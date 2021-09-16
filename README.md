@@ -3,7 +3,27 @@ Experimental implementation of JSONpath
 
 This is a placeholder for an eventual implementation of lexing and parsing of JSONpath.
 
-IETF grammar:
+IETF partial grammar (July 2020 draft):
+~~~~
+  step = ".." name ; nested descendants
+        / "." name ; child (dot notation)
+        / "[" value-expression *("," value-expression) "]"
+           ; child[ren] (bracket notation)
+        / "[" value-expression *2(":" value-expression) "]"  ; (slice)
+   value-expression = *DIGIT / name
+                    / script-expression / filter-expression
+   name = "'" text "'"
+        / "*" ; wildcard
+   script-expression = "(" script ")"
+   filter-expression = "?(" script ")"
+   script = <To be defined in the course of standardization>
+   text = <any text, restrictions to be defined>
+   DIGIT = %x30-39
+~~~~
+
+IETF partial grammar (March 2021 draft)
+
+(it is incomplete, building up chunks at a time?)
 
 ~~~~
 json-path = root-selector *selector
