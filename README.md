@@ -5,6 +5,7 @@ This is a placeholder for an eventual implementation of lexing and parsing of JS
 
 IETF grammar:
 
+~~~~
 json-path = root-selector *selector
    root-selector = "$"               ; $ selects document root node
    
@@ -144,3 +145,4 @@ selector = dot-child              ; see below for alternatives
                   +-----------------+-------------------+
                   |     "" uXXXX    |       U+XXXX      |
                   +-----------------+-------------------+
+~~~~
