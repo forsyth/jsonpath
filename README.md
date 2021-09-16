@@ -5,6 +5,8 @@ This is a placeholder for an eventual implementation of lexing and parsing of JS
 
 IETF partial grammar (July 2020 draft):
 ~~~~
+  JSONPath = root *(step)
+  root = "$"
   step = ".." name ; nested descendants
         / "." name ; child (dot notation)
         / "[" value-expression *("," value-expression) "]"
