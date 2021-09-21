@@ -1,5 +1,7 @@
 package JSONPath
 
+import "fmt"
+
 const eof = -1
 
 // rd tracks lookahead state for the lexer.
@@ -28,4 +30,8 @@ func (r *rd) look() int {
 		return eof
 	}
 	return int(r.s[r.i])
+}
+
+func (r *rd) offset() string {
+	return fmt.Sprintf("offset %d", r.i-1)
 }
