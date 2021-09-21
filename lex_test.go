@@ -36,6 +36,13 @@ var samples []lexOutput = []lexOutput{
 		[]el{el{tok: '$'},  el{tok: tokNest},  el{tok: tokID, val:"book"}, el{tok: '['},  el{tok: '('},  el{tok: '@'},  el{tok: '.'},  el{tok: tokID, val: "length"}, el{tok: '-'},  el{tok: tokInt, val: 1},  el{tok: ')'},  el{tok: ']'},  el{tok: tokEOF}, 
 		},
 	},
+	lexOutput{"$.['store'].book[?(@.price >= 20 && @.price <= 50 || true)].title",
+		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: '['}, el{tok: tokString, val: "store"}, el{tok: ']'},  el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: tokFilter},
+		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: tokGE}, el{tok: tokInt, val: 20}, el{tok: tokAnd},
+			el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: tokLE}, el{tok: tokInt, val: 50}, el{tok: tokOr}, el{tok: tokID},
+			el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
+		},
+	},
 }
 
 type lexState struct {
