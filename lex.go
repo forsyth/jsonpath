@@ -22,7 +22,7 @@ func lexPath(r *rd) (token, interface{}, error) {
 	switch c := r.get(); c {
 	case eof:
 		return tokEOF, nil, nil
-	case '(', ')', '[', ']', '@', '*', '$', ':', '+', '-', ',': // + and - are allowed as signs for integers
+	case '(', ')', '[', ']', '*', '$', ':', '-', ',': // - is allowed as a sign for integers
 		return token(c), nil, nil
 	case '.':
 		return isNext(r, '.', tokNest, '.')
@@ -84,6 +84,7 @@ func lexExpr(r *rd, okRE bool) (token, interface{}, error) {
 
 // lexNumber returns an integer token from r with a 64-bit value, or an error (eg, it overflows).
 // Currently it supports only integers.
+// The IETF grammar excludes leading zeroes, presumably to avoid octal, but we'll accept them as decimal.
 func lexNumber(r *rd) (token, int64, error) {
 	var sb strings.Builder
 	r.unget()
