@@ -6,7 +6,7 @@ import (
 )
 
 type el struct {
-	op  Op
+	tok  token
 	val interface{}
 }
 
@@ -16,47 +16,78 @@ type lexOutput struct {
 }
 
 var samples []lexOutput = []lexOutput{
-	lexOutput{"$", []el{{op: Oroot}, el{op: Oeof}}},
+	lexOutput{"$", []el{{tok: '$'}, el{tok: tokEOF}}},
 	lexOutput{"$.store.book[(@.length-1)].title",
-		[]el{el{op: Oroot}, el{op: Odot}, el{op: Oid, val: "store"}, el{op: Odot}, el{op: Oid, val: "book"}, el{op: Obra}, el{op: Olpar},
-		      el{op: Ocurrent}, el{op: Odot}, el{op: Oid, val: "length"}, el{op: Osub}, el{op: Oint, val: 1}, el{op: Orpar}, el{op: Oket}, el{op: Odot}, el{op: Oid}, el{op: Oeof},
+		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: tokID, val: "store"}, el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: '('},
+		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "length"}, el{tok: '-'}, el{tok: tokInt, val: 1}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID}, el{tok: tokEOF},
 		},
 	},
 	lexOutput{"$.store.book[?(@.price < 10)].title",
-		[]el{el{op: Oroot}, el{op: Odot}, el{op: Oid}, el{op: Odot}, el{op: Oid}, el{op: Obra}, el{op: Ofilter},
-		      el{op: Ocurrent}, el{op: Odot}, el{op: Oid}, el{op: Olt}, el{op: Oint, val: 10}, el{op: Orpar}, el{op: Oket}, el{op: Odot}, el{op: Oid, val: "title"}, el{op: Oeof},
+		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: tokID}, el{tok: '.'}, el{tok: tokID}, el{tok: '['}, el{tok: tokFilter},
+		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID}, el{tok: '<'}, el{tok: tokInt, val: 10}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
 		},
 	},
 	lexOutput{"$.['store'].book[?(@.price < 10)].title",
-		[]el{el{op: Oroot}, el{op: Odot}, el{op: Obra}, el{op: Ostring, val: "store"}, el{op: Oket},  el{op: Odot}, el{op: Oid, val: "book"}, el{op: Obra}, el{op: Ofilter},
-		      el{op: Ocurrent}, el{op: Odot}, el{op: Oid, val: "price"}, el{op: Olt}, el{op: Oint, val: 10}, el{op: Orpar}, el{op: Oket}, el{op: Odot}, el{op: Oid, val: "title"}, el{op: Oeof},
+		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: '['}, el{tok: tokString, val: "store"}, el{tok: ']'},  el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: tokFilter},
+		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: '<'}, el{tok: tokInt, val: 10}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
 		},
 	},
 	lexOutput{"$..book[(@.length-1)]",
-		[]el{el{op: Oroot},  el{op: Onest},  el{op: Oid, val:"book"}, el{op: Obra},  el{op: Olpar},  el{op: Ocurrent},  el{op: Odot},  el{op: Oid, val: "length"}, el{op: Osub},  el{op: Oint, val: 1},  el{op: Orpar},  el{op: Oket},  el{op: Oeof}, 
+		[]el{el{tok: '$'},  el{tok: tokNest},  el{tok: tokID, val:"book"}, el{tok: '['},  el{tok: '('},  el{tok: '@'},  el{tok: '.'},  el{tok: tokID, val: "length"}, el{tok: '-'},  el{tok: tokInt, val: 1},  el{tok: ')'},  el{tok: ']'},  el{tok: tokEOF}, 
 		},
 	},
+}
+
+type lexState struct {
+	r	*rd
+	nestp	int
+	expr	bool
+}
+
+func (ls *lexState) lex() (token, interface{}, error) {
+	if ls.expr {
+		tok, v, err := lexExpr(ls.r, false)
+		switch tok {
+		case '(':
+			ls.nestp++
+		case ')':
+			if ls.nestp > 0 {
+				ls.nestp--
+			}
+			if ls.nestp == 0 {
+				ls.expr = false
+			}
+		}
+		return tok, v, err
+	}
+	tok, v, err := lexPath(ls.r)
+	if tok == '(' || tok == tokFilter {
+		ls.nestp++
+		ls.expr = true
+	}
+	return tok, v, err
 }
 
 func TestLex(t *testing.T) {
 	for i, sam := range samples {
 		rdr := &rd{sam.s, 0}
+		ls := &lexState{rdr, 0, false}
 		fmt.Printf("%s -> ", sam.s)
 		for j, el := range sam.ops {
-			op, val, err := lex(rdr)
-			print(op, val, err)
-			if op != el.op || op != Oerror && err != nil {
-				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, op, val, err, el.op, el.val)
+			tok, val, err := ls.lex()
+			print(tok, val, err)
+			if tok != el.tok || tok != tokError && err != nil {
+				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, tok, val, err, el.tok, el.val)
 				break
 			}
 		}
 		fmt.Printf("\n")
 		if rdr.look() != eof {
-			t.Errorf("sample %d, not reached Oeof", i)
+			t.Errorf("sample %d, not reached tokEOF", i)
 			for {
-				op, val, err := lex(rdr)
-				print(op, val, err)
-				if op == Oeof || op == Oerror {
+				tok, val, err := ls.lex()
+				print(tok, val, err)
+				if tok == tokEOF || tok == tokError {
 					break
 				}
 			}
@@ -65,9 +96,9 @@ func TestLex(t *testing.T) {
 	}
 }
 
-func print(op Op, val interface{}, err error) {
-	fmt.Printf(" %v", op)
-	if op.hasVal() {
+func print(tok token, val interface{}, err error) {
+	fmt.Printf(" %v", tok)
+	if tok.hasVal() {
 		fmt.Printf("[%#v]", val)
 	}
 	if err != nil {
