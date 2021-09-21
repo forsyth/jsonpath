@@ -9,8 +9,8 @@ import (
 
 var (
 	ErrUnclosedString = errors.New("unclosed string literal")
-	ErrBadEscape = errors.New("unknown character escape")
-	ErrShortEscape = errors.New("unicode escape needs 4 hex digits")
+	ErrBadEscape      = errors.New("unknown character escape")
+	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 )
 
 // lexPath returns the next token and an optional associated value (eg, int or string), or an error.
@@ -22,7 +22,7 @@ func lexPath(r *rd) (token, interface{}, error) {
 	switch c := r.get(); c {
 	case eof:
 		return tokEOF, nil, nil
-	case '(', ')', '[', ']', '@', '*', '$', ':', '+', '-', ',':	// + and - are allowed as signs for integers
+	case '(', ')', '[', ']', '@', '*', '$', ':', '+', '-', ',': // + and - are allowed as signs for integers
 		return token(c), nil, nil
 	case '.':
 		return isNext(r, '.', tokNest, '.')
@@ -182,14 +182,14 @@ func isNext(r *rd, c int, t token, f token) (token, interface{}, error) {
 		return t, nil, nil
 	}
 	if f == tokError {
-		return tokError, r.look(), fmt.Errorf("unexpected char %#v after %#v at %s", rune(r.look()), rune(c), r.offset())
+		return tokError, r.look(), fmt.Errorf("unexpected char %q after %q at %s", rune(r.look()), rune(c), r.offset())
 	}
 	return f, nil, nil
 }
 
 // diagnose an unexpected character, not valid for a token
 func tokenError(r *rd, c int) (token, int, error) {
-	return tokError, c, fmt.Errorf("unexpected character %#v at %s", rune(c), r.offset())
+	return tokError, c, fmt.Errorf("unexpected character %q at %s", rune(c), r.offset())
 }
 
 func isDigit(c int) bool {

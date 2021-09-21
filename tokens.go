@@ -11,21 +11,21 @@ import "unicode"
 type token rune
 
 const (
-	tokError token = unicode.MaxRune + iota	// not a valid token in any grammar
-	tokEOF	// end of file
-	tokID	// identifier
-	tokString	// single- or double-quoted string
-	tokInt	// integer
-	tokNest	// ..
-	tokReal	// real number (might be used in expressions)
-	tokRE	// /re/, in expressions
-	tokLE	// <=
-	tokGE	// >=
-	tokEq	// ==
-	tokNE	// !=
-	tokFilter	// ?(
-	tokAnd	// &&
-	tokOr	// ||
+	tokError  token = unicode.MaxRune + iota // not a valid token in any grammar
+	tokEOF                                   // end of file
+	tokID                                    // identifier
+	tokString                                // single- or double-quoted string
+	tokInt                                   // integer
+	tokNest                                  // ..
+	tokReal                                  // real number (might be used in expressions)
+	tokRE                                    // /re/, in expressions
+	tokLE                                    // <=
+	tokGE                                    // >=
+	tokEq                                    // ==
+	tokNE                                    // !=
+	tokFilter                                // ?(
+	tokAnd                                   // &&
+	tokOr                                    // ||
 )
 
 // hasVal returns true if token t has an associated value
@@ -41,21 +41,37 @@ func (t token) hasVal() bool {
 // String returns a printable form of a token
 func (t token) String() string {
 	switch t {
-	case tokError:	return "tokError"
-	case tokEOF:	return "tokEOF"
-	case tokID:	return "tokID"
-	case tokString:	return "tokString"
-	case tokInt: return "tokInt"
-	case tokNest: return "tokNest"
-	case tokReal: return "tokReal"
-	case tokRE: return "tokRE"
-	case tokLE: return "tokLE"
-	case tokGE: return "tokGE"
-	case tokEq: return "tokEq"
-	case tokNE: return "tokNE"
-	case tokFilter: return "tokFilter"
-	case tokAnd: return "tokAnd"
-	case tokOr: return "tokOr"
-	default: return string(t)
+	case tokError:
+		return "tokError"
+	case tokEOF:
+		return "tokEOF"
+	case tokID:
+		return "tokID"
+	case tokString:
+		return "tokString"
+	case tokInt:
+		return "tokInt"
+	case tokNest:
+		return "tokNest"
+	case tokReal:
+		return "tokReal"
+	case tokRE:
+		return "tokRE"
+	case tokLE:
+		return "tokLE"
+	case tokGE:
+		return "tokGE"
+	case tokEq:
+		return "tokEq"
+	case tokNE:
+		return "tokNE"
+	case tokFilter:
+		return "tokFilter"
+	case tokAnd:
+		return "tokAnd"
+	case tokOr:
+		return "tokOr"
+	default:
+		return string(t)
 	}
 }
