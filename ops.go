@@ -110,13 +110,3 @@ var opnames map[Op]string = map[Op]string{
 func (o Op) String() string {
 	return opnames[o]
 }
-
-// hasVal returns true if o has an associated value
-func (o Op) hasVal() bool {
-	switch o {
-	case Oid, Ostring, Oint, Oreal, Ore:
-		return true
-	default:
-		return false
-	}
-}
