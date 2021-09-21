@@ -6,7 +6,7 @@ import (
 )
 
 type el struct {
-	tok  token
+	tok token
 	val interface{}
 }
 
@@ -18,37 +18,36 @@ type lexOutput struct {
 var samples []lexOutput = []lexOutput{
 	lexOutput{"$", []el{{tok: '$'}, el{tok: tokEOF}}},
 	lexOutput{"$.store.book[(@.length-1)].title",
-		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: tokID, val: "store"}, el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: '('},
-		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "length"}, el{tok: '-'}, el{tok: tokInt, val: 1}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID}, el{tok: tokEOF},
+		[]el{{tok: '$'}, {tok: '.'}, {tok: tokID, val: "store"}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: '('},
+			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "length"}, {tok: '-'}, {tok: tokInt, val: 1}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID}, {tok: tokEOF},
 		},
 	},
 	lexOutput{"$.store.book[?(@.price < 10)].title",
-		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: tokID}, el{tok: '.'}, el{tok: tokID}, el{tok: '['}, el{tok: tokFilter},
-		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID}, el{tok: '<'}, el{tok: tokInt, val: 10}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
+		[]el{{tok: '$'}, {tok: '.'}, {tok: tokID}, {tok: '.'}, {tok: tokID}, {tok: '['}, {tok: tokFilter},
+			{tok: '@'}, {tok: '.'}, {tok: tokID}, {tok: '<'}, {tok: tokInt, val: 10}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
 		},
 	},
 	lexOutput{"$.['store'].book[?(@.price < 10)].title",
-		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: '['}, el{tok: tokString, val: "store"}, el{tok: ']'},  el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: tokFilter},
-		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: '<'}, el{tok: tokInt, val: 10}, el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
+		[]el{{tok: '$'}, {tok: '.'}, {tok: '['}, {tok: tokString, val: "store"}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: tokFilter},
+			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: '<'}, {tok: tokInt, val: 10}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
 		},
 	},
 	lexOutput{"$..book[(@.length-1)]",
-		[]el{el{tok: '$'},  el{tok: tokNest},  el{tok: tokID, val:"book"}, el{tok: '['},  el{tok: '('},  el{tok: '@'},  el{tok: '.'},  el{tok: tokID, val: "length"}, el{tok: '-'},  el{tok: tokInt, val: 1},  el{tok: ')'},  el{tok: ']'},  el{tok: tokEOF}, 
-		},
+		[]el{{tok: '$'}, {tok: tokNest}, {tok: tokID, val: "book"}, {tok: '['}, {tok: '('}, {tok: '@'}, {tok: '.'}, {tok: tokID, val: "length"}, {tok: '-'}, {tok: tokInt, val: 1}, {tok: ')'}, {tok: ']'}, {tok: tokEOF}},
 	},
-	lexOutput{"$.['store'].book[?(@.price >= 20 && @.price <= 50 || true)].title",
-		[]el{el{tok: '$'}, el{tok: '.'}, el{tok: '['}, el{tok: tokString, val: "store"}, el{tok: ']'},  el{tok: '.'}, el{tok: tokID, val: "book"}, el{tok: '['}, el{tok: tokFilter},
-		      el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: tokGE}, el{tok: tokInt, val: 20}, el{tok: tokAnd},
-			el{tok: '@'}, el{tok: '.'}, el{tok: tokID, val: "price"}, el{tok: tokLE}, el{tok: tokInt, val: 50}, el{tok: tokOr}, el{tok: tokID},
-			el{tok: ')'}, el{tok: ']'}, el{tok: '.'}, el{tok: tokID, val: "title"}, el{tok: tokEOF},
+	lexOutput{"$.['store'].book[?(@.price >= 20 && @.price <= 50 || (  true \t))].title",
+		[]el{{tok: '$'}, {tok: '.'}, {tok: '['}, {tok: tokString, val: "store"}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: tokFilter},
+			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: tokGE}, {tok: tokInt, val: 20}, {tok: tokAnd},
+			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: tokLE}, {tok: tokInt, val: 50}, {tok: tokOr}, {tok: '('}, {tok: tokID, val:"true"}, {tok: ')'},
+			{tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
 		},
 	},
 }
 
 type lexState struct {
-	r	*rd
-	nestp	int
-	expr	bool
+	r     *rd
+	nestp int
+	expr  bool
 }
 
 func (ls *lexState) lex() (token, interface{}, error) {
