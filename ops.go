@@ -42,23 +42,12 @@ const (
 	Oadd   // +
 	Osub   // binary -
 	Ocall  // function call id(args)
-	Olist  // lists of things (eg, arguments)
 	Oin    // "in"
 	Onin   // "nin", not in
 	Omatch // ~
-
-	// used as tokens until the context is clear
-	Olpar  // (
-	Orpar  // )
-	Obra   // [
-	Oket   // ]
-	Ocolon // :
-	Ocomma // ,
-	Ostar  // *
-	Oslash // /
 )
 
-var opnames map[Op]string = map[Op]string{
+var opNames map[Op]string = map[Op]string{
 	Oerror:   "Oerror",
 	Oeof:     "Oeof",
 	Oid:      "Oid",
@@ -92,21 +81,66 @@ var opnames map[Op]string = map[Op]string{
 	Oadd:     "Oadd",
 	Osub:     "Osub",
 	Ocall:    "Ocall",
-	Olist:    "Olist",
 	Oin:      "Oin",
 	Onin:     "Onin",
 	Omatch:   "Omatch",
-	Olpar:    "Olpar",
-	Orpar:    "Orpar",
-	Obra:     "Obra",
-	Oket:     "Oket",
-	Ocolon:   "Ocolon",
-	Ocomma:   "Ocomma",
-	Ostar:    "Ostar",
-	Oslash:   "Oslash",
 }
 
-// String returns the textual representation of Op o
+var opText map[Op]string = map[Op]string{
+	Oerror:   "(error)",
+	Oeof:     "(eof)",
+	Oid:      "identifier",
+	Ostring:  "string",
+	Oint:     "integer",
+	Oreal:    "real number",
+	Ore:      "regular expression",
+	Oroot:    "$",
+	Ocurrent: "@",
+	Odot:     ".",
+	Oselect:  "[]selection",
+	Oindex:   "[]index",
+	Oslice:   "[]slice",
+	Ounion:   "[]union",
+	Owild:    "*",
+	Onest:    "..",
+	Ofilter:  "?(filter)",
+	Oexp:     "(exp)",
+	Olt:      "<",
+	Ole:      "<=",
+	Oeq:      "==",
+	One:      "!=",
+	Oge:      ">=",
+	Ogt:      ">",
+	Oand:     "&&",
+	Oor:      "||",
+	Omul:     "*",
+	Odiv:     "/",
+	Omod:     "%",
+	Oneg:     "unary -",
+	Oadd:     "+",
+	Osub:     "-",
+	Ocall:    "function call",
+	Oin:      "in",
+	Onin:     "nin",
+	Omatch:   "~",
+}
+
+// GoString returns the textual representation of Op o, for debugging
+func (o Op) GoString() string {
+	return opNames[o]
+}
+
+// String returns a readable representation of Op o for diagnostics
 func (o Op) String() string {
-	return opnames[o]
+	return opText[o]
+}
+
+// IsLeaf returns true if o is a leaf operator
+func (o Op) IsLeaf() bool {
+	switch o {
+	case Oid, Ostring, Oint, Oreal, Ore, Oroot, Ocurrent, Owild:
+		return true
+	default:
+		return false
+	}
 }
