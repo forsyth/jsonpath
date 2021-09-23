@@ -38,8 +38,8 @@ func (t token) hasVal() bool {
 	}
 }
 
-// String returns a printable form of a token
-func (t token) String() string {
+// GoString returns the internal name of a token (for debugging)
+func (t token) GoString() string {
 	switch t {
 	case tokError:
 		return "tokError"
@@ -71,6 +71,44 @@ func (t token) String() string {
 		return "tokAnd"
 	case tokOr:
 		return "tokOr"
+	default:
+		return string(t)
+	}
+}
+
+// String returns an readable form of a token for diagnostics
+func (t token) String() string {
+	switch t {
+	case tokError:
+		return "(invalid token)"
+	case tokEOF:
+		return "end of file"
+	case tokID:
+		return "identifier"
+	case tokString:
+		return "string literal"
+	case tokInt:
+		return "integer literal"
+	case tokNest:
+		return ".."
+	case tokReal:
+		return "floating-point literal"
+	case tokRE:
+		return "regular expression"
+	case tokLE:
+		return "<="
+	case tokGE:
+		return ">="
+	case tokEq:
+		return "=="
+	case tokNE:
+		return "!="
+	case tokFilter:
+		return "?("
+	case tokAnd:
+		return "&&"
+	case tokOr:
+		return "||"
 	default:
 		return string(t)
 	}
