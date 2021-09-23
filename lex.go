@@ -54,7 +54,13 @@ func lexExpr(r *rd, okRE bool) (token, interface{}, error) {
 		return tokEOF, nil, nil
 	case '(', ')', '[', ']', '@', '$', '.', ',':
 		return token(c), nil, nil
-	case '~', '*', '/', '%', '+', '-':
+	case '~', '*', '%', '+', '-':
+		return token(c), nil, nil
+	case '/':
+		if okRE {
+			s, err := lexString(r, c)
+			return tokRE, s, err
+		}
 		return token(c), nil, nil
 	case '&':
 		return isNext(r, '&', tokAnd, '&')
