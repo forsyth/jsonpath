@@ -11,7 +11,7 @@ const (
 	OpString           // single- or double-quoted string
 	OpInt              // integer
 	OpReal             // real number (might be used in expressions)
-	OpRe               // /re/
+	OpRE               // /re/
 
 	// path operators
 	OpRoot    // $
@@ -54,7 +54,7 @@ var opNames map[Op]string = map[Op]string{
 	OpString:  "OpString",
 	OpInt:     "OpInt",
 	OpReal:    "OpReal",
-	OpRe:      "OpRe",
+	OpRE:      "OpRE",
 	OpRoot:    "OpRoot",
 	OpCurrent: "OpCurrent",
 	OpDot:     "OpDot",
@@ -93,7 +93,7 @@ var opText map[Op]string = map[Op]string{
 	OpString:  "string",
 	OpInt:     "integer",
 	OpReal:    "real number",
-	OpRe:      "regular expression",
+	OpRE:      "regular expression",
 	OpRoot:    "$",
 	OpCurrent: "@",
 	OpDot:     ".",
@@ -138,7 +138,7 @@ func (o Op) String() string {
 // IsLeaf returns true if o is a leaf operator
 func (o Op) IsLeaf() bool {
 	switch o {
-	case OpId, OpString, OpInt, OpReal, OpRe, OpRoot, OpCurrent, OpWild:
+	case OpId, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild:
 		return true
 	default:
 		return false
