@@ -4,7 +4,7 @@ import "unicode"
 
 // A token is an value in the lexical stream produced by the lexical analyser.
 // Many tokens are represented directly by the rune value (typically in the ASCII range), eg '*', '(', '['.
-// Others are compound tokens that represent an operator such as "<=", or
+// OpThers are compound tokens that represent an operator such as "<=", or
 // an identifier, number or string, with an associated value.
 // For simplicity, the stream of tokens is usable by path, filter and expression parsers,
 // since inappropriate tokens in the sequence must anyway be detected by the parsers.

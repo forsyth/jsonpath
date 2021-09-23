@@ -5,124 +5,124 @@ package JSONPath
 type Op int
 
 const (
-	Oerror  Op = iota // illegal token, deliberately the same as the zero value
-	Oeof              // end of file
-	Oid               // identifier
-	Ostring           // single- or double-quoted string
-	Oint              // integer
-	Oreal             // real number (might be used in expressions)
-	Ore               // /re/
+	OpError  Op = iota // illegal token, deliberately the same as the zero value
+	OpEof              // end of file
+	OpId               // identifier
+	OpString           // single- or double-quoted string
+	OpInt              // integer
+	OpReal             // real number (might be used in expressions)
+	OpRe               // /re/
 
 	// path operators
-	Oroot    // $
-	Ocurrent // @
-	Odot     // .
-	Oselect  // [] when used for selection
-	Oindex   // [] when used for indexing
-	Oslice   // [lb: ub: step] slice operator
-	Ounion   // [key1, key2 ...]
-	Owild    // *
-	Onest    // ..
-	Ofilter  // ?(...)
-	Oexp     // (...)
+	OpRoot    // $
+	OpCurrent // @
+	OpDot     // .
+	OpSelect  // [] when used for selection
+	OpIndex   // [] when used for indexing
+	OpSlice   // [lb: ub: step] slice operator
+	OpUnion   // [key1, key2 ...]
+	OpWild    // *
+	OpNest    // ..
+	OpFilter  // ?(...)
+	OpExp     // (...)
 
 	// expression operators, in both filters and "expression engines"
-	Olt    // <
-	Ole    // <=
-	Oeq    // = or ==
-	One    // !=
-	Oge    // >=
-	Ogt    // >
-	Oand   // &&
-	Oor    // ||
-	Omul   // *
-	Odiv   // /
-	Omod   // %
-	Oneg   // unary -
-	Oadd   // +
-	Osub   // binary -
-	Ocall  // function call id(args)
-	Oin    // "in"
-	Onin   // "nin", not in
-	Omatch // ~
+	OpLt    // <
+	OpLe    // <=
+	OpEq    // = or ==
+	OpNe    // !=
+	OpGe    // >=
+	OpGt    // >
+	OpAnd   // &&
+	OpOr    // ||
+	OpMul   // *
+	OpDiv   // /
+	OpMod   // %
+	OpNeg   // unary -
+	OpAdd   // +
+	OpSub   // binary -
+	OpCall  // function call id(args)
+	OpIn    // "in"
+	OpNin   // "nin", not in
+	OpMatch // ~
 )
 
 var opNames map[Op]string = map[Op]string{
-	Oerror:   "Oerror",
-	Oeof:     "Oeof",
-	Oid:      "Oid",
-	Ostring:  "Ostring",
-	Oint:     "Oint",
-	Oreal:    "Oreal",
-	Ore:      "Ore",
-	Oroot:    "Oroot",
-	Ocurrent: "Ocurrent",
-	Odot:     "Odot",
-	Oselect:  "Oselect",
-	Oindex:   "Oindex",
-	Oslice:   "Oslice",
-	Ounion:   "Ounion",
-	Owild:    "Owild",
-	Onest:    "Onest",
-	Ofilter:  "Ofilter",
-	Oexp:     "Oexp",
-	Olt:      "Olt",
-	Ole:      "Ole",
-	Oeq:      "Oeq",
-	One:      "One",
-	Oge:      "Oge",
-	Ogt:      "Ogt",
-	Oand:     "Oand",
-	Oor:      "Oor",
-	Omul:     "Omul",
-	Odiv:     "Odiv",
-	Omod:     "Omod",
-	Oneg:     "Oneg",
-	Oadd:     "Oadd",
-	Osub:     "Osub",
-	Ocall:    "Ocall",
-	Oin:      "Oin",
-	Onin:     "Onin",
-	Omatch:   "Omatch",
+	OpError:   "OpError",
+	OpEof:     "OpEof",
+	OpId:      "OpId",
+	OpString:  "OpString",
+	OpInt:     "OpInt",
+	OpReal:    "OpReal",
+	OpRe:      "OpRe",
+	OpRoot:    "OpRoot",
+	OpCurrent: "OpCurrent",
+	OpDot:     "OpDot",
+	OpSelect:  "OpSelect",
+	OpIndex:   "OpIndex",
+	OpSlice:   "OpSlice",
+	OpUnion:   "OpUnion",
+	OpWild:    "OpWild",
+	OpNest:    "OpNest",
+	OpFilter:  "OpFilter",
+	OpExp:     "OpExp",
+	OpLt:      "OpLt",
+	OpLe:      "OpLe",
+	OpEq:      "OpEq",
+	OpNe:      "OpNe",
+	OpGe:      "OpGe",
+	OpGt:      "OpGt",
+	OpAnd:     "OpAnd",
+	OpOr:      "OpOr",
+	OpMul:     "OpMul",
+	OpDiv:     "OpDiv",
+	OpMod:     "OpMod",
+	OpNeg:     "OpNeg",
+	OpAdd:     "OpAdd",
+	OpSub:     "OpSub",
+	OpCall:    "OpCall",
+	OpIn:      "OpIn",
+	OpNin:     "OpNin",
+	OpMatch:   "OpMatch",
 }
 
 var opText map[Op]string = map[Op]string{
-	Oerror:   "(error)",
-	Oeof:     "(eof)",
-	Oid:      "identifier",
-	Ostring:  "string",
-	Oint:     "integer",
-	Oreal:    "real number",
-	Ore:      "regular expression",
-	Oroot:    "$",
-	Ocurrent: "@",
-	Odot:     ".",
-	Oselect:  "[]selection",
-	Oindex:   "[]index",
-	Oslice:   "[]slice",
-	Ounion:   "[]union",
-	Owild:    "*",
-	Onest:    "..",
-	Ofilter:  "?(filter)",
-	Oexp:     "(exp)",
-	Olt:      "<",
-	Ole:      "<=",
-	Oeq:      "==",
-	One:      "!=",
-	Oge:      ">=",
-	Ogt:      ">",
-	Oand:     "&&",
-	Oor:      "||",
-	Omul:     "*",
-	Odiv:     "/",
-	Omod:     "%",
-	Oneg:     "unary -",
-	Oadd:     "+",
-	Osub:     "-",
-	Ocall:    "function call",
-	Oin:      "in",
-	Onin:     "nin",
-	Omatch:   "~",
+	OpError:   "(error)",
+	OpEof:     "(eof)",
+	OpId:      "identifier",
+	OpString:  "string",
+	OpInt:     "integer",
+	OpReal:    "real number",
+	OpRe:      "regular expression",
+	OpRoot:    "$",
+	OpCurrent: "@",
+	OpDot:     ".",
+	OpSelect:  "[]selection",
+	OpIndex:   "[]index",
+	OpSlice:   "[]slice",
+	OpUnion:   "[]union",
+	OpWild:    "*",
+	OpNest:    "..",
+	OpFilter:  "?(filter)",
+	OpExp:     "(exp)",
+	OpLt:      "<",
+	OpLe:      "<=",
+	OpEq:      "==",
+	OpNe:      "!=",
+	OpGe:      ">=",
+	OpGt:      ">",
+	OpAnd:     "&&",
+	OpOr:      "||",
+	OpMul:     "*",
+	OpDiv:     "/",
+	OpMod:     "%",
+	OpNeg:     "unary -",
+	OpAdd:     "+",
+	OpSub:     "-",
+	OpCall:    "function call",
+	OpIn:      "in",
+	OpNin:     "nin",
+	OpMatch:   "~",
 }
 
 // GoString returns the textual representation of Op o, for debugging
@@ -138,7 +138,7 @@ func (o Op) String() string {
 // IsLeaf returns true if o is a leaf operator
 func (o Op) IsLeaf() bool {
 	switch o {
-	case Oid, Ostring, Oint, Oreal, Ore, Oroot, Ocurrent, Owild:
+	case OpId, OpString, OpInt, OpReal, OpRe, OpRoot, OpCurrent, OpWild:
 		return true
 	default:
 		return false

@@ -32,7 +32,7 @@ func ParsePath(s string) (Path, error) {
 	if err != nil {
 		return nil, err
 	}
-	path := []*Step{&Step{Oroot, nil}}
+	path := []*Step{&Step{OpRoot, nil}}
 	for {
 		var step *Step
 		tok, val, err := lexPath(rdr)
@@ -44,20 +44,20 @@ func ParsePath(s string) (Path, error) {
 			if err != nil {
 				return nil, err
 			}
-			step = &Step{Oexp, []Val{e}}
+			step = &Step{OpExp, []Val{e}}
 		case tokFilter:
 			e, err := parseExpr(rdr)
 			if err != nil {
 				return nil, err
 			}
-			step = &Step{Ofilter, []Val{e}}
+			step = &Step{OpFilter, []Val{e}}
 		case '.':
 			op, name, err := parsePathName(rdr)
 			if err != nil {
 				return nil, err
 			}
-			if op == Owild {
-				step = &Step{Owild, nil}
+			if op == OpWild {
+				step = &Step{OpWild, nil}
 			} else {
 				step = &Step{op, []Val{name}}
 			}
@@ -66,10 +66,10 @@ func ParsePath(s string) (Path, error) {
 			if err != nil {
 				return nil, err
 			}
-			if op == Owild {
+			if op == OpWild {
 				return nil, errors.New("..* not allowed") // or is it?
 			}
-			step = &Step{Onest, []Val{name}}
+			step = &Step{OpNest, []Val{name}}
 		case '[':
 			op, vals, err := parseVals(rdr)
 			if err != nil {
@@ -79,7 +79,7 @@ func ParsePath(s string) (Path, error) {
 			if err != nil {
 				return nil, err
 			}
-			_ = op   // Oslice, Oindex, Oselect, Ounion
+			_ = op   // OpSlice, OpIndex, OpSelect, OpUnion
 			_ = vals // need to inspect them to distinguish
 		default:
 			if tok.hasVal() {
@@ -93,7 +93,7 @@ func ParsePath(s string) (Path, error) {
 }
 
 func parseVals(r *rd) (Op, []Val, error) {
-	return Oerror, nil, errors.New("parseVals not done yet")
+	return OpError, nil, errors.New("parseVals not done yet")
 }
 
 func parseExpr(r *rd) (Expr, error) {
@@ -105,17 +105,17 @@ func parseExpr(r *rd) (Expr, error) {
 func parsePathName(r *rd) (Op, string, error) {
 	tok, val, err := lexPath(r)
 	if err != nil {
-		return Oerror, "", err
+		return OpError, "", err
 	}
 	switch tok {
 	case '*':
-		return Owild, "", nil
+		return OpWild, "", nil
 	case tokID:
-		return Oid, val.(string), nil
+		return OpId, val.(string), nil
 	case tokString:
-		return Ostring, val.(string), nil
+		return OpString, val.(string), nil
 	default:
-		return Oerror, "", fmt.Errorf("unexpected %v at %s", tok, r.offset())
+		return OpError, "", fmt.Errorf("unexpected %v at %s", tok, r.offset())
 	}
 }
 

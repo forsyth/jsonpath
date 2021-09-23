@@ -26,9 +26,9 @@ type IntLeaf struct {
 func (l *IntLeaf) IsLeaf() bool { return true }
 func (l *IntLeaf) Op() Op       { return l.op }
 
-// NameLeaf represents a user-defined name (Oid), "@" (Ocurrent) and "$" (Oroot).
+// NameLeaf represents a user-defined name (OpId), "@" (OpCurrent) and "$" (OpRoot).
 type NameLeaf struct {
-	op  Op
+	op   Op
 	name string
 }
 
@@ -64,13 +64,13 @@ type Expr interface {
 
 // prectab lists the operator precedence groups, from low to high.
 var prectab [][]Op = [][]Op{
-	[]Op{Oor},
-	[]Op{Oand},
-	[]Op{Oeq, One},
-	[]Op{Olt, Ole, Ogt, Oge},
-	[]Op{Oadd, Osub},
-	[]Op{Omul, Odiv, Omod},
-	[]Op{Oneg}, // unary '-'
+	[]Op{OpOr},
+	[]Op{OpAnd},
+	[]Op{OpEq, OpNe},
+	[]Op{OpLt, OpLe, OpGt, OpGe},
+	[]Op{OpAdd, OpSub},
+	[]Op{OpMul, OpDiv, OpMod},
+	[]Op{OpNeg}, // unary '-'
 	//	array[] of {'|'},	// UnionExpr
 }
 
@@ -120,14 +120,14 @@ func (p *parser) expr(pri int) (Expr, error) {
 	if pri >= len(prectab) {
 		return p.primary()
 	}
-	if prectab[pri][0] == Oneg { // unary '-'
+	if prectab[pri][0] == OpNeg { // unary '-'
 		if p.look() == '-' {
 			p.get()
 			arg, err := p.expr(pri + 1)
 			if err != nil {
 				return nil, err
 			}
-			return &Inner{Oneg, []Expr{arg}}, nil
+			return &Inner{OpNeg, []Expr{arg}}, nil
 		}
 		pri++ // ???
 	}
@@ -158,15 +158,15 @@ func (p *parser) primary() (Expr, error) {
 	switch tok {
 	case tokID:
 		// (), [] handled here?
-		return &NameLeaf{Oid, val.(string)}, nil
+		return &NameLeaf{OpId, val.(string)}, nil
 	case tokInt:
-		return &IntLeaf{Oint, val.(int64)}, nil
+		return &IntLeaf{OpInt, val.(int64)}, nil
 	case tokString:
-		return &StringLeaf{Ostring, val.(string)}, nil
+		return &StringLeaf{OpString, val.(string)}, nil
 	case '@':
-		return &NameLeaf{Ocurrent, "@"}, nil
+		return &NameLeaf{OpCurrent, "@"}, nil
 	case '$':
-		return &NameLeaf{Oroot, "$"}, nil
+		return &NameLeaf{OpRoot, "$"}, nil
 	case '(':
 		e, err := parseExpr(p.r)
 		if err != nil {
@@ -207,33 +207,33 @@ func opPrec(t token, p []token) int {
 func tok2op(t token) Op {
 	switch t {
 	case '*':
-		return Omul
+		return OpMul
 	case '+':
-		return Oadd
+		return OpAdd
 	case '-':
-		return Osub
+		return OpSub
 	case '/':
-		return Odiv
+		return OpDiv
 	case '%':
-		return Omod
+		return OpMod
 	case tokEq:
-		return Oeq
+		return OpEq
 	case tokNE:
-		return One
+		return OpNe
 	case '<':
-		return Olt
+		return OpLt
 	case tokLE:
-		return Ole
+		return OpLe
 	case tokGE:
-		return Oge
+		return OpGe
 	case '>':
-		return Ogt
+		return OpGt
 	case tokAnd:
-		return Oand
+		return OpAnd
 	case tokOr:
-		return Oor
+		return OpOr
 	default:
-		return Oerror
+		return OpError
 	}
 }
 
