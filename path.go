@@ -35,10 +35,10 @@ func ParsePath(s string) (Path, error) {
 	path := []*Step{&Step{OpRoot, nil}}
 	for {
 		var step *Step
-		tok, val, err := lexPath(rdr)
-		switch tok {
+		lx := lexPath(rdr)
+		switch lx.tok {
 		case tokError:
-			return nil, err
+			return nil, lx.err
 		case '(':
 			e, err := parseExpr(rdr)
 			if err != nil {
@@ -82,10 +82,10 @@ func ParsePath(s string) (Path, error) {
 			_ = op   // OpSlice, OpIndex, OpSelect, OpUnion
 			_ = vals // need to inspect them to distinguish
 		default:
-			if tok.hasVal() {
-				return nil, fmt.Errorf("unexpected token %v (%v)", tok, val)
+			if lx.tok.hasVal() {
+				return nil, fmt.Errorf("unexpected token %v (%v)", lx.tok, lx.val)
 			}
-			return nil, fmt.Errorf("unexpected token %v", tok)
+			return nil, fmt.Errorf("unexpected token %v", lx.tok)
 		}
 		path = append(path, step)
 	}
@@ -103,29 +103,29 @@ func parseExpr(r *rd) (Expr, error) {
 
 // identifier, string or *
 func parsePathName(r *rd) (Op, string, error) {
-	tok, val, err := lexPath(r)
-	if err != nil {
-		return OpError, "", err
+	lx := lexPath(r)
+	if lx.err != nil {
+		return OpError, "", lx.err
 	}
-	switch tok {
+	switch lx.tok {
 	case '*':
 		return OpWild, "", nil
 	case tokID:
-		return OpId, val.(string), nil
+		return OpId, lx.val.(string), nil
 	case tokString:
-		return OpString, val.(string), nil
+		return OpString, lx.val.(string), nil
 	default:
-		return OpError, "", fmt.Errorf("unexpected %v at %s", tok, r.offset())
+		return OpError, "", fmt.Errorf("unexpected %v at %s",lx. tok, r.offset())
 	}
 }
 
 func expect(r *rd, nt token) error {
-	tok, _, err := lexPath(r)
-	if err != nil {
-		return err
+	lx := lexPath(r)
+	if lx.err != nil {
+		return lx.err
 	}
-	if tok != nt {
-		return fmt.Errorf("expected %q at %s, got %v", nt, r.offset(), tok)
+	if lx.tok != nt {
+		return fmt.Errorf("expected %q at %s, got %v", nt, r.offset(), lx.tok)
 	}
 	return nil
 }

@@ -13,24 +13,31 @@ var (
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 )
 
+// lexeme is a tuple representing a lexical element: token, optional value, optional error
+type lexeme struct {
+	tok	token
+	val	Val
+	err	error
+}
+
 // lexPath returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of path elements.
-func lexPath(r *rd) (token, interface{}, error) {
+func lexPath(r *rd) lexeme {
 	for isSpace(r.look()) {
 		r.get()
 	}
 	switch c := r.get(); c {
 	case eof:
-		return tokEOF, nil, nil
+		return lexeme{tokEOF, nil, nil}
 	case '(', ')', '[', ']', '*', '$', ':', '-', ',': // - is allowed as a sign for integers
-		return token(c), nil, nil
+		return lexeme{token(c), nil, nil}
 	case '.':
 		return isNext(r, '.', tokNest, '.')
 	case '?':
 		return isNext(r, '(', tokFilter, tokError)
 	case '"', '\'':
 		s, err := lexString(r, c)
-		return tokString, s, err
+		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
 			return lexNumber(r)
@@ -45,23 +52,23 @@ func lexPath(r *rd) (token, interface{}, error) {
 // lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of "script expressions" (filter and plain expressions).
 // If okRE is true, a '/' character introduces a regular expression (ended by an unescaped trailing '/').
-func lexExpr(r *rd, okRE bool) (token, interface{}, error) {
+func lexExpr(r *rd, okRE bool) lexeme {
 	for isSpace(r.look()) {
 		r.get()
 	}
 	switch c := r.get(); c {
 	case eof:
-		return tokEOF, nil, nil
+		return lexeme{tokEOF, nil, nil}
 	case '(', ')', '[', ']', '@', '$', '.', ',':
-		return token(c), nil, nil
+		return lexeme{token(c), nil, nil}
 	case '~', '*', '%', '+', '-':
-		return token(c), nil, nil
+		return lexeme{token(c), nil, nil}
 	case '/':
 		if okRE {
 			s, err := lexString(r, c)
-			return tokRE, s, err
+			return lexeme{tokRE, s, err}
 		}
-		return token(c), nil, nil
+		return lexeme{token(c), nil, nil}
 	case '&':
 		return isNext(r, '&', tokAnd, '&')
 	case '|':
@@ -76,7 +83,7 @@ func lexExpr(r *rd, okRE bool) (token, interface{}, error) {
 		return isNext(r, '=', tokNE, '!')
 	case '"', '\'':
 		s, err := lexString(r, c)
-		return tokString, s, err
+		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
 			return lexNumber(r)
@@ -91,7 +98,7 @@ func lexExpr(r *rd, okRE bool) (token, interface{}, error) {
 // lexNumber returns an integer token from r with a 64-bit value, or an error (eg, it overflows).
 // Currently it supports only integers.
 // The IETF grammar excludes leading zeroes, presumably to avoid octal, but we'll accept them as decimal.
-func lexNumber(r *rd) (token, int64, error) {
+func lexNumber(r *rd) lexeme {
 	var sb strings.Builder
 	r.unget()
 	for isDigit(r.look()) {
@@ -99,19 +106,19 @@ func lexNumber(r *rd) (token, int64, error) {
 	}
 	v, err := strconv.ParseInt(sb.String(), 10, 64)
 	if err != nil {
-		return tokError, 0, err
+		return lexeme{tokError, 0, err}
 	}
-	return tokInt, v, nil
+	return lexeme{tokInt, v, nil}
 }
 
 // lexID returns an identifier token from r
-func lexID(r *rd) (token, string, error) {
+func lexID(r *rd) lexeme {
 	var sb strings.Builder
 	r.unget()
 	for isAlphanumeric(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	return tokID, sb.String(), nil
+	return lexeme{tokID, sb.String(), nil}
 }
 
 // lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
@@ -183,20 +190,20 @@ func escaped(r *rd, cq int) (rune, error) {
 }
 
 // if the next character is c, consume it and return t, otherwise return f
-func isNext(r *rd, c int, t token, f token) (token, interface{}, error) {
+func isNext(r *rd, c int, t token, f token) lexeme {
 	if r.look() == c {
 		r.get()
-		return t, nil, nil
+		return lexeme{t, nil, nil}
 	}
 	if f == tokError {
-		return tokError, r.look(), fmt.Errorf("unexpected char %q after %q at %s", rune(r.look()), rune(c), r.offset())
+		return lexeme{tokError, r.look(), fmt.Errorf("unexpected char %q after %q at %s", rune(r.look()), rune(c), r.offset())}
 	}
-	return f, nil, nil
+	return lexeme{f, nil, nil}
 }
 
 // diagnose an unexpected character, not valid for a token
-func tokenError(r *rd, c int) (token, int, error) {
-	return tokError, c, fmt.Errorf("unexpected character %q at %s", rune(c), r.offset())
+func tokenError(r *rd, c int) lexeme {
+	return lexeme{tokError, c, fmt.Errorf("unexpected character %q at %s", rune(c), r.offset())}
 }
 
 func isDigit(c int) bool {

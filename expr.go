@@ -78,36 +78,32 @@ var prectab [][]Op = [][]Op{
 type parser struct {
 	r    *rd
 	peek bool  // unget was called
-	tok  token // 1 token lookahead
-	val  Val   // associated value, if any
-	err  error // associated error value, if any
+	lex	lexeme	// value of unget
 }
 
-func (p *parser) get() (token, Val, error) {
+func (p *parser) get() lexeme {
 	if p.peek {
 		p.peek = false
-		return p.tok, p.val, p.err
+		return p.lex
 	}
 	return lexExpr(p.r, false)
 }
 
-func (p *parser) unget(tok token, val Val, err error) {
+func (p *parser) unget(lex lexeme) {
 	if p.peek {
 		panic("internal error: too much lookahead")
 	}
 	p.peek = true
-	p.tok = tok
-	p.val = val
-	p.err = err
+	p.lex = lex
 }
 
 func (p *parser) look() token {
-	tok, val, err := p.get()
-	p.unget(tok, val, err)
-	if err != nil {
+	lx := p.get()
+	p.unget(lx)
+	if lx.err != nil {
 		return tokError
 	}
-	return tok
+	return lx.tok
 }
 
 func (p *parser) parse() (Expr, error) {
@@ -137,32 +133,32 @@ func (p *parser) expr(pri int) (Expr, error) {
 	}
 	// associate operators at current priority level
 	for isOpIn(tok2op(p.look()), prectab[pri]) {
-		tok, _, err := p.get()
-		if err != nil {
-			return nil, err
+		lx := p.get()
+		if lx.err != nil {
+			return nil, lx.err
 		}
 		right, err := p.expr(pri + 1)
 		if err != nil {
 			return nil, err
 		}
-		e = &Inner{tok2op(tok), []Expr{e, right}}
+		e = &Inner{tok2op(lx.tok), []Expr{e, right}}
 	}
 	return e, nil
 }
 
 func (p *parser) primary() (Expr, error) {
-	tok, val, err := p.get()
-	if err != nil {
-		return nil, err
+	lx := p.get()
+	if lx.err != nil {
+		return nil, lx.err
 	}
-	switch tok {
+	switch lx.tok {
 	case tokID:
 		// (), [] handled here?
-		return &NameLeaf{OpId, val.(string)}, nil
+		return &NameLeaf{OpId, lx.val.(string)}, nil
 	case tokInt:
-		return &IntLeaf{OpInt, val.(int64)}, nil
+		return &IntLeaf{OpInt, lx.val.(int64)}, nil
 	case tokString:
-		return &StringLeaf{OpString, val.(string)}, nil
+		return &StringLeaf{OpString, lx.val.(string)}, nil
 	case '@':
 		return &NameLeaf{OpCurrent, "@"}, nil
 	case '$':
@@ -178,17 +174,17 @@ func (p *parser) primary() (Expr, error) {
 		}
 		return e, nil
 	default:
-		return nil, fmt.Errorf("unexpected token %v in expression term", tok)
+		return nil, fmt.Errorf("unexpected token %v in expression term", lx.tok)
 	}
 }
 
 func (p *parser) expect(req token) error {
-	tok, _, err := p.get()
-	if err != nil {
-		return err
+	lx := p.get()
+	if lx.err != nil {
+		return lx.err
 	}
-	if tok != req {
-		return fmt.Errorf("expected %v, got %v", req, tok)
+	if lx.tok != req {
+		return fmt.Errorf("expected %v, got %v", req, lx.tok)
 	}
 	return nil
 }
