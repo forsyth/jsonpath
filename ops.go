@@ -45,6 +45,7 @@ const (
 	OpIn    // "in"
 	OpNin   // "nin", not in
 	OpMatch // ~
+	OpNot	// unary !
 )
 
 var opNames map[Op]string = map[Op]string{
@@ -84,6 +85,7 @@ var opNames map[Op]string = map[Op]string{
 	OpIn:      "OpIn",
 	OpNin:     "OpNin",
 	OpMatch:   "OpMatch",
+	OpNot:	"OpNot",
 }
 
 var opText map[Op]string = map[Op]string{
@@ -123,6 +125,7 @@ var opText map[Op]string = map[Op]string{
 	OpIn:      "in",
 	OpNin:     "nin",
 	OpMatch:   "~",
+	OpNot:	"!",
 }
 
 // GoString returns the textual representation of Op o, for debugging

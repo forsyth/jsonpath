@@ -67,10 +67,10 @@ var prectab [][]Op = [][]Op{
 	[]Op{OpOr},
 	[]Op{OpAnd},
 	[]Op{OpEq, OpNe},
-	[]Op{OpLt, OpLe, OpGt, OpGe},
+	[]Op{OpLt, OpLe, OpGt, OpGe, OpMatch, OpIn, OpNin},
 	[]Op{OpAdd, OpSub},
 	[]Op{OpMul, OpDiv, OpMod},
-	[]Op{OpNeg}, // unary '-'
+	[]Op{OpNeg, OpNot}, // unary '-'
 	//	array[] of {'|'},	// UnionExpr
 }
 
@@ -116,16 +116,15 @@ func (p *parser) expr(pri int) (Expr, error) {
 	if pri >= len(prectab) {
 		return p.primary()
 	}
-	if prectab[pri][0] == OpNeg { // unary '-'
-		if p.look() == '-' {
-			p.get(false)
-			arg, err := p.expr(pri + 1)
-			if err != nil {
-				return nil, err
-			}
-			return &Inner{OpNeg, []Expr{arg}}, nil
+	if prectab[pri][0] == OpNeg { // unary '-' or '!'
+		c := p.look()
+		switch c {
+		case '-':
+			return p.unary(OpNeg, pri)
+		case '!':
+			return p.unary(OpNot, pri)
 		}
-		pri++ // ???
+		pri++ // primary
 	}
 	e, err := p.expr(pri + 1)
 	if err != nil {
@@ -144,6 +143,16 @@ func (p *parser) expr(pri int) (Expr, error) {
 		e = &Inner{tok2op(lx.tok), []Expr{e, right}}
 	}
 	return e, nil
+}
+
+// unary applies a unary operator to a following expression
+func (p *parser) unary(op Op, pri int) (Expr, error) {
+	p.get(false)
+	arg, err := p.expr(pri + 1)
+	if err != nil {
+		return nil, err
+	}
+	return &Inner{op, []Expr{arg}}, nil
 }
 
 func (p *parser) primary() (Expr, error) {
