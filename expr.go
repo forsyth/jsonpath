@@ -81,12 +81,12 @@ type parser struct {
 	lex	lexeme	// value of unget
 }
 
-func (p *parser) get() lexeme {
+func (p *parser) get(withRE bool) lexeme {
 	if p.peek {
 		p.peek = false
 		return p.lex
 	}
-	return lexExpr(p.r, false)
+	return lexExpr(p.r, withRE)
 }
 
 func (p *parser) unget(lex lexeme) {
@@ -98,7 +98,7 @@ func (p *parser) unget(lex lexeme) {
 }
 
 func (p *parser) look() token {
-	lx := p.get()
+	lx := p.get(false)
 	p.unget(lx)
 	if lx.err != nil {
 		return tokError
@@ -118,7 +118,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 	}
 	if prectab[pri][0] == OpNeg { // unary '-'
 		if p.look() == '-' {
-			p.get()
+			p.get(false)
 			arg, err := p.expr(pri + 1)
 			if err != nil {
 				return nil, err
@@ -133,7 +133,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 	}
 	// associate operators at current priority level
 	for isOpIn(tok2op(p.look()), prectab[pri]) {
-		lx := p.get()
+		lx := p.get(false)
 		if lx.err != nil {
 			return nil, lx.err
 		}
@@ -147,7 +147,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 }
 
 func (p *parser) primary() (Expr, error) {
-	lx := p.get()
+	lx := p.get(true)
 	if lx.err != nil {
 		return nil, lx.err
 	}
@@ -179,7 +179,7 @@ func (p *parser) primary() (Expr, error) {
 }
 
 func (p *parser) expect(req token) error {
-	lx := p.get()
+	lx := p.get(false)
 	if lx.err != nil {
 		return lx.err
 	}
