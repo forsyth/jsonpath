@@ -82,7 +82,7 @@ func TestLex(t *testing.T) {
 		fmt.Printf("%s -> ", sam.s)
 		for j, el := range sam.ops {
 			lx := ls.lex()
-			print(lx)
+			fmt.Printf(" %#v", lx)
 			if lx.tok != el.tok || lx.tok != tokError && lx.err != nil {
 				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, lx.tok, lx.val, lx.err, el.tok, el.val)
 				break
@@ -93,7 +93,7 @@ func TestLex(t *testing.T) {
 			t.Errorf("sample %d, not reached tokEOF", i)
 			for {
 				lx := ls.lex()
-				print(lx)
+				fmt.Printf(" %#v", lx)
 				if lx.tok == tokEOF || lx.tok == tokError {
 					break
 				}
@@ -101,8 +101,4 @@ func TestLex(t *testing.T) {
 			fmt.Printf("\n")
 		}
 	}
-}
-
-func print(lx lexeme) {
-	fmt.Printf(" %#v", lx)
 }
