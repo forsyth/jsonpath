@@ -44,16 +44,17 @@ var samples []lexOutput = []lexOutput{
 	},
 }
 
+// keep enough state to handle nested script-expressions [nested ()]
 type lexState struct {
-	r     *rd
+	lexer
 	nestp int
 	expr  bool
 }
 
-func (ls *lexState) lex() (token, interface{}, error) {
+func (ls *lexState) lex() lexeme {
 	if ls.expr {
-		tok, v, err := lexExpr(ls.r, false)
-		switch tok {
+		lx := ls.lexExpr(false)
+		switch lx.tok {
 		case '(':
 			ls.nestp++
 		case ')':
@@ -64,26 +65,26 @@ func (ls *lexState) lex() (token, interface{}, error) {
 				ls.expr = false
 			}
 		}
-		return tok, v, err
+		return lx
 	}
-	tok, v, err := lexPath(ls.r)
-	if tok == '(' || tok == tokFilter {
+	lx := ls.lexPath()
+	if lx.tok == '(' || lx.tok == tokFilter {
 		ls.nestp++
 		ls.expr = true
 	}
-	return tok, v, err
+	return lx
 }
 
 func TestLex(t *testing.T) {
 	for i, sam := range samples {
 		rdr := &rd{sam.s, 0}
-		ls := &lexState{rdr, 0, false}
+		ls := &lexState{lexer: lexer{r: rdr}}
 		fmt.Printf("%s -> ", sam.s)
 		for j, el := range sam.ops {
-			tok, val, err := ls.lex()
-			print(tok, val, err)
-			if tok != el.tok || tok != tokError && err != nil {
-				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, tok, val, err, el.tok, el.val)
+			lx := ls.lex()
+			print(lx)
+			if lx.tok != el.tok || lx.tok != tokError && lx.err != nil {
+				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, lx.tok, lx.val, lx.err, el.tok, el.val)
 				break
 			}
 		}
@@ -91,9 +92,9 @@ func TestLex(t *testing.T) {
 		if rdr.look() != eof {
 			t.Errorf("sample %d, not reached tokEOF", i)
 			for {
-				tok, val, err := ls.lex()
-				print(tok, val, err)
-				if tok == tokEOF || tok == tokError {
+				lx := ls.lex()
+				print(lx)
+				if lx.tok == tokEOF || lx.tok == tokError {
 					break
 				}
 			}
@@ -102,12 +103,12 @@ func TestLex(t *testing.T) {
 	}
 }
 
-func print(tok token, val interface{}, err error) {
-	fmt.Printf(" %v", tok)
-	if tok.hasVal() {
-		fmt.Printf("[%#v]", val)
+func print(lx lexeme) {
+	fmt.Printf(" %v", lx.tok)
+	if lx.tok.hasVal() {
+		fmt.Printf("[%#v]", lx.val)
 	}
-	if err != nil {
-		fmt.Printf("!%s", err)
+	if lx.err != nil {
+		fmt.Printf("!%s", lx.err)
 	}
 }
