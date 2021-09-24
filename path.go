@@ -138,11 +138,11 @@ func (p *parser) parseSubscript() (Op, Val, error) {
 		case '*':
 			return OpWild, nil, nil
 		case '(':
-			e, err := p.parseExpr1()
+			e, err := p.parseExpr()
 			// need to lookahead for ":", the "expr" case of "start" (ie, it's a slice)
 			return OpExp, e, err
 		case tokFilter:
-			e, err := p.parseExpr1()
+			e, err := p.parseExpr()
 			return OpFilter, e, err
 
 		// union-element ("," union-element)
@@ -189,10 +189,6 @@ func (p *parser) parseMember() (Op, Val, error) {
 	case '(':
 		// expr ::= "(" script-expression ")"
 		e, err := p.parseExpr()
-		if err != nil {
-			return OpError, "", err
-		}
-		err = expect(p, ')')
 		return OpExp, e, err
 	default:
 		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
@@ -200,8 +196,8 @@ func (p *parser) parseMember() (Op, Val, error) {
 }
 
 // parse the tail of expr or filter, expecting a closing ')'
-func (p *parser) parseExpr1() (Expr, error) {
-	e, err := p.parseExpr()
+func (p *parser) parseExpr() (Expr, error) {
+	e, err := p.parseScriptExpr()
 	if err != nil {
 		return nil, err
 	}

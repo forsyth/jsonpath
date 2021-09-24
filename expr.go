@@ -91,7 +91,7 @@ func (p *parser) lookExpr(withRE bool) token {
 	return p.lexer.look(p.lexer.lexExpr(withRE))
 }
 
-func (p *parser) parseExpr() (Expr, error) {
+func (p *parser) parseScriptExpr() (Expr, error) {
 	return p.expr(0)
 }
 
@@ -157,7 +157,7 @@ func (p *parser) primary() (Expr, error) {
 	case '$':
 		return &NameLeaf{OpRoot, "$"}, nil
 	case '(':
-		e, err := p.parseExpr()
+		e, err := p.parseScriptExpr()
 		if err != nil {
 			return nil, err
 		}
