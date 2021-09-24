@@ -124,7 +124,7 @@ func (p *parser) parseBrackets() (*Step, error) {
 // array-index ::= integer
 // array-slice ::= start? ":" end? (":" step?)?
 func (p *parser) parseSubscript() (Op, Val, error) {
-	union := []*Step{}	// if it's the sequence of union-element
+	union := []*Step{} // if it's the sequence of union-element
 	for {
 		lx := p.lexPath()
 		switch lx.tok {

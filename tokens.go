@@ -12,20 +12,20 @@ type token rune
 
 const (
 	tokError  token = utf8.MaxRune + iota // not a valid token in any grammar
-	tokEOF                                   // end of file
-	tokID                                    // identifier
-	tokString                                // single- or double-quoted string
-	tokInt                                   // integer
-	tokNest                                  // ..
-	tokReal                                  // real number (might be used in expressions)
-	tokRE                                    // /re/, in expressions
-	tokLE                                    // <=
-	tokGE                                    // >=
-	tokEq                                    // ==
-	tokNE                                    // !=
-	tokFilter                                // ?(
-	tokAnd                                   // &&
-	tokOr                                    // ||
+	tokEOF                                // end of file
+	tokID                                 // identifier
+	tokString                             // single- or double-quoted string
+	tokInt                                // integer
+	tokNest                               // ..
+	tokReal                               // real number (might be used in expressions)
+	tokRE                                 // /re/, in expressions
+	tokLE                                 // <=
+	tokGE                                 // >=
+	tokEq                                 // ==
+	tokNE                                 // !=
+	tokFilter                             // ?(
+	tokAnd                                // &&
+	tokOr                                 // ||
 )
 
 // hasVal returns true if token t has an associated value

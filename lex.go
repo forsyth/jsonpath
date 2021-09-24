@@ -12,21 +12,21 @@ var (
 	ErrUnclosedString = errors.New("unclosed string literal")
 	ErrBadEscape      = errors.New("unknown character escape")
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
-	ErrIntOverflow	= errors.New("overflow of negative integer literal")
+	ErrIntOverflow    = errors.New("overflow of negative integer literal")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
 type lexeme struct {
-	tok	token
-	val	Val
-	err	error
+	tok token
+	val Val
+	err error
 }
 
 // lexer provides state and one-token lookahead for the token stream
 type lexer struct {
 	r    *rd
-	peek bool  // unget was called
-	lex	lexeme	// value of unget
+	peek bool   // unget was called
+	lex  lexeme // value of unget
 }
 
 func newLexer(r *rd) *lexer {
@@ -70,7 +70,7 @@ func (l *lexer) lexPath() lexeme {
 	switch c := r.get(); c {
 	case eof:
 		return lexeme{tokEOF, nil, nil}
-	case '(', ')', '[', ']', '*', '$', ':', ',': 
+	case '(', ')', '[', ']', '*', '$', ':', ',':
 		return lexeme{token(c), nil, nil}
 	case '.':
 		return isNext(r, '.', tokNest, '.')
@@ -79,7 +79,7 @@ func (l *lexer) lexPath() lexeme {
 	case '"', '\'':
 		s, err := lexString(r, c)
 		return lexeme{tokString, s, err}
-	case '-':	// - is allowed as a sign for integers
+	case '-': // - is allowed as a sign for integers
 		fol := l.lexPath()
 		if fol.tok != tokInt {
 			return tokenError(r, c)

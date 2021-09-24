@@ -1,7 +1,7 @@
 package JSONPath
 
 import (
-//	"errors"
+	//	"errors"
 	"fmt"
 )
 
@@ -76,7 +76,7 @@ var prectab [][]Op = [][]Op{
 
 // parser represents the state of the expression parser
 type parser struct {
-	lexer	*lexer	// source of tokens
+	lexer *lexer // source of tokens
 }
 
 func (p *parser) lexExpr(withRE bool) lexeme {
