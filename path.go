@@ -102,15 +102,65 @@ func parseBrackets(rdr *rd) (*Step, error) {
 	if err != nil {
 		return nil, err
 	}
-	 // op= OpSlice, OpIndex, OpSelect, OpUnion
+	// op= OpSlice, OpIndex, OpSelect, OpUnion
 	// vals structure distinguishes them
-	return &Step{op, vals}, nil
+	return &Step{op, []Val{vals}}, nil
 }
 
-func parseSubscript(r *rd) (Op, []Val, error) {
-	return OpError, nil, errors.New("parseVals not done yet")
+// subscript ::= subscript-expression | union-element ("," union-element)
+// subscript-expression ::= "*" | expr | filter
+// union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+// array-index ::= integer
+// array-slice ::= start? ":" end? (":" step?)?
+func parseSubscript(rdr *rd) (Op, Val, error) {
+	union := []*Step{}	// if it's the sequence of union-element
+	for {
+		lx := lexPath(rdr)
+		switch lx.tok {
+
+		case tokError:
+			return OpError, "", lx.err
+		case tokEOF:
+			return OpError, "", unexpectedEOF(rdr)
+
+		// subscript-expression
+		case '*':
+			return OpWild, nil, nil
+		case '(':
+			e, err := parseExpr(rdr)
+			// need to lookahead for ":", the "expr" case of "start" (ie, it's a slice)
+			return OpExp, e, err
+		case tokFilter:
+			e, err := parseExpr(rdr)
+			return OpFilter, e, err
+
+		// union-element ("," union-element)
+		// case '-': // TO DO: signed integer; easier to add it to lexPath
+		case tokInt:
+			// integer or start element of slice
+			// need to lookahead for ":" (OpIndex vs OpSlice)
+			union = append(union, &Step{OpIndex, []Val{lx.val}})
+		case tokString:
+			// string-literal
+			union = append(union, &Step{OpString, []Val{lx.val}})
+		case tokID:
+			// treat same as string-literal
+			union = append(union, &Step{OpId, []Val{lx.val}})
+		// error
+		default:
+			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, rdr.offset())
+		}
+		lx = lexPath(rdr)
+		if lx.tok != ',' {
+			if lx.tok != ']' {
+				// TO DO: unclosed bracket
+			}
+			return OpUnion, union, nil
+		}
+	}
 }
 
+// expr ::= "(" script-expression ")"
 func parseExpr(r *rd) (Expr, error) {
 	p := &parser{r: r}
 	return p.parse()
@@ -164,4 +214,8 @@ func expect(r *rd, nt token) error {
 		return fmt.Errorf("expected %q at %s, got %v", nt, r.offset(), lx.tok)
 	}
 	return nil
+}
+
+func unexpectedEOF(r *rd) error {
+	return fmt.Errorf("unexpected EOF at %s", r.offset())
 }
