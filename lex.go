@@ -22,6 +22,28 @@ type lexeme struct {
 	err error
 }
 
+// String returns a vaguely user-readable representation of a token
+func (lx lexeme) String() string {
+	if lx.err != nil {
+		return lx.err.Error()
+	}
+	if lx.tok.hasVal() {
+		return fmt.Sprintf("%v(%v)", lx.tok, lx.val)
+	}
+	return lx.tok.String()
+}
+
+// GoString returns a string with an internal representation of a token, for debugging.
+func (lx lexeme) GoString() string {
+	if lx.err != nil {
+		return lx.err.Error()
+	}
+	if lx.tok.hasVal() {
+		return fmt.Sprintf("%#v(%#v)", lx.tok, lx.val)
+	}
+	return lx.tok.GoString()
+}
+
 // lexer provides state and one-token lookahead for the token stream
 type lexer struct {
 	r    *rd
@@ -201,6 +223,7 @@ func lexString(r *rd, cq int) (string, error) {
 
 // escaped returns the rune result of an escape sequence, or an error.
 // cq is the closing quote character (only that one is allowed in a \ sequence).
+// That seems a little fussy and might change.
 func escaped(r *rd, cq int) (rune, error) {
 	switch c := r.get(); c {
 	case eof:

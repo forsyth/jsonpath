@@ -104,11 +104,5 @@ func TestLex(t *testing.T) {
 }
 
 func print(lx lexeme) {
-	fmt.Printf(" %v", lx.tok)
-	if lx.tok.hasVal() {
-		fmt.Printf("[%#v]", lx.val)
-	}
-	if lx.err != nil {
-		fmt.Printf("!%s", lx.err)
-	}
+	fmt.Printf(" %#v", lx)
 }
