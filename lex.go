@@ -3,6 +3,7 @@ package JSONPath
 import (
 	"errors"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -11,6 +12,7 @@ var (
 	ErrUnclosedString = errors.New("unclosed string literal")
 	ErrBadEscape      = errors.New("unknown character escape")
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
+	ErrIntOverflow	= errors.New("overflow of negative integer literal")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
@@ -68,7 +70,7 @@ func (l *lexer) lexPath() lexeme {
 	switch c := r.get(); c {
 	case eof:
 		return lexeme{tokEOF, nil, nil}
-	case '(', ')', '[', ']', '*', '$', ':', '-', ',': // - is allowed as a sign for integers
+	case '(', ')', '[', ']', '*', '$', ':', ',': 
 		return lexeme{token(c), nil, nil}
 	case '.':
 		return isNext(r, '.', tokNest, '.')
@@ -77,6 +79,17 @@ func (l *lexer) lexPath() lexeme {
 	case '"', '\'':
 		s, err := lexString(r, c)
 		return lexeme{tokString, s, err}
+	case '-':	// - is allowed as a sign for integers
+		fol := l.lexPath()
+		if fol.tok != tokInt {
+			return tokenError(r, c)
+		}
+		n := fol.val.(int64)
+		if n == math.MaxInt64 {
+			return lexeme{tokError, "", ErrIntOverflow}
+		}
+		fol.val = -n
+		return fol
 	default:
 		if isDigit(c) {
 			return lexNumber(r)

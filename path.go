@@ -3,7 +3,6 @@ package JSONPath
 import (
 	"errors"
 	"fmt"
-	"math"
 )
 
 type Val interface{}
@@ -69,16 +68,16 @@ func (p *parser) parsePath() (Path, error) {
 				path = append(path, &Step{op, []Val{name}})
 			}
 		case tokNest:
-//			if p.lookPath() == '[' {
-//				// ".." "[" subscript "]"
-//				p.lexPath()
-//				sub, err := parseBrackets(rdr)
-//				if err != nil {
-//					return nil, err
-//				}
-//				path = append(path, &Step{OpNest, sub})
-//				break
-//			}
+			if p.lookPath() == '[' {
+				// ".." "[" subscript "]"
+				p.lexPath()
+				sub, err := p.parseBrackets()
+				if err != nil {
+					return nil, err
+				}
+				path = append(path, &Step{OpNest, []Val{sub}})
+				break
+			}
 			op, name, err := p.parseMember()
 			if err != nil {
 				return nil, err
@@ -187,19 +186,6 @@ func (p *parser) parseMember() (Op, Val, error) {
 		return OpString, lx.val, nil
 	case tokInt:
 		return OpInt, lx.val, nil
-	case '-':
-		lx = p.lexPath()
-		if lx.err != nil {
-			return OpError, "", lx.err
-		}
-		if lx.tok != tokInt {
-			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
-		}
-		n := lx.val.(int64)
-		if n == math.MaxInt64 {
-			return OpError, "", fmt.Errorf("overflow with negative literal at %s", p.lexer.offset())
-		}
-		return OpInt, -n, nil
 	case '(':
 		// expr ::= "(" script-expression ")"
 		e, err := p.parseExpr()
