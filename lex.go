@@ -20,9 +20,48 @@ type lexeme struct {
 	err	error
 }
 
+// lexer provides state and one-token lookahead for the token stream
+type lexer struct {
+	r    *rd
+	peek bool  // unget was called
+	lex	lexeme	// value of unget
+}
+
+func newLexer(r *rd) *lexer {
+	return &lexer{r: r}
+}
+
+// unget saves a lexeme.
+func (l *lexer) unget(lex lexeme) {
+	if l.peek {
+		panic("internal error: too much lookahead")
+	}
+	l.peek = true
+	l.lex = lex
+}
+
+// look saves a lexeme and returns its token part.
+func (l *lexer) look(lx lexeme) token {
+	l.unget(lx)
+	if lx.err != nil {
+		return tokError
+	}
+	return lx.tok
+}
+
+// offset returns a representation of the current stream offset
+func (l *lexer) offset() string {
+	return l.r.offset()
+}
+
 // lexPath returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of path elements.
-func lexPath(r *rd) lexeme {
+func (l *lexer) lexPath() lexeme {
+	if l.peek {
+		l.peek = false
+		return l.lex
+	}
+	r := l.r
 	for isSpace(r.look()) {
 		r.get()
 	}
@@ -52,7 +91,12 @@ func lexPath(r *rd) lexeme {
 // lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of "script expressions" (filter and plain expressions).
 // If okRE is true, a '/' character introduces a regular expression (ended by an unescaped trailing '/').
-func lexExpr(r *rd, okRE bool) lexeme {
+func (l *lexer) lexExpr(okRE bool) lexeme {
+	if l.peek {
+		l.peek = false
+		return l.lex
+	}
+	r := l.r
 	for isSpace(r.look()) {
 		r.get()
 	}

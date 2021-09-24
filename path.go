@@ -33,21 +33,33 @@ type Step struct {
 
 // ParsePath returns the parsed form of the path expression in s, or an error.
 func ParsePath(s string) (Path, error) {
-	rdr := &rd{s: s}
-	err := expect(rdr, '$')
+	parser := &parser{newLexer(&rd{s: s})}
+	return parser.parsePath()
+}
+
+func (p *parser) lexPath() lexeme {
+	return p.lexer.lexPath()
+}
+
+func (p *parser) lookPath() token {
+	return p.lexer.look(p.lexer.lexPath())
+}
+
+func (p *parser) parsePath() (Path, error) {
+	err := expect(p, '$')
 	if err != nil {
 		return nil, err
 	}
 	path := []*Step{&Step{OpRoot, nil}}
 	for {
-		lx := lexPath(rdr)
+		lx := p.lexPath()
 		switch lx.tok {
 		case tokEOF:
 			return path, nil
 		case tokError:
 			return nil, lx.err
 		case '.':
-			op, name, err := parseMember(rdr)
+			op, name, err := p.parseMember()
 			if err != nil {
 				return nil, err
 			}
@@ -57,9 +69,9 @@ func ParsePath(s string) (Path, error) {
 				path = append(path, &Step{op, []Val{name}})
 			}
 		case tokNest:
-//			if p.look() == '[' {
+//			if p.lookPath() == '[' {
 //				// ".." "[" subscript "]"
-//				p.get()
+//				p.lexPath()
 //				sub, err := parseBrackets(rdr)
 //				if err != nil {
 //					return nil, err
@@ -67,7 +79,7 @@ func ParsePath(s string) (Path, error) {
 //				path = append(path, &Step{OpNest, sub})
 //				break
 //			}
-			op, name, err := parseMember(rdr)
+			op, name, err := p.parseMember()
 			if err != nil {
 				return nil, err
 			}
@@ -76,7 +88,7 @@ func ParsePath(s string) (Path, error) {
 			}
 			path = append(path, &Step{OpNest, []Val{name}})
 		case '[':
-			sub, err := parseBrackets(rdr)
+			sub, err := p.parseBrackets()
 			if err != nil {
 				return nil, err
 			}
@@ -93,12 +105,12 @@ func ParsePath(s string) (Path, error) {
 
 // parse bracketed subscript in
 // step ::= ...  "[" subscript "]" ... | ".." "[" subscript "]"
-func parseBrackets(rdr *rd) (*Step, error) {
-	op, vals, err := parseSubscript(rdr)
+func (p *parser) parseBrackets() (*Step, error) {
+	op, vals, err := p.parseSubscript()
 	if err != nil {
 		return nil, err
 	}
-	err = expect(rdr, ']')
+	err = expect(p, ']')
 	if err != nil {
 		return nil, err
 	}
@@ -112,26 +124,26 @@ func parseBrackets(rdr *rd) (*Step, error) {
 // union-element ::=  array-index | string-literal | array-slice   // could include identifier?
 // array-index ::= integer
 // array-slice ::= start? ":" end? (":" step?)?
-func parseSubscript(rdr *rd) (Op, Val, error) {
+func (p *parser) parseSubscript() (Op, Val, error) {
 	union := []*Step{}	// if it's the sequence of union-element
 	for {
-		lx := lexPath(rdr)
+		lx := p.lexPath()
 		switch lx.tok {
 
 		case tokError:
 			return OpError, "", lx.err
 		case tokEOF:
-			return OpError, "", unexpectedEOF(rdr)
+			return OpError, "", p.unexpectedEOF()
 
 		// subscript-expression
 		case '*':
 			return OpWild, nil, nil
 		case '(':
-			e, err := parseExpr(rdr)
+			e, err := p.parseExpr1()
 			// need to lookahead for ":", the "expr" case of "start" (ie, it's a slice)
 			return OpExp, e, err
 		case tokFilter:
-			e, err := parseExpr(rdr)
+			e, err := p.parseExpr1()
 			return OpFilter, e, err
 
 		// union-element ("," union-element)
@@ -148,9 +160,9 @@ func parseSubscript(rdr *rd) (Op, Val, error) {
 			union = append(union, &Step{OpId, []Val{lx.val}})
 		// error
 		default:
-			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, rdr.offset())
+			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
 		}
-		lx = lexPath(rdr)
+		lx = p.lexPath()
 		if lx.tok != ',' {
 			if lx.tok != ']' {
 				// TO DO: unclosed bracket
@@ -160,15 +172,9 @@ func parseSubscript(rdr *rd) (Op, Val, error) {
 	}
 }
 
-// expr ::= "(" script-expression ")"
-func parseExpr(r *rd) (Expr, error) {
-	p := &parser{r: r}
-	return p.parse()
-}
-
 // member ::= "*" | identifier | expr | integer
-func parseMember(rdr *rd) (Op, Val, error) {
-	lx := lexPath(rdr)
+func (p *parser) parseMember() (Op, Val, error) {
+	lx := p.lexPath()
 	if lx.err != nil {
 		return OpError, "", lx.err
 	}
@@ -182,40 +188,55 @@ func parseMember(rdr *rd) (Op, Val, error) {
 	case tokInt:
 		return OpInt, lx.val, nil
 	case '-':
-		lx = lexPath(rdr)
+		lx = p.lexPath()
 		if lx.err != nil {
 			return OpError, "", lx.err
 		}
 		if lx.tok != tokInt {
-			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, rdr.offset())
+			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
 		}
 		n := lx.val.(int64)
 		if n == math.MaxInt64 {
-			return OpError, "", fmt.Errorf("overflow with negative literal at %s", rdr.offset())
+			return OpError, "", fmt.Errorf("overflow with negative literal at %s", p.lexer.offset())
 		}
 		return OpInt, -n, nil
 	case '(':
-		e, err := parseExpr(rdr)
+		// expr ::= "(" script-expression ")"
+		e, err := p.parseExpr()
 		if err != nil {
 			return OpError, "", err
 		}
-		return OpExp, e, nil
+		err = expect(p, ')')
+		return OpExp, e, err
 	default:
-		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, rdr.offset())
+		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
 	}
 }
 
-func expect(r *rd, nt token) error {
-	lx := lexPath(r)
+// parse the tail of expr or filter, expecting a closing ')'
+func (p *parser) parseExpr1() (Expr, error) {
+	e, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+	err = expect(p, ')')
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func expect(p *parser, nt token) error {
+	lx := p.lexPath()
 	if lx.err != nil {
 		return lx.err
 	}
 	if lx.tok != nt {
-		return fmt.Errorf("expected %q at %s, got %v", nt, r.offset(), lx.tok)
+		return fmt.Errorf("expected %q at %s, got %v", nt, p.lexer.offset(), lx.tok)
 	}
 	return nil
 }
 
-func unexpectedEOF(r *rd) error {
-	return fmt.Errorf("unexpected EOF at %s", r.offset())
+func (p *parser) unexpectedEOF() error {
+	return fmt.Errorf("unexpected EOF at %s", p.lexer.offset())
 }

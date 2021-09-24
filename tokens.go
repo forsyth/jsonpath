@@ -1,6 +1,6 @@
 package JSONPath
 
-import "unicode"
+import "unicode/utf8"
 
 // A token is an value in the lexical stream produced by the lexical analyser.
 // Many tokens are represented directly by the rune value (typically in the ASCII range), eg '*', '(', '['.
@@ -11,7 +11,7 @@ import "unicode"
 type token rune
 
 const (
-	tokError  token = unicode.MaxRune + iota // not a valid token in any grammar
+	tokError  token = utf8.MaxRune + iota // not a valid token in any grammar
 	tokEOF                                   // end of file
 	tokID                                    // identifier
 	tokString                                // single- or double-quoted string

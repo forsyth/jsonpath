@@ -1,7 +1,7 @@
 package JSONPath
 
 import (
-	"errors"
+//	"errors"
 	"fmt"
 )
 
@@ -76,39 +76,23 @@ var prectab [][]Op = [][]Op{
 
 // parser represents the state of the expression parser
 type parser struct {
-	r    *rd
-	peek bool  // unget was called
-	lex	lexeme	// value of unget
+	lexer	*lexer	// source of tokens
 }
 
-func (p *parser) get(withRE bool) lexeme {
-	if p.peek {
-		p.peek = false
-		return p.lex
-	}
-	return lexExpr(p.r, withRE)
+func (p *parser) lexExpr(withRE bool) lexeme {
+	return p.lexer.lexExpr(withRE)
 }
 
 func (p *parser) unget(lex lexeme) {
-	if p.peek {
-		panic("internal error: too much lookahead")
-	}
-	p.peek = true
-	p.lex = lex
+	p.lexer.unget(lex)
 }
 
-func (p *parser) look() token {
-	lx := p.get(false)
-	p.unget(lx)
-	if lx.err != nil {
-		return tokError
-	}
-	return lx.tok
+func (p *parser) lookExpr(withRE bool) token {
+	return p.lexer.look(p.lexer.lexExpr(withRE))
 }
 
-func (p *parser) parse() (Expr, error) {
-	// need to check !p.peek at end
-	return nil, errors.New("parse not done yet")
+func (p *parser) parseExpr() (Expr, error) {
+	return p.expr(0)
 }
 
 // parse a subexpression with priority pri
@@ -117,7 +101,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 		return p.primary()
 	}
 	if prectab[pri][0] == OpNeg { // unary '-' or '!'
-		c := p.look()
+		c := p.lookExpr(false)
 		switch c {
 		case '-':
 			return p.unary(OpNeg, pri)
@@ -131,8 +115,8 @@ func (p *parser) expr(pri int) (Expr, error) {
 		return nil, err
 	}
 	// associate operators at current priority level
-	for isOpIn(tok2op(p.look()), prectab[pri]) {
-		lx := p.get(false)
+	for isOpIn(tok2op(p.lookExpr(false)), prectab[pri]) {
+		lx := p.lexExpr(false)
 		if lx.err != nil {
 			return nil, lx.err
 		}
@@ -147,7 +131,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 
 // unary applies a unary operator to a following expression
 func (p *parser) unary(op Op, pri int) (Expr, error) {
-	p.get(false)
+	p.lexExpr(false)
 	arg, err := p.expr(pri + 1)
 	if err != nil {
 		return nil, err
@@ -156,7 +140,7 @@ func (p *parser) unary(op Op, pri int) (Expr, error) {
 }
 
 func (p *parser) primary() (Expr, error) {
-	lx := p.get(true)
+	lx := p.lexExpr(true)
 	if lx.err != nil {
 		return nil, lx.err
 	}
@@ -173,7 +157,7 @@ func (p *parser) primary() (Expr, error) {
 	case '$':
 		return &NameLeaf{OpRoot, "$"}, nil
 	case '(':
-		e, err := parseExpr(p.r)
+		e, err := p.parseExpr()
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +172,7 @@ func (p *parser) primary() (Expr, error) {
 }
 
 func (p *parser) expect(req token) error {
-	lx := p.get(false)
+	lx := p.lexExpr(false)
 	if lx.err != nil {
 		return lx.err
 	}
