@@ -4,34 +4,57 @@ import "fmt"
 
 const eof = -1
 
-// rd tracks lookahead state for the lexer.
-// Since no character in the grammar can be non-ASCII, we can just ints at this level.
+// Loc is a location (line and byte offset)
+type Loc struct {
+	line	int	// current line, origin 0, usually 0
+	pos	int	// byte position for next byte in whole input
+}
+
+// rd returns input units (currently bytes) from a string, allowing backing up for lexer lookahead (only 1 unit actually used).
+// Since non-ASCII characters form identifiers, we can use bytes (as int) at this level.
+// TO DO: Perhaps it should just use bufio.Reader, since it provides the 1 unit backing up needed.
 type rd struct {
 	s string
-	i int
+	Loc
 }
 
+// get returns the next input unit and advances the input stream.
 func (r *rd) get() int {
-	if r.i >= len(r.s) {
+	if r.pos >= len(r.s) {
 		return eof
 	}
-	r.i++
-	return int(r.s[r.i-1])
+	c := int(r.s[r.pos])
+	r.pos++
+	if c == '\n' {
+		r.line++
+	}
+	return c
 }
 
+// unget backs up one unit in the input stream.
 func (r *rd) unget() {
-	if r.i > 0 {
-		r.i--
+	if r.pos > 0 {
+		r.pos--
+		if r.s[r.pos] == '\n' {
+			r.line--
+		}
 	}
 }
 
+// look returns the next input unit without advancing the input.
 func (r *rd) look() int {
-	if r.i >= len(r.s) {
-		return eof
+	c := r.get()
+	if c != eof {
+		r.unget()
 	}
-	return int(r.s[r.i])
+	return c
+}
+
+// Loc returns the current line number (origin 1) and byte offset in the input.
+func (r *rd) loc() Loc {
+	return Loc{r.line+1, r.pos}
 }
 
 func (r *rd) offset() string {
-	return fmt.Sprintf("offset %d", r.i-1)
+	return fmt.Sprintf("offset %d", r.pos-1)
 }
