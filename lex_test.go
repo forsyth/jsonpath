@@ -42,6 +42,12 @@ var samples []lexOutput = []lexOutput{
 			{tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
 		},
 	},
+	lexOutput{"$[':@.\"$,*\\'\\\\']",
+		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*'\\"}, {tok: ']'}, {tok:  tokEOF}},
+	},
+	lexOutput{"$[':@.\"$,*\\\\'\\\\\\\\']",
+		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*\\"}, {tok: tokError, val: "unexpected character '\\\\' at offset 13"}},
+	},
 }
 
 // keep enough state to handle nested script-expressions [nested ()]
@@ -76,6 +82,7 @@ func (ls *lexState) lex() lexeme {
 }
 
 func TestLex(t *testing.T) {
+   Samples:
 	for i, sam := range samples {
 		rdr := &rd{sam.s, 0}
 		ls := &lexState{lexer: lexer{r: rdr}}
@@ -83,6 +90,15 @@ func TestLex(t *testing.T) {
 		for j, el := range sam.ops {
 			lx := ls.lex()
 			fmt.Printf(" %#v", lx)
+			if el.tok == tokError && el.val != nil {
+				if lx.err == nil {
+					t.Errorf("sample %d el %d, expected error (%s) got nil", i, j, el.val)
+				} else if lx.err.Error() != el.val {
+					t.Errorf("sample %d el %d, expected error (%s) got (%s)", i, j, el.val, lx.err)
+				}
+				fmt.Printf("\n")
+				continue Samples
+			}
 			if lx.tok != el.tok || lx.tok != tokError && lx.err != nil {
 				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, lx.tok, lx.val, lx.err, el.tok, el.val)
 				break
