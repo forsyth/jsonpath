@@ -53,12 +53,12 @@ var samples []lexOutput = []lexOutput{
 // keep enough state to handle nested script-expressions [nested ()]
 type lexState struct {
 	lexer
-	nestp int
-	expr  bool
+	nestp int	// nesting count for ()
 }
 
+// lex switches between the path lexer and expression lexer, at the outermost ( or ?( and back at the closing )
 func (ls *lexState) lex() lexeme {
-	if ls.expr {
+	if ls.nestp > 0 {
 		lx := ls.lexExpr(false)
 		switch lx.tok {
 		case '(':
@@ -67,16 +67,12 @@ func (ls *lexState) lex() lexeme {
 			if ls.nestp > 0 {
 				ls.nestp--
 			}
-			if ls.nestp == 0 {
-				ls.expr = false
-			}
 		}
 		return lx
 	}
 	lx := ls.lexPath()
 	if lx.tok == '(' || lx.tok == tokFilter {
 		ls.nestp++
-		ls.expr = true
 	}
 	return lx
 }
