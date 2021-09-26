@@ -36,10 +36,10 @@ func TestPathParse(t *testing.T) {
 }
 
 func (s *Step) String() string {
-	doc := s.op.GoString()
-	if len(s.args) > 0 {
+	doc := s.Op.GoString()
+	if len(s.Args) > 0 {
 		doc += "("
-		for i, a := range s.args {
+		for i, a := range s.Args {
 			if i > 0 {
 				doc += ","
 			}

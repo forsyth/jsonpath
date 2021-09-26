@@ -10,8 +10,16 @@ type Val interface{}
 type Path []*Step
 
 type Step struct {
-	op   Op
-	args []Val
+	Op   Op
+	Args []Val
+}
+
+// Slice is a Val that represents a JavaScript slice with [start: end: stride], where any of them might be optional.
+// It appears as an operand in an OpUnion.
+type Slice struct {
+	Start	Val
+	End	Val
+	Stride	Val
 }
 
 // started with the IETF drafts, but reverted to a grammar adapted from https://github.com/dchester/jsonpath/blob/master/lib/grammar.js
@@ -100,7 +108,7 @@ func (p *parser) parsePath() (Path, error) {
 // parse bracketed subscript in
 // step ::= ...  "[" subscript "]" ... | ".." "[" subscript "]"
 func (p *parser) parseBrackets() (*Step, error) {
-	op, vals, err := p.parseSubscript()
+	step, err := p.parseSubscript()
 	if err != nil {
 		return nil, err
 	}
@@ -108,9 +116,7 @@ func (p *parser) parseBrackets() (*Step, error) {
 	if err != nil {
 		return nil, err
 	}
-	// op= OpSlice, OpIndex, OpSelect, OpUnion
-	// vals structure distinguishes them
-	return &Step{op, []Val{vals}}, nil
+	return step, nil
 }
 
 // subscript ::= subscript-expression | union-element ("," union-element)
@@ -121,20 +127,46 @@ func (p *parser) parseBrackets() (*Step, error) {
 //
 // it's easier to accept a list of any both subscript-expressions and union-elements
 // and analyse the value list to see what it is (or if it's an illegal list)
-func (p *parser) parseSubscript() (Op, Val, error) {
-	vals, err := p.parseValList()
+func (p *parser) parseSubscript() (*Step, error) {
+	steps, err := p.parseValList()
 	if err != nil {
-		return OpError, nil, err
+		return nil, err
 	}
-	// distinguish cases
-	return OpUnion, vals, nil
+	if len(steps) > 1 {	// can't have subscript-expressions
+		for _, step := range steps {
+			switch step.Op {
+			case OpWild, OpExp, OpFilter:
+				return nil, fmt.Errorf("%s cannot be in a union element list", step.Op)
+			default:
+				// ok
+			}
+		}
+	}
+	// distinguish union from subscript expression
+	switch steps[0].Op {
+	case OpWild, OpFilter:
+		return steps[0], nil
+	case OpExp:
+		steps[0].Op = OpIndex
+		return steps[0], nil
+	default:
+		args := []Val{}
+		for _, step := range steps {
+			if len(step.Args) != 1 {
+				panic(fmt.Sprintf("incorrect structure for subscript list: %s", step.Op))
+			}
+			args = append(args, step.Args[0])
+		}
+		return &Step{OpUnion, args}, nil
+	}
 }
 
 // element ("," element)*
 // where element ::= union-element | subscript-expression,
 // where the latter cannot appear in a list.
-func (p *parser) parseValList() ([]Val, error) {
-	vals := []Val{}
+// parseValList uses steps as a return value to tag the values with their internal type.
+func (p *parser) parseValList() ([]*Step, error) {
+	vals := []*Step{}
 	for {
 		exp, err := p.parseVal()
 		if err != nil {
@@ -214,12 +246,12 @@ func (p *parser) parseVal() (*Step, error) {
 // The context means that valid successors are end, ":" (if a stride), "]", "," (if a union with a slice, and no stride),
 // and then "]" if there's no stride, or there's a stride expression.
 func (p *parser) parseSlice(start Val) (*Step, error) {
-	vals := []Val{start}
+	slice := &Slice{start, nil, nil}
+	step := &Step{OpSlice, []Val{slice}}
 	tok := p.lookPath()
 	if tok == ',' || tok == ']' {
 		// neither end nor stride, ie x[s:], make them empty
-		vals = append(vals, nil, nil)
-		return &Step{OpSlice, vals}, nil
+		return step, nil
 	}
 	// end? (":" stride?)?
 	if tok != ':' {
@@ -228,27 +260,25 @@ func (p *parser) parseSlice(start Val) (*Step, error) {
 		if err != nil {
 			return nil, err
 		}
-		vals = append(vals, e)
+		slice.End = e
 	}
 	// (":" stride?)?
 	switch p.lookPath() {
 	case ']', ',':
-		vals = append(vals, nil)	// missing stride
-		return &Step{OpSlice, vals}, nil
+		return step, nil
 	case ':':
 		// ":" stride?
 		p.lexPath()
 		tok = p.lookPath()
 		if tok == ',' || tok == ']' {
-			vals = append(vals, nil)	// missing stride
-			return &Step{OpSlice, vals}, nil
+			return step, nil
 		}
 		e, err := p.parseSliceVal()
 		if err != nil {
 			return nil, err
 		}
-		vals = append(vals, e)
-		return &Step{OpSlice, vals}, nil
+		slice.Stride = e
+		return step, nil
 	default:
 		return nil, fmt.Errorf("unexpected token %s at %s", p.lookPath(), p.offset())
 	}
