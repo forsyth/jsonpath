@@ -250,7 +250,7 @@ func (p *parser) parseSlice(start Val) (*Step, error) {
 		vals = append(vals, e)
 		return &Step{OpSlice, vals}, nil
 	default:
-		return nil, fmt.Errorf("Xunexpected token %s at %s", p.lookPath(), p.offset())
+		return nil, fmt.Errorf("unexpected token %s at %s", p.lookPath(), p.offset())
 	}
 }
 
