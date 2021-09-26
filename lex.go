@@ -143,6 +143,10 @@ func (l *lexer) lexExprRE() lexeme {
 func (l *lexer) lexExprGen(okRE bool) lexeme {
 	if l.peek {
 		l.peek = false
+		if okRE && l.lex.tok == '/' {
+			s, err := l.lexString('/')
+			return lexeme{tokRE, s, err}
+		}
 		return l.lex
 	}
 	l.ws()
