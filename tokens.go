@@ -26,6 +26,7 @@ const (
 	tokFilter                             // ?(
 	tokAnd                                // &&
 	tokOr                                 // ||
+	tokMatch	// =~
 )
 
 // hasVal returns true if token t has an associated value
@@ -71,6 +72,8 @@ func (t token) GoString() string {
 		return "tokAnd"
 	case tokOr:
 		return "tokOr"
+	case tokMatch:
+		return "tokMatch"
 	default:
 		return string(t)
 	}
@@ -109,6 +112,8 @@ func (t token) String() string {
 		return "&&"
 	case tokOr:
 		return "||"
+	case tokMatch:
+		return "=~"
 	default:
 		return string(t)
 	}

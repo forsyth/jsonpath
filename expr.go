@@ -231,6 +231,8 @@ func (p *parser) primary1() (Expr, error) {
 		return &NameLeaf{OpId, lx.val.(string)}, nil
 	case tokInt:
 		return &IntLeaf{OpInt, lx.val.(int64)}, nil
+	case tokReal:
+		return &FloatLeaf{OpReal, lx.val.(float64)}, nil
 	case tokString:
 		return &StringLeaf{OpString, lx.val.(string)}, nil
 	case tokRE:
@@ -296,6 +298,8 @@ func tok2op(t token) Op {
 		return OpAnd
 	case tokOr:
 		return OpOr
+	case '~', tokMatch:
+		return OpMatch
 	default:
 		return OpError
 	}

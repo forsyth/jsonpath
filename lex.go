@@ -10,9 +10,10 @@ import (
 
 var (
 	ErrUnclosedString = errors.New("unclosed string literal")
-	ErrBadEscape      = errors.New("unknown character escape")
+	ErrBadEscape      = errors.New("unknown character escape sequence")
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 	ErrIntOverflow    = errors.New("overflow of negative integer literal")
+	ErrBadReal = errors.New("invalid floating-point literal")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
@@ -106,7 +107,7 @@ func (l *lexer) lexPath() lexeme {
 			r.unget()
 			return tokenError(r, r.look())
 		}
-		fol := l.lexNumber()
+		fol := l.lexNumber(false)
 		if fol.tok != tokInt {
 			return tokenError(r, c)
 		}
@@ -118,7 +119,7 @@ func (l *lexer) lexPath() lexeme {
 		return fol
 	default:
 		if isDigit(c) {
-			return l.lexNumber()
+			return l.lexNumber(false)
 		}
 		if isLetter(c) {
 			return l.lexID(isAlphanumericDash)
@@ -168,7 +169,11 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 	case '>':
 		return l.isNext('=', tokGE, '>')
 	case '=':
-		return l.isNext('=', tokEq, '=')
+		lx := l.isNext('=', tokEq, '=')
+		if lx.tok != '=' {
+			return lx
+		}
+		return l.isNext('~', tokMatch, '=')
 	case '!':
 		return l.isNext('=', tokNE, '!')
 	case '"', '\'':
@@ -176,7 +181,7 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
-			return l.lexNumber()
+			return l.lexNumber(true)
 		}
 		if isLetter(c) {
 			return l.lexID(isAlphanumeric)
@@ -196,18 +201,43 @@ func (l *lexer) ws() Loc {
 // lexNumber returns an integer token from r with a 64-bit value, or an error (eg, it overflows).
 // Currently it supports only integers.
 // The IETF grammar excludes leading zeroes, presumably to avoid octal, but we'll accept them as decimal.
-func (l *lexer) lexNumber() lexeme {
+func (l *lexer) lexNumber(real bool) lexeme {
 	var sb strings.Builder
 	r := l.r
 	r.unget()
 	for isDigit(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	v, err := strconv.ParseInt(sb.String(), 10, 64)
+	if !real || r.look() != '.' {
+		// integer only
+		v, err := strconv.ParseInt(sb.String(), 10, 64)
+		if err != nil {
+			return lexeme{tokError, 0, err}
+		}
+		return lexeme{tokInt, v, nil}
+	}
+	r.get()
+	for isDigit(r.look()) {
+		sb.WriteByte(byte(r.get()))
+	}
+	if r.look() == 'e' {	// e[+-]?[0-9]+
+		r.get()
+		c := r.look()
+		if c == '+' || c == '-' {
+			sb.WriteByte(byte(r.get()))
+		}
+		if !isDigit(r.look()) {
+			return lexeme{tokError, 0, ErrBadReal}
+		}
+		for isDigit(r.look()) {
+			sb.WriteByte(byte(r.get()))
+		}
+	}
+	v, err := strconv.ParseFloat(sb.String(), 64)
 	if err != nil {
 		return lexeme{tokError, 0, err}
 	}
-	return lexeme{tokInt, v, nil}
+	return lexeme{tokReal, v, nil}
 }
 
 // lexID returns an identifier token from r
