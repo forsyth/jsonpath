@@ -205,6 +205,9 @@ func lexString(r *rd, cq int) (string, error) {
 	var s strings.Builder
 	for {
 		c := r.get()
+		if c == eof {
+			return s.String(), ErrUnclosedString
+		}
 		if c == cq {
 			break
 		}
