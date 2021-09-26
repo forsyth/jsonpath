@@ -20,12 +20,13 @@ type lexeme struct {
 	tok token
 	val Val
 	err error
+//	loc Loc	// starting location
 }
 
 // String returns a vaguely user-readable representation of a token
 func (lx lexeme) String() string {
 	if lx.err != nil {
-		return lx.err.Error()
+		return "!"+lx.err.Error()
 	}
 	if lx.tok.hasVal() {
 		return fmt.Sprintf("%v(%v)", lx.tok, lx.val)
@@ -36,7 +37,7 @@ func (lx lexeme) String() string {
 // GoString returns a string with an internal representation of a token, for debugging.
 func (lx lexeme) GoString() string {
 	if lx.err != nil {
-		return lx.err.Error()
+		return "!"+lx.err.Error()
 	}
 	if lx.tok.hasVal() {
 		return fmt.Sprintf("%#v(%#v)", lx.tok, lx.val)
@@ -85,24 +86,27 @@ func (l *lexer) lexPath() lexeme {
 		l.peek = false
 		return l.lex
 	}
+	l.ws()
 	r := l.r
-	for isSpace(r.look()) {
-		r.get()
-	}
 	switch c := r.get(); c {
 	case eof:
 		return lexeme{tokEOF, nil, nil}
 	case '(', ')', '[', ']', '*', '$', ':', ',':
 		return lexeme{token(c), nil, nil}
 	case '.':
-		return isNext(r, '.', tokNest, '.')
+		return l.isNext('.', tokNest, '.')
 	case '?':
-		return isNext(r, '(', tokFilter, tokError)
+		return l.isNext('(', tokFilter, tokError)
 	case '"', '\'':
-		s, err := lexString(r, c)
+		s, err := l.lexString(c)
 		return lexeme{tokString, s, err}
 	case '-': // - is allowed as a sign for integers
-		fol := l.lexPath()
+		l.ws()
+		if !isDigit(r.get()) {
+			r.unget()
+			return tokenError(r, r.look())
+		}
+		fol := l.lexNumber()
 		if fol.tok != tokInt {
 			return tokenError(r, c)
 		}
@@ -114,27 +118,34 @@ func (l *lexer) lexPath() lexeme {
 		return fol
 	default:
 		if isDigit(c) {
-			return lexNumber(r)
+			return l.lexNumber()
 		}
 		if isLetter(c) {
-			return lexID(r)
+			return l.lexID(isAlphanumericDash)
 		}
 		return tokenError(r, c)
 	}
 }
 
 // lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
+func (l *lexer) lexExpr() lexeme {
+	return l.lexExprGen(false)
+}
+
+func (l *lexer) lexExprRE() lexeme {
+	return l.lexExprGen(true)
+}
+
+// lexExprGen returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of "script expressions" (filter and plain expressions).
 // If okRE is true, a '/' character introduces a regular expression (ended by an unescaped trailing '/').
-func (l *lexer) lexExpr(okRE bool) lexeme {
+func (l *lexer) lexExprGen(okRE bool) lexeme {
 	if l.peek {
 		l.peek = false
 		return l.lex
 	}
+	l.ws()
 	r := l.r
-	for isSpace(r.look()) {
-		r.get()
-	}
 	switch c := r.get(); c {
 	case eof:
 		return lexeme{tokEOF, nil, nil}
@@ -144,41 +155,50 @@ func (l *lexer) lexExpr(okRE bool) lexeme {
 		return lexeme{token(c), nil, nil}
 	case '/':
 		if okRE {
-			s, err := lexString(r, c)
+			s, err := l.lexString(c)
 			return lexeme{tokRE, s, err}
 		}
 		return lexeme{token(c), nil, nil}
 	case '&':
-		return isNext(r, '&', tokAnd, '&')
+		return l.isNext('&', tokAnd, '&')
 	case '|':
-		return isNext(r, '|', tokOr, '|')
+		return l.isNext('|', tokOr, '|')
 	case '<':
-		return isNext(r, '=', tokLE, '<')
+		return l.isNext('=', tokLE, '<')
 	case '>':
-		return isNext(r, '=', tokGE, '>')
+		return l.isNext('=', tokGE, '>')
 	case '=':
-		return isNext(r, '=', tokEq, '=')
+		return l.isNext('=', tokEq, '=')
 	case '!':
-		return isNext(r, '=', tokNE, '!')
+		return l.isNext('=', tokNE, '!')
 	case '"', '\'':
-		s, err := lexString(r, c)
+		s, err := l.lexString(c)
 		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
-			return lexNumber(r)
+			return l.lexNumber()
 		}
 		if isLetter(c) {
-			return lexID(r)
+			return l.lexID(isAlphanumeric)
 		}
 		return tokenError(r, c)
 	}
 }
 
+// ws skips white space, and returns the current location
+func (l *lexer) ws() Loc {
+	for isSpace(l.r.look()) {
+		l.r.get()
+	}
+	return l.r.loc()
+}
+
 // lexNumber returns an integer token from r with a 64-bit value, or an error (eg, it overflows).
 // Currently it supports only integers.
 // The IETF grammar excludes leading zeroes, presumably to avoid octal, but we'll accept them as decimal.
-func lexNumber(r *rd) lexeme {
+func (l *lexer) lexNumber() lexeme {
 	var sb strings.Builder
+	r := l.r
 	r.unget()
 	for isDigit(r.look()) {
 		sb.WriteByte(byte(r.get()))
@@ -191,18 +211,20 @@ func lexNumber(r *rd) lexeme {
 }
 
 // lexID returns an identifier token from r
-func lexID(r *rd) lexeme {
+func (l *lexer)  lexID(isAlpha func(int) bool) lexeme {
 	var sb strings.Builder
+	r := l.r
 	r.unget()
-	for isAlphanumeric(r.look()) {
+	for isAlpha(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
 	return lexeme{tokID, sb.String(), nil}
 }
 
 // lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
-func lexString(r *rd, cq int) (string, error) {
+func (l *lexer) lexString(cq int) (string, error) {
 	var s strings.Builder
+	r := l.r
 	for {
 		c := r.get()
 		if c == eof {
@@ -273,7 +295,8 @@ func escaped(r *rd, cq int) (rune, error) {
 }
 
 // if the next character is c, consume it and return t, otherwise return f
-func isNext(r *rd, c int, t token, f token) lexeme {
+func (l *lexer) isNext(c int, t token, f token) lexeme {
+	r := l.r
 	if r.look() == c {
 		r.get()
 		return lexeme{t, nil, nil}
@@ -305,6 +328,11 @@ func isLetter(c int) bool {
 
 func isAlphanumeric(c int) bool {
 	return isLetter(c) || isDigit(c)
+}
+
+// weirdly, outside expressions, identifiers can contain "-".
+func isAlphanumericDash(c int) bool {
+	return isLetter(c) || isDigit(c) || c == '-'
 }
 
 // isSpace returns the space characters allowed by the grammar(s), and \f and \v.

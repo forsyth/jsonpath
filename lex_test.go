@@ -17,6 +17,8 @@ type lexOutput struct {
 
 var samples []lexOutput = []lexOutput{
 	lexOutput{"$", []el{{tok: '$'}, el{tok: tokEOF}}},
+	lexOutput{"$[-99]", []el{{tok: '$'}, el{tok: '['}, el{tok: tokInt, val: -99}, el{tok: ']'}, el{tok: tokEOF}}},
+	lexOutput{"$[-9223372036854775807]", []el{{tok: '$'}, el{tok: '['}, el{tok: tokError, val: "overflow of negative integer literal"}, el{tok: ']'}, el{tok: tokEOF}}},
 	lexOutput{"$.store.book[(@.length-1)].title",
 		[]el{{tok: '$'}, {tok: '.'}, {tok: tokID, val: "store"}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: '('},
 			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "length"}, {tok: '-'}, {tok: tokInt, val: 1}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID}, {tok: tokEOF},
@@ -59,7 +61,7 @@ type lexState struct {
 // lex switches between the path lexer and expression lexer, at the outermost ( or ?( and back at the closing )
 func (ls *lexState) lex() lexeme {
 	if ls.nestp > 0 {
-		lx := ls.lexExpr(false)
+		lx := ls.lexExpr()
 		switch lx.tok {
 		case '(':
 			ls.nestp++
@@ -80,7 +82,7 @@ func (ls *lexState) lex() lexeme {
 func TestLex(t *testing.T) {
 Samples:
 	for i, sam := range samples {
-		rdr := &rd{sam.s, 0}
+		rdr := &rd{s: sam.s}
 		ls := &lexState{lexer: lexer{r: rdr}}
 		fmt.Printf("%s -> ", sam.s)
 		for j, el := range sam.ops {
