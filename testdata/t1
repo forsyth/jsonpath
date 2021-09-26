@@ -186,5 +186,5 @@ $[two.some]
 $.store.book[?(@.price < 10)].title
 $['store'].book[?(@.price < 10)].title
 $..book[(@.length-1)]
-$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true \t))].title
+$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title
 $[':@.\"$,*\\'\\\\']
