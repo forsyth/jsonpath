@@ -1,5 +1,8 @@
 package JSONPath
 
+// Parse the script expression language embedded within path expressions.
+// It's a small subset of JavaScript (at least I hope it's a small subset.)
+
 import (
 	//	"errors"
 	"fmt"
@@ -86,19 +89,17 @@ var prectab [][]Op = [][]Op{
 	//	array[] of {'|'},	// UnionExpr
 }
 
-// parser represents the state of the expression parser
-type parser struct {
-	*lexer // source of tokens
-}
-
+// lookExpr looks ahead in the expression lexical syntax.
 func (p *parser) lookExpr() token {
-	return p.look(p.lexExpr(false))
+	return p.look(p.lexExpr())
 }
 
+// advanceExpr consumes a token in the expression lexical syntax.
 func (p *parser) advanceExpr() {
-	_ = p.lexExpr(false)
+	_ = p.lexExpr()
 }
 
+// parseScriptExpr consumes and parses a script expression, using the expression lexical syntax.
 func (p *parser) parseScriptExpr() (Expr, error) {
 	return p.expr(0)
 }
@@ -124,7 +125,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 	}
 	// associate operators at current priority level
 	for isOpIn(tok2op(p.lookExpr()), prectab[pri]) {
-		lx := p.lexExpr(false)
+		lx := p.lexExpr()
 		if lx.err != nil {
 			return nil, lx.err
 		}
@@ -173,7 +174,7 @@ func (p *parser) primary() (Expr, error) {
 		case '.':
 			// field selection
 			p.advanceExpr()
-			lx := p.lexExpr(false)
+			lx := p.lexExpr()
 			if lx.err != nil {
 				return nil, lx.err
 			}
@@ -219,15 +220,14 @@ func (p *parser) parseExprList(base Expr) ([]Expr, error) {
 	}
 }
 
-// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")"
+// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]"
 func (p *parser) primary1() (Expr, error) {
-	lx := p.lexExpr(true)
+	lx := p.lexExprRE()
 	if lx.err != nil {
 		return nil, lx.err
 	}
 	switch lx.tok {
 	case tokID:
-		// (), [] handled here?
 		return &NameLeaf{OpId, lx.val.(string)}, nil
 	case tokInt:
 		return &IntLeaf{OpInt, lx.val.(int64)}, nil
@@ -257,7 +257,7 @@ func (p *parser) primary1() (Expr, error) {
 }
 
 func (p *parser) expect(req token) error {
-	lx := p.lexExpr(false)
+	lx := p.lexExpr()
 	if lx.err != nil {
 		return lx.err
 	}
@@ -265,16 +265,6 @@ func (p *parser) expect(req token) error {
 		return fmt.Errorf("expected %v, got %v", req, lx.tok)
 	}
 	return nil
-}
-
-func opPrec(t token, p []token) int {
-	for j := 0; j < len(p); j++ {
-		if t == p[j] {
-			return j
-		}
-	}
-	// not an operator
-	return -1
 }
 
 // convert tokens to expression operators
