@@ -43,7 +43,7 @@ var samples []lexOutput = []lexOutput{
 		},
 	},
 	lexOutput{"$[':@.\"$,*\\'\\\\']",
-		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*'\\"}, {tok: ']'}, {tok:  tokEOF}},
+		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*'\\"}, {tok: ']'}, {tok: tokEOF}},
 	},
 	lexOutput{"$[':@.\"$,*\\\\'\\\\\\\\']",
 		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*\\"}, {tok: tokError, val: "unexpected character '\\\\' at offset 13"}},
@@ -53,7 +53,7 @@ var samples []lexOutput = []lexOutput{
 // keep enough state to handle nested script-expressions [nested ()]
 type lexState struct {
 	lexer
-	nestp int	// nesting count for ()
+	nestp int // nesting count for ()
 }
 
 // lex switches between the path lexer and expression lexer, at the outermost ( or ?( and back at the closing )
@@ -78,7 +78,7 @@ func (ls *lexState) lex() lexeme {
 }
 
 func TestLex(t *testing.T) {
-   Samples:
+Samples:
 	for i, sam := range samples {
 		rdr := &rd{sam.s, 0}
 		ls := &lexState{lexer: lexer{r: rdr}}
