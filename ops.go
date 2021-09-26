@@ -42,9 +42,10 @@ const (
 	OpAdd   // +
 	OpSub   // binary -
 	OpCall  // function call id(args)
+	OpArray	// [e-list]
 	OpIn    // "in"
 	OpNin   // "nin", not in
-	OpMatch // ~
+	OpMatch // ~= (why not just ~)
 	OpNot   // unary !
 )
 
@@ -82,6 +83,7 @@ var opNames map[Op]string = map[Op]string{
 	OpAdd:     "OpAdd",
 	OpSub:     "OpSub",
 	OpCall:    "OpCall",
+	OpArray:	"OpArray",
 	OpIn:      "OpIn",
 	OpNin:     "OpNin",
 	OpMatch:   "OpMatch",
@@ -122,6 +124,7 @@ var opText map[Op]string = map[Op]string{
 	OpAdd:     "+",
 	OpSub:     "-",
 	OpCall:    "function call",
+	OpArray:	"array value",
 	OpIn:      "in",
 	OpNin:     "nin",
 	OpMatch:   "~",
