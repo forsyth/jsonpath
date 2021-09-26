@@ -14,6 +14,9 @@ type Inner struct {
 func (i *Inner) IsLeaf() bool { return false }
 func (i *Inner) Op() Op       { return i.op }
 func (i *Inner) Kid(c int) Expr {
+	if c >= len(i.kids) {
+		return nil
+	}
 	return i.kids[c]
 }
 
@@ -53,6 +56,15 @@ type StringLeaf struct {
 func (l *StringLeaf) IsLeaf() bool { return true }
 func (l *StringLeaf) Op() Op       { return l.op }
 
+// RegexpLeaf represents the value of a single- or double-quoted string.
+type RegexpLeaf struct {
+	op  Op
+	val string
+}
+
+func (l *RegexpLeaf) IsLeaf() bool { return true }
+func (l *RegexpLeaf) Op() Op       { return l.op }
+
 // Expr represents an arbitrary expression tree; it can be cast to one of the above, depending on Op.
 type Expr interface {
 	// Op gives the node's operator, which determines the detailed structure.
@@ -76,19 +88,15 @@ var prectab [][]Op = [][]Op{
 
 // parser represents the state of the expression parser
 type parser struct {
-	lexer *lexer // source of tokens
+	*lexer // source of tokens
 }
 
-func (p *parser) lexExpr(withRE bool) lexeme {
-	return p.lexer.lexExpr(withRE)
+func (p *parser) lookExpr() token {
+	return p.look(p.lexExpr(false))
 }
 
-func (p *parser) unget(lex lexeme) {
-	p.lexer.unget(lex)
-}
-
-func (p *parser) lookExpr(withRE bool) token {
-	return p.lexer.look(p.lexer.lexExpr(withRE))
+func (p *parser) advanceExpr() {
+	_ = p.lexExpr(false)
 }
 
 func (p *parser) parseScriptExpr() (Expr, error) {
@@ -101,21 +109,21 @@ func (p *parser) expr(pri int) (Expr, error) {
 		return p.primary()
 	}
 	if prectab[pri][0] == OpNeg { // unary '-' or '!'
-		c := p.lookExpr(false)
+		c := p.lookExpr()
 		switch c {
 		case '-':
 			return p.unary(OpNeg, pri)
 		case '!':
 			return p.unary(OpNot, pri)
 		}
-		pri++ // primary
+		//pri++ // primary
 	}
 	e, err := p.expr(pri + 1)
 	if err != nil {
 		return nil, err
 	}
 	// associate operators at current priority level
-	for isOpIn(tok2op(p.lookExpr(false)), prectab[pri]) {
+	for isOpIn(tok2op(p.lookExpr()), prectab[pri]) {
 		lx := p.lexExpr(false)
 		if lx.err != nil {
 			return nil, lx.err
@@ -129,17 +137,90 @@ func (p *parser) expr(pri int) (Expr, error) {
 	return e, nil
 }
 
-// unary applies a unary operator to a following expression
+// unary applies a unary operator to a following primary expression
+// unary ::= ("-" | "!")+ primary
 func (p *parser) unary(op Op, pri int) (Expr, error) {
-	p.lexExpr(false)
-	arg, err := p.expr(pri + 1)
+	p.advanceExpr()
+	arg, err := p.primary()
 	if err != nil {
 		return nil, err
 	}
 	return &Inner{op, []Expr{arg}}, nil
 }
 
+// primary ::= primary1 ("(" e-list ")" | "[" e-list "]" | "." identifier)*
 func (p *parser) primary() (Expr, error) {
+	e, err := p.primary1()
+	if err != nil {
+		return nil, err
+	}
+	for {
+		switch p.lookExpr() {
+		case '(':
+			// function call
+			p.advanceExpr()
+			e, err = p.application(OpCall, ')', e)
+			if err != nil {
+				return nil, err
+			}
+		case '[':
+			// index (and slice?)
+			p.advanceExpr()
+			e, err = p.application(OpIndex, ']', e)
+			if err != nil {
+				return nil, err
+			}
+		case '.':
+			// field selection
+			p.advanceExpr()
+			lx := p.lexExpr(false)
+			if lx.err != nil {
+				return nil, lx.err
+			}
+			if lx.tok != tokID {
+				return nil, fmt.Errorf("expected identifier in '.' selection")
+			}
+			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpId, lx.val.(string)}}}
+		default:
+			return e, nil
+		}
+	}
+}
+
+// apply optional expression e to an expression list (terminated by a given end token) as operator op
+func (p *parser) application(op Op, end token, e Expr) (Expr, error) {
+	args, err := p.parseExprList(e)
+	if err != nil {
+		return nil, err
+	}
+	err = p.expect(end)
+	if err != nil {
+		return nil, err
+	}
+	return &Inner{op, args}, nil
+}
+
+// e-list ::= expr ("," expr)*
+// the base expression appears as the first entry in the array returned
+func (p *parser) parseExprList(base Expr) ([]Expr, error) {
+	list := []Expr{}
+	if base != nil {
+		list = append(list, base)
+	}
+	for {
+		e, err := p.expr(0)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, e)
+		if p.lookExpr() != ',' {
+			return list, nil
+		}
+	}
+}
+
+// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")"
+func (p *parser) primary1() (Expr, error) {
 	lx := p.lexExpr(true)
 	if lx.err != nil {
 		return nil, lx.err
@@ -152,6 +233,8 @@ func (p *parser) primary() (Expr, error) {
 		return &IntLeaf{OpInt, lx.val.(int64)}, nil
 	case tokString:
 		return &StringLeaf{OpString, lx.val.(string)}, nil
+	case tokRE:
+		return &RegexpLeaf{OpRE, lx.val.(string)}, nil
 	case '@':
 		return &NameLeaf{OpCurrent, "@"}, nil
 	case '$':
@@ -166,6 +249,8 @@ func (p *parser) primary() (Expr, error) {
 			return nil, err
 		}
 		return e, nil
+	case '[':
+		return p.application(OpArray, ']', nil)
 	default:
 		return nil, fmt.Errorf("unexpected token %v in expression term", lx.tok)
 	}

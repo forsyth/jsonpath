@@ -22,10 +22,10 @@ type Step struct {
 // subscript-expression ::= "*" | expr | filter
 // union-element ::=  array-index | string-literal | array-slice   // could include identifier?
 // array-index ::= integer
-// array-slice ::= start? ":" end? (":" step?)?
+// array-slice ::= start? ":" end? (":" stride?)?
 // start ::= integer | expr
 // end ::= integer | expr
-// step ::= integer | expr
+// stride ::= integer | expr
 // expr ::= "(" script-expression ")"
 // filter ::= "?(" script-expression ")"
 // integer := "-"? [0-9]+
@@ -36,12 +36,8 @@ func ParsePath(s string) (Path, error) {
 	return parser.parsePath()
 }
 
-func (p *parser) lexPath() lexeme {
-	return p.lexer.lexPath()
-}
-
 func (p *parser) lookPath() token {
-	return p.lexer.look(p.lexer.lexPath())
+	return p.look(p.lexPath())
 }
 
 func (p *parser) parsePath() (Path, error) {
@@ -146,7 +142,6 @@ func (p *parser) parseSubscript() (Op, Val, error) {
 			return OpFilter, e, err
 
 		// union-element ("," union-element)
-		// case '-': // TO DO: signed integer; easier to add it to lexPath
 		case tokInt:
 			// integer or start element of slice
 			// need to lookahead for ":" (OpIndex vs OpSlice)
@@ -157,18 +152,17 @@ func (p *parser) parseSubscript() (Op, Val, error) {
 		case tokID:
 			// treat same as string-literal
 			union = append(union, &Step{OpId, []Val{lx.val}})
+
 		// error
 		default:
-			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
+			return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 		}
-		lx = p.lexPath()
-		if lx.tok != ',' {
-			if lx.tok != ']' {
-				// TO DO: unclosed bracket
-			}
-			return OpUnion, union, nil
+		if p.lookPath() != ',' {
+			break
 		}
+		_ = p.lexPath()
 	}
+	return OpUnion, union, nil
 }
 
 // member ::= "*" | identifier | expr | integer
@@ -191,7 +185,7 @@ func (p *parser) parseMember() (Op, Val, error) {
 		e, err := p.parseExpr()
 		return OpExp, e, err
 	default:
-		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.lexer.offset())
+		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}
 }
 
@@ -214,11 +208,11 @@ func expect(p *parser, nt token) error {
 		return lx.err
 	}
 	if lx.tok != nt {
-		return fmt.Errorf("expected %q at %s, got %v", nt, p.lexer.offset(), lx.tok)
+		return fmt.Errorf("expected %q at %s, got %v", nt, p.offset(), lx.tok)
 	}
 	return nil
 }
 
 func (p *parser) unexpectedEOF() error {
-	return fmt.Errorf("unexpected EOF at %s", p.lexer.offset())
+	return fmt.Errorf("unexpected EOF at %s", p.offset())
 }
