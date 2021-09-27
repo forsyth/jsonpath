@@ -39,7 +39,7 @@ func (p *parser) parseScriptExpr() (Expr, error) {
 }
 
 // expr collects binary operators with priority >= pri, starting with an initial primary tree:
-//	primary (op expr)*
+//	primary (op e)*
 // See http://antlr.org/papers/Clarke-expr-parsing-1986.pdf for the history and details.
 // p.expr(0) builds a complete (sub)tree.
 func (p *parser) expr(pri int) (Expr, error) {
@@ -74,7 +74,7 @@ func (p *parser) unary(op Op) (Expr, error) {
 	return &Inner{op, []Expr{arg}}, nil
 }
 
-// primary ::= primary1 ("(" e-list ")" | "[" e-list "]" | "." identifier)*
+// primary ::= primary1 ("(" e-list ")" | "[" e "]" | "." identifier)*
 func (p *parser) primary() (Expr, error) {
 	e, err := p.primary1()
 	if err != nil {
@@ -90,12 +90,17 @@ func (p *parser) primary() (Expr, error) {
 				return nil, err
 			}
 		case '[':
-			// index (and slice?)
+			// index, just one expression
 			p.advanceExpr()
-			e, err = p.application(OpIndex, ']', e)
+			index, err := p.expr(0)
 			if err != nil {
 				return nil, err
 			}
+			err = p.expect(']')
+			if err != nil {
+				return nil, err
+			}
+			return &Inner{OpIndex, []Expr{e, index}}, nil
 		case '.':
 			// field selection
 			p.advanceExpr()

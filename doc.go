@@ -14,44 +14,46 @@ The two parts have different structures.
 
 Paths have the following grammar:
 
-path ::= "$" step*
-step ::= "." member | ".." member | "[" subscript "]" | ".." "[" subscript "]"
-member ::= "*" | identifier | expr | signed-integer
-subscript ::= subscript-expression | union-element ("," union-element)
-subscript-expression ::= "*" | expr | filter
-union-element ::=  array-index | string-literal | array-slice   // could include identifier?
-array-index ::= signed-integer
-array-slice ::= start? ":" end? (":" stride?)?
-start ::= signed-integer | expr
-end ::= signed-integer | expr
-stride ::= signed-integer | expr
-expr ::= "(" script-expression ")"
-filter ::= "?(" script-expression ")"
-step ::= ...  "[" subscript "]" ... | ".." "[" subscript "]"
-subscript ::= subscript-expression | union-element ("," union-element)
-subscript-expression ::= "*" | expr | filter
-union-element ::=  array-index | string-literal | array-slice   // could include identifier?
-array-index ::= signed-integer
-array-slice ::= start? ":" end? (":" step?)?
-member ::= "*" | identifier | expr | signed-integer
-expr ::= "(" script-expression ")"
-signed-integer ::= "-"? integer
-integer ::= [0-9]+
+	path ::= "$" step*
+	step ::= "." member | ".." member | "[" subscript "]" | ".." "[" subscript "]"
+	member ::= "*" | identifier | expr | signed-integer
+	subscript ::= subscript-expression | union-element ("," union-element)
+	subscript-expression ::= "*" | expr | filter
+	union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+	array-index ::= signed-integer
+	array-slice ::= start? ":" end? (":" stride?)?
+	start ::= signed-integer | expr
+	end ::= signed-integer | expr
+	stride ::= signed-integer | expr
+	expr ::= "(" script-expression ")"
+	filter ::= "?(" script-expression ")"
+	step ::= ...  "[" subscript "]" ... | ".." "[" subscript "]"
+	subscript ::= subscript-expression | union-element ("," union-element)
+	subscript-expression ::= "*" | expr | filter
+	union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+	array-index ::= signed-integer
+	array-slice ::= start? ":" end? (":" step?)?
+	member ::= "*" | identifier | expr | signed-integer
+	expr ::= "(" script-expression ")"
+	signed-integer ::= "-"? integer
+	integer ::= [0-9]+
 
 Script expressions (filters and calculations) share the same syntax:
 
-script-expression ::= e   // both filters and values share the same syntax
-e ::= primary | e binary-op e
-binary-op ::= "+" | "-" | "*" | "/" | "%" | "<" | ">" | ">=" | "<=" | "==" | "!=" | "=~" | "in" | "nin"  | "&&" | "||"
-unary-op ::= "-" | "!"
-primary ::= primary1 ("(" e-list ")" | "[" e-list "]" | "." identifier)*
-e-list ::= e ("," e)*
-primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]" | unary-op primary1
+	script-expression ::= e   // both filters and values share the same syntax
+	e ::= primary | e binary-op e
+	binary-op ::= "+" | "-" | "*" | "/" | "%" | "<" | ">" | ">=" | "<=" | "==" | "!=" | "=~" | "in" | "nin"  | "&&" | "||"
+	unary-op ::= "-" | "!"
+	primary ::= primary1 ("(" e-list ")" | "[" e "]" | "." identifier)*
+	e-list ::= e ("," e)*
+	primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]" | unary-op primary1
 
 Paths are represented by a Path type, which is just a sequence of Steps. Expressions are represented by a type Expr, which is an expression tree.
 
 ParsePath returns a Path that represents the JSONpath provided as text.
-That result Path, and the Steps and Exprs it contains, can then be evaluated against a subject JSON structure (document).
+That result Path, and the Steps and Expr trees it contains, can then be evaluated against a subject JSON structure (document).
+
+ParseScriptExpression parses a string that contains only a script expression (not a path) and returns the Expr tree. It is not normally needed, because ParsePath will parse any script expressions in a path string, but might be useful for calculating using values in a JSON document.
 
 (The evaluator is not yet complete, and the Path, Step and Expr structures are still subject to change, since this project is not yet an initial release.
 No issues yet, please!)
