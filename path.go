@@ -5,21 +5,25 @@ import (
 	"fmt"
 )
 
+// Val is an int64, float64, string (literal or identifier), Slice or Expr
 type Val interface{}
 
+// Path is a sequence of Steps, following the grammar.
+// The first step is always OpRoot.
 type Path []*Step
 
+// Step represents a single step in the path.
 type Step struct {
-	Op   Op
-	Args []Val
+	Op   Op	// Op is the action to take at this step. Not all Ops are valid Steps (eg, expression operators).
+	Args []Val	// Zero or more arguments to the operation (eg, integer and string values, an identifier, a Slice or a filter or other Expr).
 }
 
 // Slice is a Val that represents a JavaScript slice with [start: end: stride], where any of them might be optional.
 // It appears as an operand in an OpUnion.
 type Slice struct {
-	Start  Val
-	End    Val
-	Stride Val
+	Start  Val	// optional starting offset
+	End    Val	// optional end offset (exclusive)
+	Stride Val	// optional value selecting every n array elements.
 }
 
 // started with the IETF drafts, but reverted to a grammar adapted from https://github.com/dchester/jsonpath/blob/master/lib/grammar.js
@@ -41,8 +45,7 @@ type Slice struct {
 
 // ParsePath returns the parsed form of the path expression in s, or an error.
 func ParsePath(s string) (Path, error) {
-	parser := &parser{newLexer(&rd{s: s})}
-	return parser.parsePath()
+	return newParser(s).parsePath()
 }
 
 func (p *parser) lookPath() token {
