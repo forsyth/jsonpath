@@ -11,7 +11,16 @@ import (
 // ParseScriptExpression gives direct access to the secondary parser for expressions, returning an Expr tree representing
 // the expression in s.
 func ParseScriptExpression(s string) (Expr, error) {
-	return newParser(s).parseScriptExpr()
+	p := newParser(s)
+	e, err := p.parseScriptExpr()
+	if err != nil {
+		return nil, err
+	}
+	lx := p.lexExpr()
+	if lx.tok != tokEOF {
+		return nil, fmt.Errorf("missing operator at %s, before %s", p.offset(), lx.tok)
+	}
+	return e, nil
 }
 
 // lookExpr looks ahead in the expression lexical syntax.
@@ -29,16 +38,16 @@ func (p *parser) parseScriptExpr() (Expr, error) {
 	return p.expr(0)
 }
 
-// expr collects left-associative binary operators with priority >= pri.
+// expr collects binary operators with priority >= pri, starting with an initial primary tree:
 //	primary (op expr)*
 // See http://antlr.org/papers/Clarke-expr-parsing-1986.pdf for the history and details.
+// p.expr(0) builds a complete (sub)tree.
 func (p *parser) expr(pri int) (Expr, error) {
 	e, err := p.primary()
 	if err != nil {
 		return nil, err
 	}
-	// left-associate operators at current priority level
-	// note that non-operators
+	// build tree nodes until a lower-priority operator is seen (including all non-binary-operators)
 	for tok2op(p.lookExpr()).precedence() >= pri {
 		lx := p.lexExpr()
 		if lx.err != nil {
