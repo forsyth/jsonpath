@@ -100,6 +100,9 @@ func (l *lexer) lexPath() lexeme {
 		return l.isNext('(', tokFilter, tokError)
 	case '"', '\'':
 		s, err := l.lexString(c)
+		if err != nil {
+			return lexeme{tokError, 0, err}
+		}
 		return lexeme{tokString, s, err}
 	case '-': // - is allowed as a sign for integers
 		l.ws()
@@ -129,23 +132,10 @@ func (l *lexer) lexPath() lexeme {
 }
 
 // lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
-func (l *lexer) lexExpr() lexeme {
-	return l.lexExprGen(false)
-}
-
-func (l *lexer) lexExprRE() lexeme {
-	return l.lexExprGen(true)
-}
-
-// lexExprGen returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of "script expressions" (filter and plain expressions).
-// If okRE is true, a '/' character introduces a regular expression (ended by an unescaped trailing '/').
-func (l *lexer) lexExprGen(okRE bool) lexeme {
+func (l *lexer) lexExpr() lexeme {
 	if l.peek {
 		l.peek = false
-		if okRE && l.lex.tok == '/' {
-			return l.lexRegExp('/')
-		}
 		return l.lex
 	}
 	l.ws()
@@ -153,14 +143,9 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 	switch c := r.get(); c {
 	case eof:
 		return lexeme{tokEOF, nil, nil}
-	case '(', ')', '[', ']', '@', '$', '.', ',':
-		return lexeme{token(c), nil, nil}
-	case '~', '*', '%', '+', '-':
+	case '(', ')', '[', ']', '@', '$', '.', ',', '~', '*', '%', '+', '-':
 		return lexeme{token(c), nil, nil}
 	case '/':
-		if okRE {
-			return l.lexRegExp(c)
-		}
 		return lexeme{token(c), nil, nil}
 	case '&':
 		return l.isNext('&', tokAnd, '&')
@@ -180,6 +165,9 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 		return l.isNext('=', tokNE, '!')
 	case '"', '\'':
 		s, err := l.lexString(c)
+		if err != nil {
+			return lexeme{tokError, 0, err}
+		}
 		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
