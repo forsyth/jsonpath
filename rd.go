@@ -6,8 +6,8 @@ const eof = -1
 
 // Loc is a location (line and byte offset)
 type Loc struct {
-	line	int	// current line, origin 0, usually 0
-	pos	int	// byte position for next byte in whole input
+	line int // current line, origin 0, usually 0
+	pos  int // byte position for next byte in whole input
 }
 
 // rd returns input units (currently bytes) from a string, allowing backing up for lexer lookahead (only 1 unit actually used).
@@ -52,7 +52,7 @@ func (r *rd) look() int {
 
 // Loc returns the current line number (origin 1) and byte offset in the input.
 func (r *rd) loc() Loc {
-	return Loc{r.line+1, r.pos}
+	return Loc{r.line + 1, r.pos}
 }
 
 func (r *rd) offset() string {

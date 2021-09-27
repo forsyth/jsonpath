@@ -13,7 +13,7 @@ var (
 	ErrBadEscape      = errors.New("unknown character escape sequence")
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 	ErrIntOverflow    = errors.New("overflow of negative integer literal")
-	ErrBadReal = errors.New("invalid floating-point literal")
+	ErrBadReal        = errors.New("invalid floating-point literal")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
@@ -21,13 +21,13 @@ type lexeme struct {
 	tok token
 	val Val
 	err error
-//	loc Loc	// starting location
+	//	loc Loc	// starting location
 }
 
 // String returns a vaguely user-readable representation of a token
 func (lx lexeme) String() string {
 	if lx.err != nil {
-		return "!"+lx.err.Error()
+		return "!" + lx.err.Error()
 	}
 	if lx.tok.hasVal() {
 		return fmt.Sprintf("%v(%v)", lx.tok, lx.val)
@@ -38,7 +38,7 @@ func (lx lexeme) String() string {
 // GoString returns a string with an internal representation of a token, for debugging.
 func (lx lexeme) GoString() string {
 	if lx.err != nil {
-		return "!"+lx.err.Error()
+		return "!" + lx.err.Error()
 	}
 	if lx.tok.hasVal() {
 		return fmt.Sprintf("%#v(%#v)", lx.tok, lx.val)
@@ -217,7 +217,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 	for isDigit(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	if r.look() == 'e' {	// e[+-]?[0-9]+
+	if r.look() == 'e' { // e[+-]?[0-9]+
 		r.get()
 		c := r.look()
 		if c == '+' || c == '-' {
@@ -238,7 +238,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 }
 
 // lexID returns an identifier token from r
-func (l *lexer)  lexID(isAlpha func(int) bool) lexeme {
+func (l *lexer) lexID(isAlpha func(int) bool) lexeme {
 	var sb strings.Builder
 	r := l.r
 	r.unget()

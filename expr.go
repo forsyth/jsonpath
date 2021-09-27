@@ -14,8 +14,13 @@ type Inner struct {
 	kids []Expr
 }
 
+// Isleaf returns false.
 func (i *Inner) IsLeaf() bool { return false }
-func (i *Inner) Op() Op       { return i.op }
+
+// Op returns the node's operator.
+func (i *Inner) Op() Op { return i.op }
+
+// Kid returns child c (index c) or nil if there isn't one.
 func (i *Inner) Kid(c int) Expr {
 	if c >= len(i.kids) {
 		return nil
@@ -29,8 +34,11 @@ type IntLeaf struct {
 	val int64
 }
 
+// IsLeaf returns true.
 func (l *IntLeaf) IsLeaf() bool { return true }
-func (l *IntLeaf) Op() Op       { return l.op }
+
+// Op returns the node's operator.
+func (l *IntLeaf) Op() Op { return l.op }
 
 // NameLeaf represents a user-defined name (OpId), "@" (OpCurrent) and "$" (OpRoot).
 type NameLeaf struct {
@@ -38,8 +46,11 @@ type NameLeaf struct {
 	name string
 }
 
+// IsLeaf returns true.
 func (l *NameLeaf) IsLeaf() bool { return true }
-func (l *NameLeaf) Op() Op       { return l.op }
+
+// Op returns the node's operator.
+func (l *NameLeaf) Op() Op { return l.op }
 
 // FloatLeaf represents a floating-point number.
 type FloatLeaf struct {
@@ -47,8 +58,11 @@ type FloatLeaf struct {
 	val float64
 }
 
+// IsLeaf returns true.
 func (l *FloatLeaf) IsLeaf() bool { return true }
-func (l *FloatLeaf) Op() Op       { return l.op }
+
+// Op returns the node's operator.
+func (l *FloatLeaf) Op() Op { return l.op }
 
 // StringLeaf represents the value of a single- or double-quoted string.
 type StringLeaf struct {
@@ -56,8 +70,11 @@ type StringLeaf struct {
 	val string
 }
 
+// IsLeaf returns true.
 func (l *StringLeaf) IsLeaf() bool { return true }
-func (l *StringLeaf) Op() Op       { return l.op }
+
+// Op returns the node's operator.
+func (l *StringLeaf) Op() Op { return l.op }
 
 // RegexpLeaf represents the value of a single- or double-quoted string.
 type RegexpLeaf struct {
@@ -65,10 +82,13 @@ type RegexpLeaf struct {
 	val string
 }
 
+// IsLeaf returns true.
 func (l *RegexpLeaf) IsLeaf() bool { return true }
-func (l *RegexpLeaf) Op() Op       { return l.op }
 
-// Expr represents an arbitrary expression tree; it can be cast to one of the above, depending on Op.
+// Op returns the node's operator.
+func (l *RegexpLeaf) Op() Op { return l.op }
+
+// Expr represents an arbitrary expression tree; it can be converted to one of the ...Leaf types or Inner, depending on Op.
 type Expr interface {
 	// Op gives the node's operator, which determines the detailed structure.
 	Op() Op
@@ -109,7 +129,7 @@ func (p *parser) advanceExpr() {
 	_ = p.lexExpr()
 }
 
-// parseScriptExpr consumes and parses a script expression, using the expression lexical syntax.
+// parseScriptExpr consumes and parses a script expression, using the expression lexical syntax (lexExpr).
 func (p *parser) parseScriptExpr() (Expr, error) {
 	return p.expr(0)
 }
@@ -123,7 +143,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 		return nil, err
 	}
 	// left-associate operators at current priority level
-	// note that non-operators 
+	// note that non-operators
 	for opPrec(tok2op(p.lookExpr())) >= pri {
 		lx := p.lexExpr()
 		if lx.err != nil {
@@ -131,7 +151,7 @@ func (p *parser) expr(pri int) (Expr, error) {
 		}
 		op := tok2op(lx.tok)
 		oprec := opPrec(op)
-		right, err := p.expr(oprec + 1)	// use oprec for right-associative operator, if we have them
+		right, err := p.expr(oprec + 1) // use oprec for right-associative operator, if we have them
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +241,7 @@ func (p *parser) parseExprList(base Expr) ([]Expr, error) {
 	}
 }
 
-// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]"
+// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]" | "-" primary1 | "!" primary1
 func (p *parser) primary1() (Expr, error) {
 	lx := p.lexExpr()
 	if lx.err != nil {
@@ -263,6 +283,7 @@ func (p *parser) primary1() (Expr, error) {
 		}
 		return e, nil
 	case '[':
+		// array-literal
 		return p.application(OpArray, ']', nil)
 	default:
 		return nil, fmt.Errorf("unexpected token %v in expression term", lx.tok)

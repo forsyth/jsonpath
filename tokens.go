@@ -26,9 +26,9 @@ const (
 	tokFilter                             // ?(
 	tokAnd                                // &&
 	tokOr                                 // ||
-	tokMatch	// =~
-	tokIn	// "in"
-	tokNin	// "nin"
+	tokMatch                              // =~
+	tokIn                                 // "in"
+	tokNin                                // "nin"
 )
 
 // hasVal returns true if token t has an associated value

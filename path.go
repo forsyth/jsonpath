@@ -17,9 +17,9 @@ type Step struct {
 // Slice is a Val that represents a JavaScript slice with [start: end: stride], where any of them might be optional.
 // It appears as an operand in an OpUnion.
 type Slice struct {
-	Start	Val
-	End	Val
-	Stride	Val
+	Start  Val
+	End    Val
+	Stride Val
 }
 
 // started with the IETF drafts, but reverted to a grammar adapted from https://github.com/dchester/jsonpath/blob/master/lib/grammar.js
@@ -132,7 +132,7 @@ func (p *parser) parseSubscript() (*Step, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(steps) > 1 {	// can't have subscript-expressions
+	if len(steps) > 1 { // can't have subscript-expressions
 		for _, step := range steps {
 			switch step.Op {
 			case OpWild, OpExp, OpFilter:
