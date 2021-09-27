@@ -27,6 +27,8 @@ const (
 	tokAnd                                // &&
 	tokOr                                 // ||
 	tokMatch	// =~
+	tokIn	// "in"
+	tokNin	// "nin"
 )
 
 // hasVal returns true if token t has an associated value
@@ -74,6 +76,10 @@ func (t token) GoString() string {
 		return "tokOr"
 	case tokMatch:
 		return "tokMatch"
+	case tokIn:
+		return "tokIn"
+	case tokNin:
+		return "tokNin"
 	default:
 		return string(t)
 	}
@@ -114,6 +120,10 @@ func (t token) String() string {
 		return "||"
 	case tokMatch:
 		return "=~"
+	case tokIn:
+		return "in"
+	case tokNin:
+		return "nin"
 	default:
 		return string(t)
 	}

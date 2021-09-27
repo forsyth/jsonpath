@@ -144,8 +144,7 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 	if l.peek {
 		l.peek = false
 		if okRE && l.lex.tok == '/' {
-			s, err := l.lexString('/')
-			return lexeme{tokRE, s, err}
+			return l.lexRegExp('/')
 		}
 		return l.lex
 	}
@@ -160,8 +159,7 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 		return lexeme{token(c), nil, nil}
 	case '/':
 		if okRE {
-			s, err := l.lexString(c)
-			return lexeme{tokRE, s, err}
+			return l.lexRegExp(c)
 		}
 		return lexeme{token(c), nil, nil}
 	case '&':
@@ -192,6 +190,13 @@ func (l *lexer) lexExprGen(okRE bool) lexeme {
 		}
 		return tokenError(r, c)
 	}
+}
+
+// lexRegExp can be called by the parser when it consumes a token (eg, '/') that must introduce a regular expression,
+// gathering the text of the expression here and returning it.
+func (l *lexer) lexRegExp(c int) lexeme {
+	s, err := l.lexString(c)
+	return lexeme{tokRE, s, err}
 }
 
 // ws skips white space, and returns the current location

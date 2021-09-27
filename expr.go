@@ -77,16 +77,26 @@ type Expr interface {
 	IsLeaf() bool
 }
 
-// prectab lists the operator precedence groups, from low to high.
-var prectab [][]Op = [][]Op{
-	[]Op{OpOr},
-	[]Op{OpAnd},
-	[]Op{OpEq, OpNe},
-	[]Op{OpLt, OpLe, OpGt, OpGe, OpMatch, OpIn, OpNin},
-	[]Op{OpAdd, OpSub},
-	[]Op{OpMul, OpDiv, OpMod},
-	[]Op{OpNeg, OpNot}, // unary '-'
-	//	array[] of {'|'},	// UnionExpr
+// opPrec returns a binary operator's precedence, or -1 if it's not a binary operator.
+// OpMatch (~, =~) is given the same precedence here as a relational operator,
+// although some implementations put it below OpMul.
+func opPrec(op Op) int {
+	switch op {
+	case OpOr:
+		return 0
+	case OpAnd:
+		return 1
+	case OpEq, OpNe:
+		return 2
+	case OpLt, OpLe, OpGt, OpGe, OpMatch, OpIn, OpNin:
+		return 3
+	case OpAdd, OpSub:
+		return 4
+	case OpMul, OpDiv, OpMod:
+		return 5
+	default:
+		return -1
+	}
 }
 
 // lookExpr looks ahead in the expression lexical syntax.
@@ -104,44 +114,35 @@ func (p *parser) parseScriptExpr() (Expr, error) {
 	return p.expr(0)
 }
 
-// parse a subexpression with priority pri
+// expr collects left-associative binary operators with priority >= pri.
+//	primary (op expr)*
+// See http://antlr.org/papers/Clarke-expr-parsing-1986.pdf for the history and details.
 func (p *parser) expr(pri int) (Expr, error) {
-	if pri >= len(prectab) {
-		return p.primary()
-	}
-	if prectab[pri][0] == OpNeg { // unary '-' or '!'
-		c := p.lookExpr()
-		switch c {
-		case '-':
-			return p.unary(OpNeg, pri)
-		case '!':
-			return p.unary(OpNot, pri)
-		}
-		//pri++ // primary
-	}
-	e, err := p.expr(pri + 1)
+	e, err := p.primary()
 	if err != nil {
 		return nil, err
 	}
-	// associate operators at current priority level
-	for isOpIn(tok2op(p.lookExpr()), prectab[pri]) {
+	// left-associate operators at current priority level
+	// note that non-operators 
+	for opPrec(tok2op(p.lookExpr())) >= pri {
 		lx := p.lexExpr()
 		if lx.err != nil {
 			return nil, lx.err
 		}
-		right, err := p.expr(pri + 1)
+		op := tok2op(lx.tok)
+		oprec := opPrec(op)
+		right, err := p.expr(oprec + 1)	// use oprec for right-associative operator, if we have them
 		if err != nil {
 			return nil, err
 		}
-		e = &Inner{tok2op(lx.tok), []Expr{e, right}}
+		e = &Inner{op, []Expr{e, right}}
 	}
 	return e, nil
 }
 
 // unary applies a unary operator to a following primary expression
 // unary ::= ("-" | "!")+ primary
-func (p *parser) unary(op Op, pri int) (Expr, error) {
-	p.advanceExpr()
+func (p *parser) unary(op Op) (Expr, error) {
 	arg, err := p.primary()
 	if err != nil {
 		return nil, err
@@ -222,11 +223,17 @@ func (p *parser) parseExprList(base Expr) ([]Expr, error) {
 
 // primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]"
 func (p *parser) primary1() (Expr, error) {
-	lx := p.lexExprRE()
+	lx := p.lexExpr()
 	if lx.err != nil {
 		return nil, lx.err
 	}
 	switch lx.tok {
+	case tokError:
+		return nil, lx.err
+	case '-':
+		return p.unary(OpNeg)
+	case '!':
+		return p.unary(OpNot)
 	case tokID:
 		return &NameLeaf{OpId, lx.val.(string)}, nil
 	case tokInt:
@@ -235,7 +242,11 @@ func (p *parser) primary1() (Expr, error) {
 		return &FloatLeaf{OpReal, lx.val.(float64)}, nil
 	case tokString:
 		return &StringLeaf{OpString, lx.val.(string)}, nil
-	case tokRE:
+	case '/':
+		lx = p.lexRegExp('/')
+		if lx.err != nil {
+			return nil, lx.err
+		}
 		return &RegexpLeaf{OpRE, lx.val.(string)}, nil
 	case '@':
 		return &NameLeaf{OpCurrent, "@"}, nil
@@ -300,16 +311,11 @@ func tok2op(t token) Op {
 		return OpOr
 	case '~', tokMatch:
 		return OpMatch
+	case tokIn:
+		return OpIn
+	case tokNin:
+		return OpNin
 	default:
 		return OpError
 	}
-}
-
-func isOpIn(op Op, ops []Op) bool {
-	for _, v := range ops {
-		if op == v {
-			return true
-		}
-	}
-	return false
 }
