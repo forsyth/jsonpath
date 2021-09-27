@@ -150,3 +150,30 @@ func (o Op) IsLeaf() bool {
 		return false
 	}
 }
+
+// precedence returns a binary operator's precedence, or -1 if it's not a binary operator.
+// OpMatch (~, =~) is given the same precedence here as a relational operator,
+// although some implementations put it below OpMul.
+func (op Op) precedence() int {
+	switch op {
+	case OpOr:
+		return 0
+	case OpAnd:
+		return 1
+	case OpEq, OpNe:
+		return 2
+	case OpLt, OpLe, OpGt, OpGe, OpMatch, OpIn, OpNin:
+		return 3
+	case OpAdd, OpSub:
+		return 4
+	case OpMul, OpDiv, OpMod:
+		return 5
+	default:
+		return -1
+	}
+}
+
+// associativity returns 1 for left-associative binary operators and 0 for right-associative binary operators
+func (Op) associativity() int {
+	return 1	// they are all left-associative at the moment
+}
