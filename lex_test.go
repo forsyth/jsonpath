@@ -7,7 +7,7 @@ import (
 
 type el struct {
 	tok token
-	val interface{}
+	val Val
 }
 
 type lexOutput struct {

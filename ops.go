@@ -131,14 +131,19 @@ var opText map[Op]string = map[Op]string{
 	OpNot:     "!",
 }
 
-// GoString returns the textual representation of Op o, for debugging
+// GoString returns the internal name of Op o, for debugging
 func (o Op) GoString() string {
 	return opNames[o]
 }
 
-// String returns a readable representation of Op o for diagnostics
+// String returns a source-level representation of Op o for diagnostics
 func (o Op) String() string {
 	return opText[o]
+}
+
+// Opcode returns the receiver value, 
+func (o Op) Opcode() Op {
+	return o
 }
 
 // IsLeaf returns true if o is a leaf operator
@@ -175,5 +180,5 @@ func (op Op) precedence() int {
 
 // associativity returns 1 for left-associative binary operators and 0 for right-associative binary operators
 func (Op) associativity() int {
-	return 1	// they are all left-associative at the moment
+	return 1 // they are all left-associative at the moment
 }

@@ -35,17 +35,17 @@ func TestPathParse(t *testing.T) {
 	}
 }
 
-func (s *Step) String() string {
-	doc := s.Op.GoString()
-	if len(s.Args) > 0 {
-		doc += "("
-		for i, a := range s.Args {
-			if i > 0 {
-				doc += ","
-			}
-			doc += fmt.Sprintf("%#v", a)
-		}
-		doc += ")"
-	}
-	return doc
-}
+//func (s *Step) String() string {
+//	doc := s.Op.GoString()
+//	if len(s.Args) > 0 {
+//		doc += "("
+//		for i, a := range s.Args {
+//			if i > 0 {
+//				doc += ","
+//			}
+//			doc += fmt.Sprintf("%#v", a)
+//		}
+//		doc += ")"
+//	}
+//	return doc
+//}
