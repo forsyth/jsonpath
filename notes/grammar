@@ -30,3 +30,4 @@ unary ::= ("-" | "!")+ primary
 primary ::= primary1 ("(" e-list ")" | "[" e-list "]" | "." identifier)* | "[" e-list "]"
 e-list ::= e ("," e)*
 primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" e ")"
+re ::= <regular expression of some style, with \/ escaping the delimiting "/">
