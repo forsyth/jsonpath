@@ -116,7 +116,7 @@ func (l *lexer) lexPath() lexeme {
 		}
 		n := fol.val.(IntVal).Val
 		if n == math.MaxInt64 {
-			return lexeme{tokError, StringVal{""}, ErrIntOverflow}
+			return lexeme{tokError, Zero, ErrIntOverflow}
 		}
 		fol.val = IntVal{-n}
 		return fol
