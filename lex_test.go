@@ -5,51 +5,62 @@ import (
 	"testing"
 )
 
-type el struct {
-	tok token
-	val Val
-}
-
 type lexOutput struct {
 	s   string
-	ops []el
+	ops []string
 }
 
 var samples []lexOutput = []lexOutput{
-	lexOutput{"$", []el{{tok: '$'}, el{tok: tokEOF}}},
-	lexOutput{"$[-99]", []el{{tok: '$'}, el{tok: '['}, el{tok: tokInt, val: -99}, el{tok: ']'}, el{tok: tokEOF}}},
-	lexOutput{"$[-9223372036854775807]", []el{{tok: '$'}, el{tok: '['}, el{tok: tokError, val: "overflow of negative integer literal"}, el{tok: ']'}, el{tok: tokEOF}}},
+	lexOutput{"$", []string{"$", "tokEOF"}},
+	lexOutput{"$[-99]",
+		[]string{
+			"$", "[", "tokInt:-99", "]", "tokEOF",
+		},
+	},
+	lexOutput{"$[-9223372036854775807]", 
+		[]string{
+			"$", "[", "tokError:overflow of negative integer literal", "]", "tokEOF",
+		},
+	},
 	lexOutput{"$.store.book[(@.length-1)].title",
-		[]el{{tok: '$'}, {tok: '.'}, {tok: tokID, val: "store"}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: '('},
-			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "length"}, {tok: '-'}, {tok: tokInt, val: 1}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID}, {tok: tokEOF},
+		[]string{
+			"$", ".", "tokID:store", ".", "tokID:book", "[", "(", "@", ".", "tokID:length", "-", "tokInt:1", ")", "]", ".", "tokID:title", "tokEOF",
 		},
 	},
 	lexOutput{"$.store.book[?(@.price < 10)].title",
-		[]el{{tok: '$'}, {tok: '.'}, {tok: tokID}, {tok: '.'}, {tok: tokID}, {tok: '['}, {tok: tokFilter},
-			{tok: '@'}, {tok: '.'}, {tok: tokID}, {tok: '<'}, {tok: tokInt, val: 10}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
+		[]string{
+			"$", ".", "tokID:store", ".", "tokID:book", "[", "tokFilter", "@", ".", "tokID:price", "<", "tokInt:10", ")", "]", ".", "tokID:title", "tokEOF",
 		},
 	},
 	lexOutput{"$['store'].book[?(@.price < 10)].title",
-		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: "store"}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: tokFilter},
-			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: '<'}, {tok: tokInt, val: 10}, {tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
+		[]string{
+			"$", "[", "tokString:\"store\"", "]", ".", "tokID:book", "[", "tokFilter", "@", ".", "tokID:price", "<", "tokInt:10", ")", "]", ".", "tokID:title", "tokEOF",
 		},
 	},
 	lexOutput{"$..book[(@.length-1)]",
-		[]el{{tok: '$'}, {tok: tokNest}, {tok: tokID, val: "book"}, {tok: '['}, {tok: '('}, {tok: '@'}, {tok: '.'}, {tok: tokID, val: "length"}, {tok: '-'}, {tok: tokInt, val: 1}, {tok: ')'}, {tok: ']'}, {tok: tokEOF}},
+		[]string{"$", "tokNest", "tokID:book", "[", "(", "@", ".", "tokID:length", "-", "tokInt:1", ")", "]", "tokEOF",},
 	},
 	lexOutput{"$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true \t))].title",
-		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: "store"}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "book"}, {tok: '['}, {tok: tokFilter},
-			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: tokGE}, {tok: tokInt, val: 20}, {tok: tokAnd},
-			{tok: '@'}, {tok: '.'}, {tok: tokID, val: "price"}, {tok: tokLE}, {tok: tokInt, val: 50}, {tok: tokOr}, {tok: '('}, {tok: tokID, val: "true"}, {tok: ')'},
-			{tok: ')'}, {tok: ']'}, {tok: '.'}, {tok: tokID, val: "title"}, {tok: tokEOF},
+		[]string{"$", "[", "tokString:\"store\"", "]", ".", "tokID:book", "[", "tokFilter", "@", ".", "tokID:price", "tokGE", "tokInt:20", "tokAnd",
+			"@", ".", "tokID:price", "tokLE", "tokInt:50", "tokOr", "(", "tokID:true", ")", ")", "]", ".", "tokID:title", "tokEOF",
 		},
 	},
 	lexOutput{"$[':@.\"$,*\\'\\\\']",
-		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*'\\"}, {tok: ']'}, {tok: tokEOF}},
+		[]string{"$", "[", "tokString:\":@.\\\"$,*'\\\\\"", "]", "tokEOF"},
 	},
 	lexOutput{"$[':@.\"$,*\\\\'\\\\\\\\']",
-		[]el{{tok: '$'}, {tok: '['}, {tok: tokString, val: ":@.\"$,*\\"}, {tok: tokError, val: "unexpected character '\\\\' at offset 13"}},
+		[]string{"$", "[", "tokString:\":@.\\\"$,*\\\\\"", "tokError:unexpected character '\\\\' at offset 13"},
 	},
+}
+
+func testForm(lx lexeme) string {
+	f := lx.tok.GoString()
+	if lx.tok == tokError {
+		f += ":"+lx.err.Error()
+	} else if lx.tok.hasVal() {
+		f += ":"+lx.val.String()
+	}
+	return f
 }
 
 // keep enough state to handle nested script-expressions [nested ()]
@@ -84,35 +95,32 @@ Samples:
 	for i, sam := range samples {
 		rdr := &rd{s: sam.s}
 		ls := &lexState{lexer: lexer{r: rdr}}
-		fmt.Printf("%s -> ", sam.s)
-		for j, el := range sam.ops {
+		fmt.Printf("%s ->", sam.s)
+		for j, expect := range sam.ops {
 			lx := ls.lex()
-			fmt.Printf(" %#v", lx)
-			if el.tok == tokError && el.val != nil {
-				if lx.err == nil {
-					t.Errorf("sample %d el %d, expected error (%s) got nil", i, j, el.val)
-				} else if lx.err.Error() != el.val {
-					t.Errorf("sample %d el %d, expected error (%s) got (%s)", i, j, el.val, lx.err)
-				}
-				fmt.Printf("\n")
+			got := testForm(lx)
+			fmt.Printf(" %s", got)
+			if got != expect {
+				fmt.Print("\n")
+				t.Errorf("sample %d, token %d, expected %s got %s", i+1, j+1, expect, got)
+				// no point printing tokens, because the state can be messed up
 				continue Samples
 			}
-			if lx.tok != el.tok || lx.tok != tokError && lx.err != nil {
-				t.Errorf("sample %d el %d, got %v (%#v %v) expected %v (%#v)", i, j, lx.tok, lx.val, lx.err, el.tok, el.val)
-				break
+			if lx.tok == tokError {
+				continue Samples
 			}
 		}
-		fmt.Printf("\n")
 		if rdr.look() != eof {
-			t.Errorf("sample %d, not reached tokEOF", i)
+			t.Errorf("sample %d, reference stopped before EOF", i+1)
+			fmt.Print(" # ")
 			for {
 				lx := ls.lex()
-				fmt.Printf(" %#v", lx)
+				fmt.Printf(" %s", testForm(lx))
 				if lx.tok == tokEOF || lx.tok == tokError {
 					break
 				}
 			}
-			fmt.Printf("\n")
 		}
+		fmt.Print("\n")
 	}
 }

@@ -101,9 +101,9 @@ func (l *lexer) lexPath() lexeme {
 	case '"', '\'':
 		s, err := l.lexString(c)
 		if err != nil {
-			return lexeme{tokError, 0, err}
+			return lexeme{tokError, Zero, err}
 		}
-		return lexeme{tokString, s, err}
+		return lexeme{tokString, StringVal{s}, err}
 	case '-': // - is allowed as a sign for integers
 		l.ws()
 		if !isDigit(r.get()) {
@@ -114,11 +114,11 @@ func (l *lexer) lexPath() lexeme {
 		if fol.tok != tokInt {
 			return tokenError(r, c)
 		}
-		n := fol.val.(int64)
+		n := fol.val.(IntVal).Val
 		if n == math.MaxInt64 {
-			return lexeme{tokError, "", ErrIntOverflow}
+			return lexeme{tokError, StringVal{""}, ErrIntOverflow}
 		}
-		fol.val = -n
+		fol.val = IntVal{-n}
 		return fol
 	default:
 		if isDigit(c) {
@@ -166,9 +166,9 @@ func (l *lexer) lexExpr() lexeme {
 	case '"', '\'':
 		s, err := l.lexString(c)
 		if err != nil {
-			return lexeme{tokError, 0, err}
+			return lexeme{tokError, Zero, err}
 		}
-		return lexeme{tokString, s, err}
+		return lexeme{tokString, StringVal{s}, err}
 	default:
 		if isDigit(c) {
 			return l.lexNumber(true)
@@ -184,7 +184,7 @@ func (l *lexer) lexExpr() lexeme {
 // gathering the text of the expression here and returning it.
 func (l *lexer) lexRegExp(c int) lexeme {
 	s, err := l.lexString(c)
-	return lexeme{tokRE, s, err}
+	return lexeme{tokRE, StringVal{s}, err}
 }
 
 // ws skips white space, and returns the current location
@@ -209,9 +209,9 @@ func (l *lexer) lexNumber(real bool) lexeme {
 		// integer only
 		v, err := strconv.ParseInt(sb.String(), 10, 64)
 		if err != nil {
-			return lexeme{tokError, 0, err}
+			return lexeme{tokError, Zero, err}
 		}
-		return lexeme{tokInt, v, nil}
+		return lexeme{tokInt, IntVal{v}, nil}
 	}
 	r.get()
 	for isDigit(r.look()) {
@@ -224,7 +224,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 			sb.WriteByte(byte(r.get()))
 		}
 		if !isDigit(r.look()) {
-			return lexeme{tokError, 0, ErrBadReal}
+			return lexeme{tokError, Zero, ErrBadReal}
 		}
 		for isDigit(r.look()) {
 			sb.WriteByte(byte(r.get()))
@@ -232,9 +232,9 @@ func (l *lexer) lexNumber(real bool) lexeme {
 	}
 	v, err := strconv.ParseFloat(sb.String(), 64)
 	if err != nil {
-		return lexeme{tokError, 0, err}
+		return lexeme{tokError, Zero, err}
 	}
-	return lexeme{tokReal, v, nil}
+	return lexeme{tokReal, FloatVal{v}, nil}
 }
 
 // lexID returns an identifier token from r
@@ -245,7 +245,7 @@ func (l *lexer) lexID(isAlpha func(int) bool) lexeme {
 	for isAlpha(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	return lexeme{tokID, sb.String(), nil}
+	return lexeme{tokID, NameVal{sb.String()}, nil}
 }
 
 // lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
@@ -329,14 +329,14 @@ func (l *lexer) isNext(c int, t token, f token) lexeme {
 		return lexeme{t, nil, nil}
 	}
 	if f == tokError {
-		return lexeme{tokError, r.look(), fmt.Errorf("unexpected char %q after %q at %s", rune(r.look()), rune(c), r.offset())}
+		return lexeme{tokError, IntVal{int64(r.look())}, fmt.Errorf("unexpected char %q after %q at %s", rune(r.look()), rune(c), r.offset())}
 	}
 	return lexeme{f, nil, nil}
 }
 
 // diagnose an unexpected character, not valid for a token
 func tokenError(r *rd, c int) lexeme {
-	return lexeme{tokError, c, fmt.Errorf("unexpected character %q at %s", rune(c), r.offset())}
+	return lexeme{tokError, IntVal{int64(c)}, fmt.Errorf("unexpected character %q at %s", rune(c), r.offset())}
 }
 
 func isDigit(c int) bool {

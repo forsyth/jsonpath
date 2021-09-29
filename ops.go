@@ -141,7 +141,7 @@ func (o Op) String() string {
 	return opText[o]
 }
 
-// Opcode returns the receiver value, 
+// Opcode returns the op value itself, so Op embedded in an operation satisfies the Expr interface.
 func (o Op) Opcode() Op {
 	return o
 }

@@ -43,15 +43,15 @@ func (slice *Slice) String() string {
 	var sb strings.Builder
 	sb.WriteByte('[')
 	if slice.Start != nil {
-		sb.WriteString(ValString(slice.Start))
+		sb.WriteString(slice.Start.String())
 	}
 	sb.WriteByte(':')
 	if slice.End != nil {
-		sb.WriteString(ValString(slice.End))
+		sb.WriteString(slice.End.String())
 	}
 	if slice.Stride != nil {
 		sb.WriteByte(':')
-		sb.WriteString(ValString(slice.Stride))
+		sb.WriteString(slice.Stride.String())
 	}
 	return sb.String()
 }

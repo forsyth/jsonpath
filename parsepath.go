@@ -189,19 +189,19 @@ func (p *parser) parseVal() (*Step, error) {
 		}
 		if p.lookPath() == ':' {
 			p.lexPath()
-			return p.parseSlice(e)
+			return p.parseSlice(ExprVal{e})
 		}
-		return &Step{OpExp, []Val{e}}, nil
+		return &Step{OpExp, []Val{ExprVal{e}}}, nil
 	case ':':
 		// slice with missing start value
-		return p.parseSlice(nil)
+		return p.parseSlice(ExprVal{})
 
 	case tokFilter:
 		e, err := p.parseExpr()
 		if err != nil {
 			return nil, err
 		}
-		return &Step{OpFilter, []Val{e}}, nil
+		return &Step{OpFilter, []Val{ExprVal{e}}}, nil
 
 	// definitely union-element
 	case tokInt:
@@ -209,7 +209,7 @@ func (p *parser) parseVal() (*Step, error) {
 		// need to lookahead for ":" (OpIndex vs OpSlice)
 		if p.lookPath() == ':' {
 			p.lexPath()
-			return p.parseSlice(lx.val.(int64))
+			return p.parseSlice(lx.val)
 		}
 		return &Step{OpInt, []Val{lx.val}}, nil
 	case tokString:
@@ -272,9 +272,13 @@ func (p *parser) parseSlice(start Val) (*Step, error) {
 func (p *parser) parseSliceVal() (Val, error) {
 	switch lx := p.lexPath(); lx.tok {
 	case '(':
-		return p.parseExpr()
+		e, err := p.parseExpr()
+		if err != nil {
+			return NoVal{}, err
+		}
+		return ExprVal{e}, nil
 	case tokInt:
-		return lx.val.(int64), nil
+		return lx.val, nil
 	default:
 		return nil, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}
@@ -284,7 +288,7 @@ func (p *parser) parseSliceVal() (Val, error) {
 func (p *parser) parseMember() (Op, Val, error) {
 	lx := p.lexPath()
 	if lx.err != nil {
-		return OpError, "", lx.err
+		return OpError, NoVal{}, lx.err
 	}
 	switch lx.tok {
 	case '*':
@@ -298,9 +302,12 @@ func (p *parser) parseMember() (Op, Val, error) {
 	case '(':
 		// expr ::= "(" script-expression ")"
 		e, err := p.parseExpr()
-		return OpExp, e, err
+		if err != nil {
+			return OpError, NoVal{}, err
+		}
+		return OpExp, ExprVal{e}, nil
 	default:
-		return OpError, "", fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
+		return OpError, NoVal{}, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}
 }
 
