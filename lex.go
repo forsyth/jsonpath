@@ -3,7 +3,6 @@ package JSONPath
 import (
 	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -98,113 +97,6 @@ func (l *lexer) offset() string {
 // lexErr returns a lexeme that bundles a diagnostic.
 func (l *lexer) lexErr(err error) lexeme {
 	return lexeme{tokError, nil, err}
-}
-
-// lexPath returns the next token and an optional associated value (eg, int or string), or an error.
-// It interprets the tokens of path elements.
-func (l *lexer) lexPath() lexeme {
-	if l.peek {
-		l.peek = false
-		return l.lex
-	}
-	l.ws()
-	r := l.r
-	switch c := r.get(); c {
-	case eof:
-		return lexeme{tokEOF, nil, nil}
-	case '(', ')', '[', ']', '*', '$', ':', ',':
-		return lexeme{token(c), nil, nil}
-	case '.':
-		return l.isNext('.', tokNest, '.')
-	case '?':
-		return l.isNext('(', tokFilter, tokError)
-	case '"', '\'':
-		s, err := l.lexString(c)
-		if err != nil {
-			return l.lexErr(err)
-		}
-		return lexeme{tokString, s, err}
-	case '-': // - is allowed as a sign for integers
-		l.ws()
-		if !isDigit(r.get()) {
-			r.unget()
-			return l.tokenErr(r.look())
-		}
-		fol := l.lexNumber(false)
-		if fol.tok != tokInt {
-			return l.tokenErr(c)
-		}
-		n := fol.val.(int64)
-		if n == math.MaxInt64 {
-			return l.lexErr(ErrIntOverflow)
-		}
-		fol.val = -n
-		return fol
-	default:
-		if isDigit(c) {
-			return l.lexNumber(false)
-		}
-		if isLetter(c) {
-			return l.lexID(isAlphanumericDash)
-		}
-		return l.tokenErr(c)
-	}
-}
-
-// lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
-// It interprets the tokens of "script expressions" (filter and plain expressions).
-func (l *lexer) lexExpr() lexeme {
-	if l.peek {
-		l.peek = false
-		return l.lex
-	}
-	l.ws()
-	r := l.r
-	switch c := r.get(); c {
-	case eof:
-		return lexeme{tokEOF, nil, nil}
-	case '(', ')', '[', ']', '@', '$', '.', ',', '~', '*', '%', '+', '-':
-		return lexeme{token(c), nil, nil}
-	case '/':
-		return lexeme{token(c), nil, nil}
-	case '&':
-		return l.isNext('&', tokAnd, '&')
-	case '|':
-		return l.isNext('|', tokOr, '|')
-	case '<':
-		return l.isNext('=', tokLE, '<')
-	case '>':
-		return l.isNext('=', tokGE, '>')
-	case '=':
-		lx := l.isNext('=', tokEq, '=')
-		if lx.tok != '=' {
-			return lx
-		}
-		return l.isNext('~', tokMatch, '=')
-	case '!':
-		return l.isNext('=', tokNE, '!')
-	case '"', '\'':
-		s, err := l.lexString(c)
-		if err != nil {
-			return l.lexErr(err)
-		}
-		return lexeme{tokString, s, err}
-	default:
-		if isDigit(c) {
-			return l.lexNumber(true)
-		}
-		if isLetter(c) {
-			return l.lexID(isAlphanumeric)
-		}
-		return l.tokenErr(c)
-	}
-}
-
-// lexRegExp can be called by the parser when it consumes a token (eg, '/') that must introduce a regular expression,
-// gathering the text of the expression here and returning it.
-func (l *lexer) lexRegExp(c int) lexeme {
-	s, err := l.lexString(c)
-	return lexeme{tokRE, s, err}
 }
 
 // ws skips white space, and returns the current location
