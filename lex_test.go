@@ -58,7 +58,14 @@ func testForm(lx lexeme) string {
 	if lx.tok == tokError {
 		f += ":"+lx.err.Error()
 	} else if lx.tok.hasVal() {
-		f += ":"+lx.val.String()
+		switch lx.tok {
+		case tokInt:
+			f += ":"+fmt.Sprint(lx.i())
+		case tokID:
+			f += ":"+lx.s()
+		case tokString:
+			f += ":"+fmt.Sprintf("%#v", lx.s())
+		}
 	}
 	return f
 }

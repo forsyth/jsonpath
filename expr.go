@@ -39,31 +39,31 @@ func (i *Inner) String() string {
 // IntLeaf represents an integer in an Expr tree.
 type IntLeaf struct {
 	Op
-	Val	IntVal
+	Val	int64
 }
 
 func (l *IntLeaf) String() string {
-	return l.Val.String()
+	return fmt.Sprint(l.Val)
 }
 
 // FloatLeaf represents a floating-point number in an Expr tree.
 type FloatLeaf struct {
 	Op
-	Val FloatVal
+	Val float64
 }
 
 func (l *FloatLeaf) String() string {
-	return l.Val.String()
+	return fmt.Sprint(l.Val)
 }
 
 // StringLeaf represents the value of a single- or double-quoted string in an Expr tree.
 type StringLeaf struct {
 	Op
-	Val StringVal
+	Val string
 }
 
 func (l *StringLeaf) String() string {
-	return l.Val.String()
+	return fmt.Sprintf("%q", l.Val)
 }
 
 // NameLeaf represents a user-defined name (OpId), "@" (OpCurrent) and "$" (OpRoot) in an Expr tree.

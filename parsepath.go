@@ -207,17 +207,18 @@ func (p *parser) parseVal() (*Step, error) {
 	case tokInt:
 		// integer or start element of slice
 		// need to lookahead for ":" (OpIndex vs OpSlice)
+		n := IntVal(lx.i())
 		if p.lookPath() == ':' {
 			p.lexPath()
-			return p.parseSlice(lx.val)
+			return p.parseSlice(n)
 		}
-		return &Step{OpInt, []Val{lx.val}}, nil
+		return &Step{OpInt, []Val{n}}, nil
 	case tokString:
 		// string-literal
-		return &Step{OpString, []Val{lx.val}}, nil
+		return &Step{OpString, []Val{StringVal(lx.s())}}, nil
 	case tokID:
 		// treat same as string-literal
-		return &Step{OpId, []Val{lx.val}}, nil
+		return &Step{OpId, []Val{NameVal(lx.s())}}, nil
 
 	default:
 		// illegal
@@ -278,7 +279,7 @@ func (p *parser) parseSliceVal() (Val, error) {
 		}
 		return e, nil
 	case tokInt:
-		return lx.val, nil
+		return IntVal(lx.i()), nil
 	default:
 		return nil, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}
@@ -292,13 +293,13 @@ func (p *parser) parseMember() (Op, Val, error) {
 	}
 	switch lx.tok {
 	case '*':
-		return OpWild, lx.val, nil
+		return OpWild, nil, nil
 	case tokID:
-		return OpId, lx.val, nil
+		return OpId, NameVal(lx.s()), nil
 	case tokString:
-		return OpString, lx.val, nil
+		return OpString, NameVal(lx.s()), nil
 	case tokInt:
-		return OpInt, lx.val, nil
+		return OpInt, IntVal(lx.i()), nil
 	case '(':
 		// expr ::= "(" script-expression ")"
 		e, err := p.parseExpr()

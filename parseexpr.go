@@ -111,7 +111,7 @@ func (p *parser) primary() (Expr, error) {
 			if lx.tok != tokID {
 				return nil, fmt.Errorf("expected identifier in '.' selection")
 			}
-			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpId, lx.val.(NameVal).S()}}}
+			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpId, lx.s()}}}
 		default:
 			return e, nil
 		}
@@ -164,19 +164,19 @@ func (p *parser) primary1() (Expr, error) {
 	case '!':
 		return p.unary(OpNot)
 	case tokID:
-		return &NameLeaf{OpId, lx.val.(NameVal).S()}, nil
+		return &NameLeaf{OpId, lx.s()}, nil
 	case tokInt:
-		return &IntLeaf{OpInt, lx.val.(IntVal)}, nil
+		return &IntLeaf{OpInt, lx.i()}, nil
 	case tokReal:
-		return &FloatLeaf{OpReal, lx.val.(FloatVal)}, nil
+		return &FloatLeaf{OpReal, lx.f()}, nil
 	case tokString:
-		return &StringLeaf{OpString, lx.val.(StringVal)}, nil
+		return &StringLeaf{OpString, lx.s()}, nil
 	case '/':
 		lx = p.lexRegExp('/')
 		if lx.err != nil {
 			return nil, lx.err
 		}
-		return &RegexpLeaf{OpRE, lx.val.(StringVal).S()}, nil
+		return &RegexpLeaf{OpRE, lx.s()}, nil
 	case '@':
 		return &NameLeaf{OpCurrent, "@"}, nil
 	case '$':

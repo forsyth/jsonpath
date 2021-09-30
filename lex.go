@@ -19,7 +19,7 @@ var (
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
 type lexeme struct {
 	tok token
-	val Val
+	val interface{}
 	err error
 	//	loc Loc	// starting location
 }
@@ -44,6 +44,21 @@ func (lx lexeme) GoString() string {
 		return fmt.Sprintf("%#v(%#v)", lx.tok, lx.val)
 	}
 	return lx.tok.GoString()
+}
+
+// s returns the value of the token as a string, or panics.
+func (lx lexeme) s() string {
+	return lx.val.(string)
+}
+
+// i returns the value of the token as an integer, or panics.
+func (lx lexeme) i() int64 {
+	return lx.val.(int64)
+}
+
+// f returns the value of the token as floating-point, or panics.
+func (lx lexeme) f() float64 {
+	return lx.val.(float64)
 }
 
 // lexer provides state and one-token lookahead for the token stream
@@ -108,7 +123,7 @@ func (l *lexer) lexPath() lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokString, StringVal(s), err}
+		return lexeme{tokString, s, err}
 	case '-': // - is allowed as a sign for integers
 		l.ws()
 		if !isDigit(r.get()) {
@@ -119,11 +134,11 @@ func (l *lexer) lexPath() lexeme {
 		if fol.tok != tokInt {
 			return l.tokenErr(c)
 		}
-		n := fol.val.(IntVal)
+		n := fol.val.(int64)
 		if n == math.MaxInt64 {
 			return l.lexErr(ErrIntOverflow)
 		}
-		fol.val = IntVal(-n)
+		fol.val = -n
 		return fol
 	default:
 		if isDigit(c) {
@@ -173,7 +188,7 @@ func (l *lexer) lexExpr() lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokString, StringVal(s), err}
+		return lexeme{tokString, s, err}
 	default:
 		if isDigit(c) {
 			return l.lexNumber(true)
@@ -189,7 +204,7 @@ func (l *lexer) lexExpr() lexeme {
 // gathering the text of the expression here and returning it.
 func (l *lexer) lexRegExp(c int) lexeme {
 	s, err := l.lexString(c)
-	return lexeme{tokRE, StringVal(s), err}
+	return lexeme{tokRE, s, err}
 }
 
 // ws skips white space, and returns the current location
@@ -216,7 +231,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokInt, IntVal(v), nil}
+		return lexeme{tokInt, v, nil}
 	}
 	r.get()
 	for isDigit(r.look()) {
@@ -239,7 +254,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 	if err != nil {
 		return l.lexErr(err)
 	}
-	return lexeme{tokReal, FloatVal(v), nil}
+	return lexeme{tokReal, v, nil}
 }
 
 // lexID returns an identifier token from r
@@ -250,7 +265,7 @@ func (l *lexer) lexID(isAlpha func(int) bool) lexeme {
 	for isAlpha(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	return lexeme{tokID, NameVal(sb.String()), nil}
+	return lexeme{tokID, sb.String(), nil}
 }
 
 // lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
