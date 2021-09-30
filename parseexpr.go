@@ -96,7 +96,7 @@ func (p *parser) primary() (Expr, error) {
 			if err != nil {
 				return nil, err
 			}
-			err = p.expect(']')
+			err = p.expect(p.lexExpr, ']')
 			if err != nil {
 				return nil, err
 			}
@@ -124,7 +124,7 @@ func (p *parser) application(op Op, end token, e Expr) (Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = p.expect(end)
+	err = p.expect(p.lexExpr, end)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (p *parser) primary1() (Expr, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = p.expect(')')
+		err = p.expect(p.lexExpr, ')')
 		if err != nil {
 			return nil, err
 		}
@@ -197,17 +197,6 @@ func (p *parser) primary1() (Expr, error) {
 	default:
 		return nil, fmt.Errorf("unexpected token %v in expression term", lx.tok)
 	}
-}
-
-func (p *parser) expect(req token) error {
-	lx := p.lexExpr()
-	if lx.err != nil {
-		return lx.err
-	}
-	if lx.tok != req {
-		return fmt.Errorf("expected %v, got %v", req, lx.tok)
-	}
-	return nil
 }
 
 // convert tokens to expression operators

@@ -33,7 +33,7 @@ func (p *parser) lookPath() token {
 // path ::= "$" step*
 // step ::= "." member | ".." member | "[" subscript "]" | ".." "[" subscript "]"
 func (p *parser) parsePath() (Path, error) {
-	err := expect(p, '$')
+	err := p.expect(p.lexPath, '$')
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (p *parser) parseBrackets() (*Step, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = expect(p, ']')
+	err = p.expect(p.lexPath, ']')
 	if err != nil {
 		return nil, err
 	}
@@ -176,8 +176,6 @@ func (p *parser) parseVal() (*Step, error) {
 	switch lx.tok {
 	case tokError:
 		return nil, lx.err
-	case tokEOF:
-		return nil, p.unexpectedEOF()
 
 	// subscript-expression
 	case '*':
@@ -318,24 +316,9 @@ func (p *parser) parseExpr() (Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = expect(p, ')')
+	err = p.expect(p.lexPath, ')')
 	if err != nil {
 		return nil, err
 	}
 	return e, nil
-}
-
-func expect(p *parser, nt token) error {
-	lx := p.lexPath()
-	if lx.err != nil {
-		return lx.err
-	}
-	if lx.tok != nt {
-		return fmt.Errorf("expected %q at %s, got %v", nt, p.offset(), lx.tok)
-	}
-	return nil
-}
-
-func (p *parser) unexpectedEOF() error {
-	return fmt.Errorf("unexpected EOF at %s", p.offset())
 }
