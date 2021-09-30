@@ -2,16 +2,9 @@ package JSONPath
 
 import "fmt"
 
-// Val is an int64, float64, string (literal or identifier), bool, *Slice or Expr as a Value
+// Val is an int64, float64, string (literal or identifier), bool, *Slice or Expr as a value, or nil as a missing value.
 type Val interface{
 	String() string
-}
-
-// NoVal represents nothing, to fill in a missing value in error returns.
-type NoVal struct {}
-
-func (v NoVal) String() string {
-	return "(no value)"
 }
 
 // IntVal represents an integer Value
@@ -19,6 +12,7 @@ type IntVal struct {
 	Val	int64
 }
 
+// Zero is a synonym for IntVal's zero value.
 var Zero = IntVal{0}
 
 func (v IntVal) String() string {

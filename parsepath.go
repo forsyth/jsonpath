@@ -274,7 +274,7 @@ func (p *parser) parseSliceVal() (Val, error) {
 	case '(':
 		e, err := p.parseExpr()
 		if err != nil {
-			return NoVal{}, err
+			return nil, err
 		}
 		return ExprVal{e}, nil
 	case tokInt:
@@ -288,7 +288,7 @@ func (p *parser) parseSliceVal() (Val, error) {
 func (p *parser) parseMember() (Op, Val, error) {
 	lx := p.lexPath()
 	if lx.err != nil {
-		return OpError, NoVal{}, lx.err
+		return OpError, nil, lx.err
 	}
 	switch lx.tok {
 	case '*':
@@ -303,11 +303,11 @@ func (p *parser) parseMember() (Op, Val, error) {
 		// expr ::= "(" script-expression ")"
 		e, err := p.parseExpr()
 		if err != nil {
-			return OpError, NoVal{}, err
+			return OpError, nil, err
 		}
 		return OpExp, ExprVal{e}, nil
 	default:
-		return OpError, NoVal{}, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
+		return OpError, nil, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}
 }
 

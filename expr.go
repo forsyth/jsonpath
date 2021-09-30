@@ -2,6 +2,17 @@ package JSONPath
 
 // Elements of an expression tree (Expr)
 
+// Expr represents an arbitrary expression tree; it can be converted to one of the ...Leaf types or Inner, depending on Opcode,
+// or using a type switch on an Expr value.
+type Expr interface {
+	// Opcode gives the node's operator, which determines the detailed structure.
+	// Useful to avoid .(type) for simple routing.
+	Opcode() Op
+
+	// IsLeaf is Op().IsLeaf() for convenience. If !IsLeaf(), it's an Inner operator.
+	IsLeaf() bool
+}
+
 // Inner represents an interior operation with one or more operands.
 type Inner struct {
 	Op
@@ -44,15 +55,4 @@ type StringLeaf struct {
 type RegexpLeaf struct {
 	Op
 	Pattern string
-}
-
-// Expr represents an arbitrary expression tree; it can be converted to one of the ...Leaf types or Inner, depending on Op,
-// or using a type switch on an Expr value.
-type Expr interface {
-	// Opcode gives the node's operator, which determines the detailed structure.
-	// Useful to avoid .(type) for simple routing.
-	Opcode() Op
-
-	// IsLeaf is Op().IsLeaf() for convenience. If !IsLeaf(), it's an Inner operator.
-	IsLeaf() bool
 }

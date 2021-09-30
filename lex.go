@@ -82,7 +82,7 @@ func (l *lexer) offset() string {
 
 // lexErr returns a lexeme that bundles a diagnostic.
 func (l *lexer) lexErr(err error) lexeme {
-	return lexeme{tokError, NoVal{}, err}
+	return lexeme{tokError, nil, err}
 }
 
 // lexPath returns the next token and an optional associated value (eg, int or string), or an error.
