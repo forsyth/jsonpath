@@ -9,13 +9,14 @@ import (
 // The first step is always OpRoot.
 type Path []*Step
 
-// Step represents a single step in the path.
+// Step represents a single step in the path: an operation with zero or more parameters, each represented by a Val,
+// which is either a constant (signed integer, string, or member name) or an Expr to be evaluated.
 type Step struct {
 	Op   Op	// Op is the action to take at this step. Not all Ops are valid Steps (eg, expression operators).
 	Args []Val	// Zero or more arguments to the operation (eg, integer and string values, an identifier, a Slice or a filter or other Expr).
 }
 
-// Val is an int64, float64, string literal, identifier, bool?, *Slice or Expr as a value (see IntVal etc below), or nil as a missing value.
+// Val is an int64, float64, string literal, name, bool?, *Slice or Expr as a value (see IntVal etc below), or nil as a missing value.
 type Val interface{
 	String() string
 }
@@ -25,13 +26,6 @@ type IntVal int64
 
 func (v IntVal) String() string {
 	return fmt.Sprint(int64(v))
-}
-
-// FloatVal represents a floating-point value, satisfying Val.
-type FloatVal float64
-
-func (v FloatVal) String() string {
-	return fmt.Sprint(float64(v))
 }
 
 // NameVal represents a key or JSON member name as a value, satisfying Val.
@@ -58,8 +52,10 @@ func (v StringVal) S() string {
 	return string(v)
 }
 
-// Slice is a Val that represents a JavaScript slice with [start: end: stride], where any of them might be optional.
-// It appears as an operand in an OpUnion.
+// SliceVal holds a Slice, and satisfies Val. It appears only as an operand to an OpUnion.
+type SliceVal *Slice
+
+// Slice represents a JavaScript slice with [start: end: stride], where any of them might be optional (nil).
 type Slice struct {
 	Start  Val	// optional starting offset
 	End    Val	// optional end offset (exclusive)
