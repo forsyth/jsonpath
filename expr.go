@@ -39,7 +39,7 @@ func (i *Inner) String() string {
 // IntLeaf represents an integer in an Expr tree.
 type IntLeaf struct {
 	Op
-	Val	int64
+	Val int64
 }
 
 func (l *IntLeaf) String() string {

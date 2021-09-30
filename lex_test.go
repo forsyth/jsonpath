@@ -17,7 +17,7 @@ var samples []lexOutput = []lexOutput{
 			"$", "[", "tokInt:-99", "]", "tokEOF",
 		},
 	},
-	lexOutput{"$[-9223372036854775807]", 
+	lexOutput{"$[-9223372036854775807]",
 		[]string{
 			"$", "[", "tokError:overflow of negative integer literal", "]", "tokEOF",
 		},
@@ -38,7 +38,7 @@ var samples []lexOutput = []lexOutput{
 		},
 	},
 	lexOutput{"$..book[(@.length-1)]",
-		[]string{"$", "tokNest", "tokID:book", "[", "(", "@", ".", "tokID:length", "-", "tokInt:1", ")", "]", "tokEOF",},
+		[]string{"$", "tokNest", "tokID:book", "[", "(", "@", ".", "tokID:length", "-", "tokInt:1", ")", "]", "tokEOF"},
 	},
 	lexOutput{"$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true \t))].title",
 		[]string{"$", "[", "tokString:\"store\"", "]", ".", "tokID:book", "[", "tokFilter", "@", ".", "tokID:price", "tokGE", "tokInt:20", "tokAnd",
@@ -56,15 +56,15 @@ var samples []lexOutput = []lexOutput{
 func testForm(lx lexeme) string {
 	f := lx.tok.GoString()
 	if lx.tok == tokError {
-		f += ":"+lx.err.Error()
+		f += ":" + lx.err.Error()
 	} else if lx.tok.hasVal() {
 		switch lx.tok {
 		case tokInt:
-			f += ":"+fmt.Sprint(lx.i())
+			f += ":" + fmt.Sprint(lx.i())
 		case tokID:
-			f += ":"+lx.s()
+			f += ":" + lx.s()
 		case tokString:
-			f += ":"+fmt.Sprintf("%#v", lx.s())
+			f += ":" + fmt.Sprintf("%#v", lx.s())
 		}
 	}
 	return f

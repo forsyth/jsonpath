@@ -12,12 +12,12 @@ type Path []*Step
 // Step represents a single step in the path: an operation with zero or more parameters, each represented by a Val,
 // which is either a constant (signed integer, string, or member name) or an Expr to be evaluated.
 type Step struct {
-	Op   Op	// Op is the action to take at this step. Not all Ops are valid Steps (eg, expression operators).
-	Args []Val	// Zero or more arguments to the operation (eg, integer and string values, an identifier, a Slice or a filter or other Expr).
+	Op   Op    // Op is the action to take at this step. Not all Ops are valid Steps (eg, expression operators).
+	Args []Val // Zero or more arguments to the operation (eg, integer and string values, an identifier, a Slice or a filter or other Expr).
 }
 
 // Val is an int64, float64, string literal, name, bool?, *Slice or Expr as a value (see IntVal etc below), or nil as a missing value.
-type Val interface{
+type Val interface {
 	String() string
 }
 
@@ -57,9 +57,9 @@ type SliceVal *Slice
 
 // Slice represents a JavaScript slice with [start: end: stride], where any of them might be optional (nil).
 type Slice struct {
-	Start  Val	// optional starting offset
-	End    Val	// optional end offset (exclusive)
-	Stride Val	// optional value selecting every n array elements.
+	Start  Val // optional starting offset
+	End    Val // optional end offset (exclusive)
+	Stride Val // optional value selecting every n array elements.
 }
 
 func (slice *Slice) String() string {
