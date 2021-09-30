@@ -8,52 +8,39 @@ type Val interface{
 }
 
 // IntVal represents an integer Value
-type IntVal struct {
-	Val	int64
-}
-
-// Zero is a synonym for IntVal's zero value.
-var Zero = IntVal{0}
+type IntVal int64
 
 func (v IntVal) String() string {
-	return fmt.Sprint(v.Val)
+	return fmt.Sprint(int64(v))
 }
 
 // FloatVal represents a floating-point Value
-type FloatVal struct {
-	Val	float64
-}
+type FloatVal float64
 
 func (v FloatVal) String() string {
-	return fmt.Sprint(v.Val)
+	return fmt.Sprint(float64(v))
 }
 
 // NameVal represents a key or JSON member name as a Value
-type NameVal struct {
-	Name string
-}
+type NameVal string
 
 func (v NameVal) String() string {
-	return v.Name
+	return string(v)
+}
+
+// S returns the name as a plain string.
+func (v NameVal) S() string {
+	return string(v)
 }
 
 // StringVal represents a string Value
-type StringVal struct {
-	Val string
-}
+type StringVal string
 
 func (v StringVal) String() string {
-	return fmt.Sprintf("%q", v.Val)
+	return fmt.Sprintf("%q", string(v))
 }
 
-type ExprVal struct {
-	Expr Expr
-}
-
-func (e ExprVal) String() string {
-	return fmt.Sprintf("%#v", e.Expr)
-}
-
-func (e ExprVal) IsMissing() bool {
-	return e.Expr == nil
+// S returns the string value unwrapped.
+func (v StringVal) S() string {
+	return string(v)
 }

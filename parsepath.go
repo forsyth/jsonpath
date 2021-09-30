@@ -189,19 +189,19 @@ func (p *parser) parseVal() (*Step, error) {
 		}
 		if p.lookPath() == ':' {
 			p.lexPath()
-			return p.parseSlice(ExprVal{e})
+			return p.parseSlice(e)
 		}
-		return &Step{OpExp, []Val{ExprVal{e}}}, nil
+		return &Step{OpExp, []Val{e}}, nil
 	case ':':
 		// slice with missing start value
-		return p.parseSlice(ExprVal{})
+		return p.parseSlice(nil)
 
 	case tokFilter:
 		e, err := p.parseExpr()
 		if err != nil {
 			return nil, err
 		}
-		return &Step{OpFilter, []Val{ExprVal{e}}}, nil
+		return &Step{OpFilter, []Val{e}}, nil
 
 	// definitely union-element
 	case tokInt:
@@ -276,7 +276,7 @@ func (p *parser) parseSliceVal() (Val, error) {
 		if err != nil {
 			return nil, err
 		}
-		return ExprVal{e}, nil
+		return e, nil
 	case tokInt:
 		return lx.val, nil
 	default:
@@ -305,7 +305,7 @@ func (p *parser) parseMember() (Op, Val, error) {
 		if err != nil {
 			return OpError, nil, err
 		}
-		return OpExp, ExprVal{e}, nil
+		return OpExp, e, nil
 	default:
 		return OpError, nil, fmt.Errorf("unexpected %v at %s", lx.tok, p.offset())
 	}

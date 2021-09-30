@@ -108,7 +108,7 @@ func (l *lexer) lexPath() lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokString, StringVal{s}, err}
+		return lexeme{tokString, StringVal(s), err}
 	case '-': // - is allowed as a sign for integers
 		l.ws()
 		if !isDigit(r.get()) {
@@ -119,11 +119,11 @@ func (l *lexer) lexPath() lexeme {
 		if fol.tok != tokInt {
 			return l.tokenErr(c)
 		}
-		n := fol.val.(IntVal).Val
+		n := fol.val.(IntVal)
 		if n == math.MaxInt64 {
 			return l.lexErr(ErrIntOverflow)
 		}
-		fol.val = IntVal{-n}
+		fol.val = IntVal(-n)
 		return fol
 	default:
 		if isDigit(c) {
@@ -173,7 +173,7 @@ func (l *lexer) lexExpr() lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokString, StringVal{s}, err}
+		return lexeme{tokString, StringVal(s), err}
 	default:
 		if isDigit(c) {
 			return l.lexNumber(true)
@@ -189,7 +189,7 @@ func (l *lexer) lexExpr() lexeme {
 // gathering the text of the expression here and returning it.
 func (l *lexer) lexRegExp(c int) lexeme {
 	s, err := l.lexString(c)
-	return lexeme{tokRE, StringVal{s}, err}
+	return lexeme{tokRE, StringVal(s), err}
 }
 
 // ws skips white space, and returns the current location
@@ -216,7 +216,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 		if err != nil {
 			return l.lexErr(err)
 		}
-		return lexeme{tokInt, IntVal{v}, nil}
+		return lexeme{tokInt, IntVal(v), nil}
 	}
 	r.get()
 	for isDigit(r.look()) {
@@ -239,7 +239,7 @@ func (l *lexer) lexNumber(real bool) lexeme {
 	if err != nil {
 		return l.lexErr(err)
 	}
-	return lexeme{tokReal, FloatVal{v}, nil}
+	return lexeme{tokReal, FloatVal(v), nil}
 }
 
 // lexID returns an identifier token from r
@@ -250,7 +250,7 @@ func (l *lexer) lexID(isAlpha func(int) bool) lexeme {
 	for isAlpha(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	return lexeme{tokID, NameVal{sb.String()}, nil}
+	return lexeme{tokID, NameVal(sb.String()), nil}
 }
 
 // lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
