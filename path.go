@@ -52,10 +52,8 @@ func (v StringVal) S() string {
 	return string(v)
 }
 
-// SliceVal holds a Slice, and satisfies Val. It appears only as an operand to an OpUnion.
-type SliceVal *Slice
-
 // Slice represents a JavaScript slice with [start: end: stride], where any of them might be optional (nil).
+// *Slice satisfies Val.
 type Slice struct {
 	Start  Val // optional starting offset
 	End    Val // optional end offset (exclusive)
