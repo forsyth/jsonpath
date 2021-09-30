@@ -46,8 +46,9 @@ Script expressions (filters and calculations) share the same syntax:
 	unary-op ::= "-" | "!"
 	primary ::= primary1 ("(" e-list ")" | "[" e "]" | "." identifier)*
 	e-list ::= e ("," e)*
-	primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]" | unary-op primary1
+	primary1 ::= identifier | integer | real | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]" | unary-op primary1
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
+	real ::= integer "." integer? ("e" [+-]? integer)?
 
 Paths are represented by a Path type, which is just a sequence of Steps. Expressions are represented by a type Expr, which is an expression tree.
 

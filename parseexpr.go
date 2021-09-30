@@ -150,7 +150,7 @@ func (p *parser) parseExprList(base Expr) ([]Expr, error) {
 	}
 }
 
-// primary1 ::= identifier | integer | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]" | "-" primary1 | "!" primary1
+// primary1 ::= identifier | integer | real | string | "/" re "/" | "@" | "$" | "(" expr ")" | "[" e-list "]" | "-" primary1 | "!" primary1
 func (p *parser) primary1() (Expr, error) {
 	lx := p.lexExpr()
 	if lx.err != nil {
