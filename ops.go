@@ -19,7 +19,7 @@ const (
 	OpDot     // .
 	OpSelect  // [] when used for selection
 	OpIndex   // [] when used for indexing
-	OpSlice   // [lb: ub: step] slice operator
+	OpSlice   // [lb: ub: stride] slice operator
 	OpUnion   // [key1, key2 ...]
 	OpWild    // *
 	OpNest    // ..
@@ -47,6 +47,10 @@ const (
 	OpNin   // "nin", not in
 	OpMatch // ~= (why not just ~)
 	OpNot   // unary !
+
+	// list operator, internal to the polish notation and stack VM
+	OpList // list element, array element, actual parameter
+	OpVal  // slice operand
 )
 
 var opNames map[Op]string = map[Op]string{
@@ -88,6 +92,8 @@ var opNames map[Op]string = map[Op]string{
 	OpNin:     "OpNin",
 	OpMatch:   "OpMatch",
 	OpNot:     "OpNot",
+	OpList:    "OpList",
+	OpVal:     "OpVal",
 }
 
 var opText map[Op]string = map[Op]string{
@@ -129,6 +135,8 @@ var opText map[Op]string = map[Op]string{
 	OpNin:     "nin",
 	OpMatch:   "~",
 	OpNot:     "!",
+	OpList:    ",",
+	OpVal:     ":",
 }
 
 // GoString returns the internal name of Op o, for debugging

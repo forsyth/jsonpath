@@ -1,0 +1,8 @@
+-	line/char offset
+-	keywords
+-	decide whether to switch to rune in lexer
+-	decide whether to use bufio instead of or underneath rd
+-	regexp flags (u is always on)
+-	evaluator
+	- ExprCode, ExprEngine, PathFinder
+-	vm dictionary for identifier and strings
