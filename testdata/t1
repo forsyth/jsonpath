@@ -188,3 +188,6 @@ $['store'].book[?(@.price < 10)].title
 $..book[(@.length-1)]
 $['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title
 $[':@.\"$,*\\'\\\\']
+# (chf) added tests not covered above
+$[?(-9223372036854775807 > 0)]
+$[?(-9223372036854775808 > 0)]

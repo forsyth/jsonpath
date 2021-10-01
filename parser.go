@@ -9,12 +9,12 @@ type parser struct {
 	*lexer // source of tokens
 }
 
-// newParser initialises and returns a parser
+// newParser initialises and returns a parser.
 func newParser(s string) *parser {
 	return &parser{newLexer(&rd{s: s})}
 }
 
-func (p *parser) expect(lex func () lexeme, nt token) error {
+func (p *parser) expect(lex func() lexeme, nt token) error {
 	lx := lex()
 	if lx.err != nil {
 		return lx.err

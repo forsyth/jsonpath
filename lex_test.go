@@ -114,6 +114,7 @@ Samples:
 				continue Samples
 			}
 			if lx.tok == tokError {
+				fmt.Print("\n")
 				continue Samples
 			}
 		}
