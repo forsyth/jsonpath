@@ -109,7 +109,7 @@ Samples:
 			fmt.Printf(" %s", got)
 			if got != expect {
 				fmt.Print("\n")
-				t.Errorf("sample %d, token %d, expected %s got %s", i+1, j+1, expect, got)
+				t.Errorf("sample %d, token %d, got %s; expected %s", i+1, j+1, got, expect)
 				// no point printing tokens, because the state can be messed up
 				continue Samples
 			}
