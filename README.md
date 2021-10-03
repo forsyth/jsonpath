@@ -39,11 +39,13 @@ Script expressions (filters and calculations) share the same syntax:
 
 	script-expression ::= e   // both filters and values share the same syntax
 	e ::= primary | e binary-op e | unary-op e
-	binary-op ::= "+" | "-" | "*" | "/" | "%" | "<" | ">" | ">=" | "<=" | "==" | "!=" | "~" | "in" | "nin"  | "&&" | "||"
+	binary-op ::= "+" | "-" | "*" | "/" | "%" | "<" | ">" |
+		">=" | "<=" | "==" | "!=" | "~" | "in" | "nin"  | "&&" | "||"
 	unary-op ::= "-" | "!"
 	unary ::= ("-" | "!")+ primary
 	primary ::= primary1 ("(" e-list ")" | "[" e-list "]" | "." identifier)*
 	e-list ::= e ("," e)*
-	primary1 ::= identifier | integer | real | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]"
+	primary1 ::= identifier | integer | real | string |
+			"/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]"
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
 	real ::= integer "." integer? ("e" [+-]? integer)?
