@@ -16,7 +16,7 @@ Paths have the following grammar:
 	member ::= "*" | identifier | expr | signed-integer
 	subscript ::= subscript-expression | union-element ("," union-element)
 	subscript-expression ::= "*" | expr | filter
-	union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+	union-element ::=  array-index | string-literal | array-slice
 	array-index ::= signed-integer
 	array-slice ::= start? ":" end? (":" stride?)?
 	start ::= signed-integer | expr
@@ -27,7 +27,7 @@ Paths have the following grammar:
 	step ::= ...  "[" subscript "]" ... | ".." "[" subscript "]"
 	subscript ::= subscript-expression | union-element ("," union-element)
 	subscript-expression ::= "*" | expr | filter
-	union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+	union-element ::=  array-index | string-literal | array-slice
 	array-index ::= signed-integer
 	array-slice ::= start? ":" end? (":" step?)?
 	member ::= "*" | identifier | expr | signed-integer
