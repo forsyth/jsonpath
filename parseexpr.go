@@ -160,7 +160,7 @@ func (p *parser) primary1() (Expr, error) {
 	case tokError:
 		return nil, lx.err
 	case '-':
-		return p.unary(OpNEg)
+		return p.unary(OpNeg)
 	case '!':
 		return p.unary(OpNot)
 	case tokID:

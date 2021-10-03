@@ -143,14 +143,14 @@ $[?(@.key!=42)] -> Root @ key Select 42 NE Filter
 $[?(@.key)] -> Root @ key Select Filter
 $[?(@.key*2==100)] -> Root @ key Select 2 Mul 100 EQ Filter
 $[?(@.key+50==100)] -> Root @ key Select 50 Add 100 EQ Filter
-$[?(@.key-50==-100)] -> Root @ key Select 50 Sub 100 NEg EQ Filter
+$[?(@.key-50==-100)] -> Root @ key Select 50 Sub 100 Neg EQ Filter
 $[?(@.key/10==5)] -> Root @ key Select 10 Div 5 EQ Filter
 $[?(@.key<3),?(@.key>6)] -> !?(filter) cannot be in a union element list
 $[?(@.key<42)] -> Root @ key Select 42 LT Filter
 $[?(@.key<=42)] -> Root @ key Select 42 LE Filter
 $[?(@.key=42)] -> !expected ")" at offset 9, got =
 $[?(@.key=='value')] -> Root @ key Select "value" EQ Filter
-$[?(@.key==-0.123e2)] -> Root @ key Select 1232 NEg EQ Filter
+$[?(@.key==-0.123e2)] -> Root @ key Select 1232 Neg EQ Filter
 $[?(@.key==010)] -> Root @ key Select 10 EQ Filter
 $[?(@.key==42)] -> Root @ key Select 42 EQ Filter
 $[?(@.key==43)] -> Root @ key Select 43 EQ Filter
@@ -170,7 +170,7 @@ $[?(@==42)] -> Root @ 42 EQ Filter
 $[?(@['@key']==42)] -> Root @ "@key" Index 42 EQ Filter
 $[?(@['key']==42)] -> Root @ "key" Index 42 EQ Filter
 $[?(@[*]==2)] -> !unexpected token * in expression term
-$[?(@[-1]==2)] -> Root @ 1 NEg Index 2 EQ Filter
+$[?(@[-1]==2)] -> Root @ 1 Neg Index 2 EQ Filter
 $[?(@[0:1]==1)] -> !unexpected character ':' at offset 7
 $[?(@[0:1]==[1])] -> !unexpected character ':' at offset 7
 $[?(@[1]=='b')] -> Root @ 1 Index "b" EQ Filter
@@ -189,6 +189,6 @@ $..book[(@.length-1)] -> Root book Nest @ length Select 1 Sub Index
 $['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> Root "store" Select book ID @ price Select 20 GE @ price Select 50 LE And true Or Filter title ID
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
-$[?(-9223372036854775807 > 0)] -> Root 9223372036854775807 NEg 0 GT Filter
+$[?(-9223372036854775807 > 0)] -> Root 9223372036854775807 Neg 0 GT Filter
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
 $..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> Root @ book Select Regexp("fruitbat.*/$|(help|need|somebody)") Match NestFilter

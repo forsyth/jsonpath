@@ -52,7 +52,7 @@ const (
 	OpMul   // *
 	OpDiv   // /
 	OpMod   // %
-	OpNEg   // unary -
+	OpNeg   // unary -
 	OpAdd   // +
 	OpSub   // binary -
 	OpCall  // function call id(args)
@@ -102,7 +102,7 @@ var opNames map[Op]string = map[Op]string{
 	OpMul:        "OpMul",
 	OpDiv:        "OpDiv",
 	OpMod:        "OpMod",
-	OpNEg:        "OpNEg",
+	OpNeg:        "OpNeg",
 	OpAdd:        "OpAdd",
 	OpSub:        "OpSub",
 	OpCall:       "OpCall",
@@ -150,7 +150,7 @@ var opText map[Op]string = map[Op]string{
 	OpMul:        "*",
 	OpDiv:        "/",
 	OpMod:        "%",
-	OpNEg:        "unary -",
+	OpNeg:        "unary -",
 	OpAdd:        "+",
 	OpSub:        "-",
 	OpCall:       "function call",
