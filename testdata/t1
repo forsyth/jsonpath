@@ -134,8 +134,8 @@ $[?(@.a && @.b || @.c)] -> Root @ a Select @ b Select And @ c Select Or Filter
 $[?(@.a[?(@.price>10)])] -> !unexpected character '?' at offset 8
 $[?(@.address.city=='Berlin')] -> Root @ address Select city Select "Berlin" EQ Filter
 $[?(@.d in [2, 3])] -> !expected ")" at offset 9, got identifier
-$[?(@.d==['v1','v2'])] -> !unexpected token , in expression term
-$[?(@.d==["v1","v2"])] -> !unexpected token , in expression term
+$[?(@.d==['v1','v2'])] -> Root @ d Select "v1" "v2" Array EQ Filter
+$[?(@.d==["v1","v2"])] -> Root @ d Select "v1" "v2" Array EQ Filter
 $[?(@.d=={"k":"v"})] -> !unexpected character '{' at offset 9
 $[?(@.id==2)] -> Root @ id Select 2 EQ Filter
 $[?(@.id==42)].name -> Root @ id Select 42 EQ Filter name ID

@@ -147,6 +147,7 @@ func (p *parser) parseExprList(base Expr) ([]Expr, error) {
 		if p.lookExpr() != ',' {
 			return list, nil
 		}
+		p.advanceExpr()
 	}
 }
 
