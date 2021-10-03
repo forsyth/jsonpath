@@ -191,4 +191,4 @@ $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
 $[?(-9223372036854775807 > 0)] -> Root 9223372036854775807 NEg 0 GT Filter
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
-$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)]Root @ book Select Regexp("fruitbat.*/$|(help|need|somebody)") Match NestFilter -> !unexpected token identifier(Root)
+$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> Root @ book Select Regexp("fruitbat.*/$|(help|need|somebody)") Match NestFilter
