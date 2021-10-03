@@ -192,3 +192,4 @@ $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 $[?(-9223372036854775807 > 0)] -> Root 9223372036854775807 Neg 0 GT Filter
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
 $..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> Root @ book Select Regexp("fruitbat.*/$|(help|need|somebody)") Match NestFilter
+$[?(@.d==['v1',3*7+5])] -> Root @ d Select "v1" 3 7 Mul 5 Add Array EQ Filter
