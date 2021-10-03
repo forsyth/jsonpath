@@ -74,6 +74,7 @@ func (slice *Slice) String() string {
 		sb.WriteByte(':')
 		sb.WriteString(slice.Stride.String())
 	}
+	sb.WriteByte(']')
 	return sb.String()
 }
 
