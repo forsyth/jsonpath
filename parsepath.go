@@ -63,7 +63,25 @@ func (p *parser) parsePath() (Path, error) {
 				if err != nil {
 					return nil, err
 				}
-				path = append(path, &Step{OpNest, []Val{sub}})
+				var op Op
+				switch sub.Op {
+				case OpSelect:
+					op = OpNestSelect
+				case OpIndex:
+					op = OpNestIndex
+				case OpUnion:
+					op = OpNestUnion
+				case OpWild:
+					op = OpNestWild
+				case OpFilter:
+					op = OpNestFilter
+				case OpExp:
+					op = OpNest
+				default:
+					panic(fmt.Sprintf("unexpected Nest Op %#v", sub.Op))
+				}
+				sub.Op = op
+				path = append(path, sub)
 				break
 			}
 			op, name, err := p.parseMember()

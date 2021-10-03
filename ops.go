@@ -2,6 +2,13 @@ package JSONPath
 
 // Op represents path expression leaf and expression operators, and filter and expression engine operators.
 // Op values also are the tokens produced by the lexical analyser.
+//
+// Nest is tricky because it's a portmanteau, thanks to ".." "[" subscript "]".
+// It can be applied to the full syntax of "subscript", including union.
+// As a plain Op, uniquely it would be a Step Op with another Step as its Arg value,
+// and having an OpNestFlag turned out to be clumsy too,
+// whereas having OpNest variants is slightly tedious but avoids special cases.
+
 type Op int
 
 const (
@@ -19,12 +26,19 @@ const (
 	OpDot     // .
 	OpSelect  // [] when used for selection
 	OpIndex   // [] when used for indexing
-	OpSlice   // [lb: ub: stride] slice operator
+	OpSlice   // [lb: ub: stride] slice operator, Arg of OpIndex, OpUnion
 	OpUnion   // [key1, key2 ...]
 	OpWild    // *
-	OpNest    // ..
 	OpFilter  // ?(...)
 	OpExp     // (...)
+
+	// path nest operators
+	OpNest	// .. member
+	OpNestSelect	// OpNest + OpSelect
+	OpNestIndex	// OpNest + OpIndex
+	OpNestUnion	// .. [key1, key2, ...]
+	OpNestWild	// .. [*]
+	OpNestFilter	// .. [?(expr)]
 
 	// expression operators, in both filters and "expression engines"
 	OpLt    // <
@@ -69,9 +83,14 @@ var opNames map[Op]string = map[Op]string{
 	OpSlice:   "OpSlice",
 	OpUnion:   "OpUnion",
 	OpWild:    "OpWild",
-	OpNest:    "OpNest",
 	OpFilter:  "OpFilter",
 	OpExp:     "OpExp",
+	OpNest:    "OpNest",
+	OpNestSelect:	"OpNestSelect",
+	OpNestIndex:	"OpNestIndex",
+	OpNestUnion:	"OpNestUnion",
+	OpNestWild:	"OpNestWild",
+	OpNestFilter:	"OpNestFilter",
 	OpLt:      "OpLt",
 	OpLe:      "OpLe",
 	OpEq:      "OpEq",
@@ -112,9 +131,14 @@ var opText map[Op]string = map[Op]string{
 	OpSlice:   "[]slice",
 	OpUnion:   "[]union",
 	OpWild:    "*",
-	OpNest:    "..",
 	OpFilter:  "?(filter)",
 	OpExp:     "(exp)",
+	OpNest:    "..",
+	OpNestSelect:	"..[[selection",
+	OpNestIndex:	"..[]index",
+	OpNestUnion:	"..[]union",
+	OpNestWild:	"..*",
+	OpNestFilter:	"..$(filter)",
 	OpLt:      "<",
 	OpLe:      "<=",
 	OpEq:      "==",
