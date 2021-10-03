@@ -25,7 +25,7 @@ func (l *lexer) lexExpr() lexeme {
 	case '>':
 		return l.isNext('=', tokGE, '>')
 	case '=':
-		lx := l.isNext('=', tokEq, '=')
+		lx := l.isNext('=', tokEQ, '=')
 		if lx.tok != '=' {
 			return lx
 		}

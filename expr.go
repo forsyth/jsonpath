@@ -66,7 +66,7 @@ func (l *StringLeaf) String() string {
 	return fmt.Sprintf("%q", l.Val)
 }
 
-// NameLeaf represents a user-defined name (OpId), "@" (OpCurrent) and "$" (OpRoot) in an Expr tree.
+// NameLeaf represents a user-defined name (OpID), "@" (OpCurrent) and "$" (OpRoot) in an Expr tree.
 type NameLeaf struct {
 	Op
 	Name string

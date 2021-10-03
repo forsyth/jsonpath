@@ -14,7 +14,7 @@ type Op int
 const (
 	OpError  Op = iota // illegal token, deliberately the same as the zero value
 	OpEof              // end of file
-	OpId               // identifier
+	OpID               // identifier
 	OpString           // single- or double-quoted string
 	OpInt              // integer
 	OpReal             // real number (might be used in expressions)
@@ -41,18 +41,18 @@ const (
 	OpNestFilter // .. [?(expr)]
 
 	// expression operators, in both filters and "expression engines"
-	OpLt    // <
-	OpLe    // <=
-	OpEq    // = or ==
-	OpNe    // !=
-	OpGe    // >=
-	OpGt    // >
+	OpLT    // <
+	OpLE    // <=
+	OpEQ    // = or ==
+	OpNE    // !=
+	OpGE    // >=
+	OpGT    // >
 	OpAnd   // &&
 	OpOr    // ||
 	OpMul   // *
 	OpDiv   // /
 	OpMod   // %
-	OpNeg   // unary -
+	OpNEg   // unary -
 	OpAdd   // +
 	OpSub   // binary -
 	OpCall  // function call id(args)
@@ -70,7 +70,7 @@ const (
 var opNames map[Op]string = map[Op]string{
 	OpError:      "OpError",
 	OpEof:        "OpEof",
-	OpId:         "OpId",
+	OpID:         "OpID",
 	OpString:     "OpString",
 	OpInt:        "OpInt",
 	OpReal:       "OpReal",
@@ -91,18 +91,18 @@ var opNames map[Op]string = map[Op]string{
 	OpNestUnion:  "OpNestUnion",
 	OpNestWild:   "OpNestWild",
 	OpNestFilter: "OpNestFilter",
-	OpLt:         "OpLt",
-	OpLe:         "OpLe",
-	OpEq:         "OpEq",
-	OpNe:         "OpNe",
-	OpGe:         "OpGe",
-	OpGt:         "OpGt",
+	OpLT:         "OpLT",
+	OpLE:         "OpLE",
+	OpEQ:         "OpEQ",
+	OpNE:         "OpNE",
+	OpGE:         "OpGE",
+	OpGT:         "OpGT",
 	OpAnd:        "OpAnd",
 	OpOr:         "OpOr",
 	OpMul:        "OpMul",
 	OpDiv:        "OpDiv",
 	OpMod:        "OpMod",
-	OpNeg:        "OpNeg",
+	OpNEg:        "OpNEg",
 	OpAdd:        "OpAdd",
 	OpSub:        "OpSub",
 	OpCall:       "OpCall",
@@ -118,7 +118,7 @@ var opNames map[Op]string = map[Op]string{
 var opText map[Op]string = map[Op]string{
 	OpError:      "(error)",
 	OpEof:        "(eof)",
-	OpId:         "identifier",
+	OpID:         "identifier",
 	OpString:     "string",
 	OpInt:        "integer",
 	OpReal:       "real number",
@@ -139,18 +139,18 @@ var opText map[Op]string = map[Op]string{
 	OpNestUnion:  "..[]union",
 	OpNestWild:   "..*",
 	OpNestFilter: "..$(filter)",
-	OpLt:         "<",
-	OpLe:         "<=",
-	OpEq:         "==",
-	OpNe:         "!=",
-	OpGe:         ">=",
-	OpGt:         ">",
+	OpLT:         "<",
+	OpLE:         "<=",
+	OpEQ:         "==",
+	OpNE:         "!=",
+	OpGE:         ">=",
+	OpGT:         ">",
 	OpAnd:        "&&",
 	OpOr:         "||",
 	OpMul:        "*",
 	OpDiv:        "/",
 	OpMod:        "%",
-	OpNeg:        "unary -",
+	OpNEg:        "unary -",
 	OpAdd:        "+",
 	OpSub:        "-",
 	OpCall:       "function call",
@@ -181,7 +181,7 @@ func (o Op) Opcode() Op {
 // IsLeaf returns true if o is a leaf operator
 func (o Op) IsLeaf() bool {
 	switch o {
-	case OpId, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild:
+	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild:
 		return true
 	default:
 		return false
@@ -197,9 +197,9 @@ func (op Op) precedence() int {
 		return 0
 	case OpAnd:
 		return 1
-	case OpEq, OpNe:
+	case OpEQ, OpNE:
 		return 2
-	case OpLt, OpLe, OpGt, OpGe, OpMatch, OpIn, OpNin:
+	case OpLT, OpLE, OpGT, OpGE, OpMatch, OpIn, OpNin:
 		return 3
 	case OpAdd, OpSub:
 		return 4

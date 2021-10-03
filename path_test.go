@@ -53,15 +53,13 @@ func TestPathParse(t *testing.T) {
 			}
 			continue
 		}
-		//		for i, el := range path {
-		//			if i > 0 {
-		//				fmt.Print(" ")
-		//			}
-		//			fmt.Printf("%s", el)
-		//		}
+		code := codePath(path)
 		if building {
-			fmt.Print(codePath(path))
+			fmt.Print(code)
 			fmt.Printf("\n")
+		}
+		if code != proto {
+			t.Errorf("line %d, coded results disagree, got %q expected %q", lno, code, proto)
 		}
 	}
 	if err := samples.Err(); err != nil {

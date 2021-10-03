@@ -234,7 +234,7 @@ func (p *parser) parseVal() (*Step, error) {
 		return &Step{OpString, []Val{StringVal(lx.s())}}, nil
 	case tokID:
 		// treat same as string-literal
-		return &Step{OpId, []Val{NameVal(lx.s())}}, nil
+		return &Step{OpID, []Val{NameVal(lx.s())}}, nil
 
 	default:
 		// illegal
@@ -311,7 +311,7 @@ func (p *parser) parseMember() (Op, Val, error) {
 	case '*':
 		return OpWild, nil, nil
 	case tokID:
-		return OpId, NameVal(lx.s()), nil
+		return OpID, NameVal(lx.s()), nil
 	case tokString:
 		return OpString, NameVal(lx.s()), nil
 	case tokInt:

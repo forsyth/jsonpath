@@ -111,7 +111,7 @@ func (p *parser) primary() (Expr, error) {
 			if lx.tok != tokID {
 				return nil, fmt.Errorf("expected identifier in '.' selection")
 			}
-			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpId, lx.s()}}}
+			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpID, lx.s()}}}
 		default:
 			return e, nil
 		}
@@ -160,11 +160,11 @@ func (p *parser) primary1() (Expr, error) {
 	case tokError:
 		return nil, lx.err
 	case '-':
-		return p.unary(OpNeg)
+		return p.unary(OpNEg)
 	case '!':
 		return p.unary(OpNot)
 	case tokID:
-		return &NameLeaf{OpId, lx.s()}, nil
+		return &NameLeaf{OpID, lx.s()}, nil
 	case tokInt:
 		return &IntLeaf{OpInt, lx.i()}, nil
 	case tokReal:
@@ -212,18 +212,18 @@ func tok2op(t token) Op {
 		return OpDiv
 	case '%':
 		return OpMod
-	case tokEq:
-		return OpEq
+	case tokEQ:
+		return OpEQ
 	case tokNE:
-		return OpNe
+		return OpNE
 	case '<':
-		return OpLt
+		return OpLT
 	case tokLE:
-		return OpLe
+		return OpLE
 	case tokGE:
-		return OpGe
+		return OpGE
 	case '>':
-		return OpGt
+		return OpGT
 	case tokAnd:
 		return OpAnd
 	case tokOr:

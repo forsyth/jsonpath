@@ -21,7 +21,7 @@ const (
 	tokRE                                 // /re/, in expressions
 	tokLE                                 // <=
 	tokGE                                 // >=
-	tokEq                                 // ==
+	tokEQ                                 // ==
 	tokNE                                 // !=
 	tokFilter                             // ?(
 	tokAnd                                // &&
@@ -64,8 +64,8 @@ func (t token) GoString() string {
 		return "tokLE"
 	case tokGE:
 		return "tokGE"
-	case tokEq:
-		return "tokEq"
+	case tokEQ:
+		return "tokEQ"
 	case tokNE:
 		return "tokNE"
 	case tokFilter:
@@ -108,7 +108,7 @@ func (t token) String() string {
 		return "<="
 	case tokGE:
 		return ">="
-	case tokEq:
+	case tokEQ:
 		return "=="
 	case tokNE:
 		return "!="
