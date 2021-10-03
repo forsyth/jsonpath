@@ -98,37 +98,53 @@ func (ls *lexState) lex() lexeme {
 }
 
 func TestLex(t *testing.T) {
+	// TO DO: switch to same scheme as path_test, with the expected output stream as plain text.
+	building := testing.Verbose()
 Samples:
 	for i, sam := range samples {
 		rdr := &rd{s: sam.s}
 		ls := &lexState{lexer: lexer{r: rdr}}
-		fmt.Printf("%s ->", sam.s)
+		if building {
+			fmt.Printf("%s ->", sam.s)
+		}
 		for j, expect := range sam.ops {
 			lx := ls.lex()
 			got := testForm(lx)
-			fmt.Printf(" %s", got)
+			if building {
+				fmt.Printf(" %s", got)
+			}
 			if got != expect {
-				fmt.Print("\n")
+				if building {
+					fmt.Print("\n")
+				}
 				t.Errorf("sample %d, token %d, got %s; expected %s", i+1, j+1, got, expect)
 				// no point printing tokens, because the state can be messed up
 				continue Samples
 			}
 			if lx.tok == tokError {
-				fmt.Print("\n")
+				if building {
+					fmt.Print("\n")
+				}
 				continue Samples
 			}
 		}
 		if rdr.look() != eof {
 			t.Errorf("sample %d, reference stopped before EOF", i+1)
-			fmt.Print(" # ")
+			if building {
+				fmt.Print(" # ")
+			}
 			for {
 				lx := ls.lex()
-				fmt.Printf(" %s", testForm(lx))
+				if building {
+					fmt.Printf(" %s", testForm(lx))
+				}
 				if lx.tok == tokEOF || lx.tok == tokError {
 					break
 				}
 			}
 		}
-		fmt.Print("\n")
+		if building {
+			fmt.Print("\n")
+		}
 	}
 }
