@@ -10,7 +10,7 @@ import (
 // member ::= "*" | identifier | expr | signed-integer
 // subscript ::= subscript-expression | union-element ("," union-element)
 // subscript-expression ::= "*" | expr | filter
-// union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+// union-element ::=  array-index | string-literal | array-slice
 // array-index ::= signed-integer
 // array-slice ::= start? ":" end? (":" stride?)?
 // start ::= signed-integer | expr
@@ -120,7 +120,7 @@ func (p *parser) parseBrackets() (*Step, error) {
 
 // subscript ::= subscript-expression | union-element ("," union-element)
 // subscript-expression ::= "*" | expr | filter
-// union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+// union-element ::=  array-index | string-literal | array-slice
 // array-index ::= signed-integer
 // array-slice ::= start? ":" end? (":" stride?)?
 //
@@ -183,7 +183,7 @@ func (p *parser) parseValList() ([]*Step, error) {
 	return vals, nil
 }
 
-// union-element ::=  array-index | string-literal | array-slice   // could include identifier?
+// union-element ::=  array-index | string-literal | array-slice
 // array-index ::= signed-integer
 // array-slice ::= start? ":" end? (":" stride?)?
 func (p *parser) parseVal() (*Step, error) {
