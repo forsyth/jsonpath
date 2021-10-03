@@ -16,7 +16,7 @@ func TestPathParse(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cannot open %s: %s", testFile, err)
 	}
-	building := testing.Verbose()	// building testdata file
+	building := testing.Verbose() // building testdata file
 	samples := bufio.NewScanner(tfd)
 	lno := 0
 	for samples.Scan() {
@@ -53,12 +53,12 @@ func TestPathParse(t *testing.T) {
 			}
 			continue
 		}
-//		for i, el := range path {
-//			if i > 0 {
-//				fmt.Print(" ")
-//			}
-//			fmt.Printf("%s", el)
-//		}
+		//		for i, el := range path {
+		//			if i > 0 {
+		//				fmt.Print(" ")
+		//			}
+		//			fmt.Printf("%s", el)
+		//		}
 		if building {
 			fmt.Print(codePath(path))
 			fmt.Printf("\n")
