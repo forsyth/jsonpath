@@ -62,9 +62,8 @@ const (
 	OpMatch // ~= (why not just ~)
 	OpNot   // unary !
 
-	// list operator, internal to the polish notation and stack VM
-	OpList // list element, array element, actual parameter
-	OpVal  // slice operand
+	// operators internal to the polish notation and stack VM
+	OpVal // operand
 )
 
 var opNames map[Op]string = map[Op]string{
@@ -111,7 +110,6 @@ var opNames map[Op]string = map[Op]string{
 	OpNin:        "OpNin",
 	OpMatch:      "OpMatch",
 	OpNot:        "OpNot",
-	OpList:       "OpList",
 	OpVal:        "OpVal",
 }
 
@@ -159,7 +157,6 @@ var opText map[Op]string = map[Op]string{
 	OpNin:        "nin",
 	OpMatch:      "~",
 	OpNot:        "!",
-	OpList:       ",",
 	OpVal:        ":",
 }
 
@@ -181,7 +178,17 @@ func (o Op) Opcode() Op {
 // IsLeaf returns true if o is a leaf operator
 func (o Op) IsLeaf() bool {
 	switch o {
-	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild:
+	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild, OpVal:
+		return true
+	default:
+		return false
+	}
+}
+
+// HasVal returns true if o is a leaf operator that carries a value.
+func (o Op) HasVal() bool {
+	switch o {
+	case OpID, OpString, OpInt, OpReal, OpRE, OpVal:
 		return true
 	default:
 		return false

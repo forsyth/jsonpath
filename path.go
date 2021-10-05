@@ -24,6 +24,11 @@ type Val interface {
 // IntVal represents an integer value, satisfying Val.
 type IntVal int64
 
+// V returns the underlying integer.
+func (v IntVal) V() int64 {
+	return int64(v)
+}
+
 func (v IntVal) String() string {
 	return fmt.Sprint(int64(v))
 }

@@ -2,194 +2,194 @@ $ -> Root
 $(key,more) -> !unexpected token (
 $. -> !unexpected end of file at offset 1
 $.$ -> !unexpected $ at offset 2
-$.'key' -> Root key String
-$.'some.key' -> Root some.key String
+$.'key' -> key Root String[0]
+$.'some.key' -> some.key Root String[0]
 $.* -> Root Wild
 $.*.* -> Root Wild Wild
-$.*.bar.* -> Root Wild bar ID Wild
-$.*['c','d'] -> Root Wild "c" "d" Union
-$.*[1] -> Root Wild 1 Select
-$.-1 -> Root -1 Int
+$.*.bar.* -> bar Root Wild ID[0] Wild
+$.*['c','d'] -> "c" "d" Root Wild Val[0] Val[1] Union.2
+$.*[1] -> Root Wild Val(1) Select.1
+$.-1 -> Root Int(-1)
 $.. -> !unexpected end of file at offset 2
-$..'key' -> Root key Nest
+$..'key' -> key Root Val[0] Nest.1
 $..* -> !..* not allowed
 $..*[?(@.id>2)] -> !..* not allowed
 $..[*] -> Root NestWild
-$..[0] -> Root 0 NestSelect
-$..[1].key -> Root 1 NestSelect key ID
-$..[?(@.id)] -> Root @ id Select NestFilter
-$..[?(@.id==2)] -> Root @ id Select 2 EQ NestFilter
-$.."key" -> Root key Nest
-$..key -> Root key Nest
-$.2 -> Root 2 Int
+$..[0] -> Root Val(0) NestSelect.1
+$..[1].key -> key Root Val(1) NestSelect.1 ID[0]
+$..[?(@.id)] -> id Root Current ID[0] Select.2 NestFilter.1
+$..[?(@.id==2)] -> id Root Current ID[0] Select.2 Int(2) EQ.2 NestFilter.1
+$.."key" -> key Root Val[0] Nest.1
+$..key -> key Root Val[0] Nest.1
+$.2 -> Root Int(2)
 $.['key'] -> !unexpected [ at offset 2
 $.["key"] -> !unexpected [ at offset 2
 $.[key] -> !unexpected [ at offset 2
-$."key" -> Root key String
-$.id -> Root id ID
-$.in -> Root in ID
-$.items[?(@.key==$.value)] -> Root items ID @ key Select $ value Select EQ Filter
-$.key -> Root key ID
-$.key-dash -> Root key-dash ID
+$."key" -> key Root String[0]
+$.id -> id Root ID[0]
+$.in -> in Root ID[0]
+$.items[?(@.key==$.value)] -> items key value Root ID[0] Current ID[1] Select.2 Root ID[2] Select.2 EQ.2 Filter.1
+$.key -> key Root ID[0]
+$.key-dash -> key-dash Root ID[0]
 $.key.. -> !unexpected end of file at offset 6
-$.length -> Root length ID
-$.missing -> Root missing ID
-$.null -> Root null ID
-$.store..price -> Root store ID price Nest
-$.true -> Root true ID
-$.屬性 -> Root 屬性 ID
-$[ 0 , 1 ] -> Root 0 1 Union
-$['$'] -> Root "$" Select
-$[''] -> Root "" Select
-$['*'] -> Root "*" Select
-$[','] -> Root "," Select
-$['.'] -> Root "." Select
-$['.*'] -> Root ".*" Select
-$['0'] -> Root "0" Select
-$[':'] -> Root ":" Select
-$[':@."$,*\'\\'] -> Root ":@.\"$,*'\\" Select
-$['@'] -> Root "@" Select
-$['"'] -> Root "\"" Select
-$['\''] -> Root "'" Select
-$['\\'] -> Root "\\" Select
-$[']'] -> Root "]" Select
-$['key','another'] -> Root "key" "another" Union
-$['key'] -> Root "key" Select
-$['missing','key'] -> Root "missing" "key" Union
-$['missing'] -> Root "missing" Select
-$['ni.*'] -> Root "ni.*" Select
-$['one','three'].key -> Root "one" "three" Union key ID
+$.length -> length Root ID[0]
+$.missing -> missing Root ID[0]
+$.null -> null Root ID[0]
+$.store..price -> store price Root ID[0] Val[1] Nest.1
+$.true -> true Root ID[0]
+$.屬性 -> 屬性 Root ID[0]
+$[ 0 , 1 ] -> Root Val(0) Val(1) Union.2
+$['$'] -> "$" Root Val[0] Select.1
+$[''] -> "" Root Val[0] Select.1
+$['*'] -> "*" Root Val[0] Select.1
+$[','] -> "," Root Val[0] Select.1
+$['.'] -> "." Root Val[0] Select.1
+$['.*'] -> ".*" Root Val[0] Select.1
+$['0'] -> "0" Root Val[0] Select.1
+$[':'] -> ":" Root Val[0] Select.1
+$[':@."$,*\'\\'] -> ":@.\"$,*'\\" Root Val[0] Select.1
+$['@'] -> "@" Root Val[0] Select.1
+$['"'] -> "\"" Root Val[0] Select.1
+$['\''] -> "'" Root Val[0] Select.1
+$['\\'] -> "\\" Root Val[0] Select.1
+$[']'] -> "]" Root Val[0] Select.1
+$['key','another'] -> "key" "another" Root Val[0] Val[1] Union.2
+$['key'] -> "key" Root Val[0] Select.1
+$['missing','key'] -> "missing" "key" Root Val[0] Val[1] Union.2
+$['missing'] -> "missing" Root Val[0] Select.1
+$['ni.*'] -> "ni.*" Root Val[0] Select.1
+$['one','three'].key -> "one" "three" key Root Val[0] Val[1] Union.2 ID[2]
 $['single'quote'] -> !expected "]" at offset 14, got identifier
 $['two'.'some'] -> !expected "]" at offset 7, got .
-$['two.some'] -> Root "two.some" Select
-$['ü'] -> Root "ü" Select
-$[(@.length-1)] -> Root @ length Select 1 Sub Index
+$['two.some'] -> "two.some" Root Val[0] Select.1
+$['ü'] -> "ü" Root Val[0] Select.1
+$[(@.length-1)] -> length Root Current ID[0] Select.2 Int(1) Sub.2 Index.1
 $[*,1] -> !* cannot be in a union element list
 $[*] -> Root Wild
-$[*].a -> Root Wild a ID
-$[*].bar[*] -> Root Wild bar ID Wild
-$[-113667776004:2] -> Root [-113667776004:2] Select
-$[-1:] -> Root [-1:] Select
-$[-1] -> Root -1 Select
-$[-2:] -> Root [-2:] Select
-$[-2] -> Root -2 Select
-$[-4:-3] -> Root [-4:-3] Select
-$[-4:-4] -> Root [-4:-4] Select
-$[-4:-5] -> Root [-4:-5] Select
-$[-4:1] -> Root [-4:1] Select
-$[-4:2] -> Root [-4:2] Select
-$[-4:3] -> Root [-4:3] Select
-$[-4:] -> Root [-4:] Select
-$[0,1] -> Root 0 1 Union
-$[0,2].key -> Root 0 2 Union key ID
-$[010:024:010] -> Root [10:24:10] Select
-$[0:0] -> Root [0:0] Select
-$[0:1] -> Root [0:1] Select
-$[0:2][*] -> Root [0:2] Select Wild
-$[0:3:-2] -> Root [0:3:-2] Select
-$[0:3:0] -> Root [0:3:0] Select
-$[0:3:1] -> Root [0:3:1] Select
-$[0:3:2] -> Root [0:3:2] Select
-$[0:4:2] -> Root [0:4:2] Select
-$[0:5] -> Root [0:5] Select
-$[0] -> Root 0 Select
-$[0]['c','d'] -> Root 0 Select "c" "d" Union
-$[113667776004:2:-1] -> Root [113667776004:2:-1] Select
-$[1:10] -> Root [1:10] Select
-$[1:3,4] -> Root [1:3] 4 Union
-$[1:3:] -> Root [1:3] Select
-$[1:3] -> Root [1:3] Select
-$[1:] -> Root [1:] Select
-$[1] -> Root 1 Select
-$[2:-113667776004:-1] -> Root [2:-113667776004:-1] Select
-$[2:113667776004] -> Root [2:113667776004] Select
-$[2:1] -> Root [2:1] Select
-$[2] -> Root 2 Select
-$[3:-2] -> Root [3:-2] Select
-$[3:-3] -> Root [3:-3] Select
-$[3:-4] -> Root [3:-4] Select
-$[3:0:-2] -> Root [3:0:-2] Select
-$[3::-1] -> Root [3::-1] Select
-$[4,1] -> Root 4 1 Union
-$[7:10] -> Root [7:10] Select
-$[7:3:-1] -> Root [7:3:-1] Select
-$[:2:-1] -> Root [:2:-1] Select
-$[:2] -> Root [:2] Select
-$[::-2] -> Root [::-2] Select
-$[::2] -> Root [::2] Select
-$[::] -> Root [:] Select
-$[:] -> Root [:] Select
-$[:]['c','d'] -> Root [:] Select "c" "d" Union
-$[?(!(@.key<42))] -> Root @ key Select 42 LT Not Filter
-$[?(!(@.key==42))] -> Root @ key Select 42 EQ Not Filter
-$[?(!@.key)] -> Root @ key Select Not Filter
+$[*].a -> a Root Wild ID[0]
+$[*].bar[*] -> bar Root Wild ID[0] Wild
+$[-113667776004:2] -> [-113667776004:2] Root Val[0] Select.1
+$[-1:] -> [-1:] Root Val[0] Select.1
+$[-1] -> Root Val(-1) Select.1
+$[-2:] -> [-2:] Root Val[0] Select.1
+$[-2] -> Root Val(-2) Select.1
+$[-4:-3] -> [-4:-3] Root Val[0] Select.1
+$[-4:-4] -> [-4:-4] Root Val[0] Select.1
+$[-4:-5] -> [-4:-5] Root Val[0] Select.1
+$[-4:1] -> [-4:1] Root Val[0] Select.1
+$[-4:2] -> [-4:2] Root Val[0] Select.1
+$[-4:3] -> [-4:3] Root Val[0] Select.1
+$[-4:] -> [-4:] Root Val[0] Select.1
+$[0,1] -> Root Val(0) Val(1) Union.2
+$[0,2].key -> key Root Val(0) Val(2) Union.2 ID[0]
+$[010:024:010] -> [10:24:10] Root Val[0] Select.1
+$[0:0] -> [0:0] Root Val[0] Select.1
+$[0:1] -> [0:1] Root Val[0] Select.1
+$[0:2][*] -> [0:2] Root Val[0] Select.1 Wild
+$[0:3:-2] -> [0:3:-2] Root Val[0] Select.1
+$[0:3:0] -> [0:3:0] Root Val[0] Select.1
+$[0:3:1] -> [0:3:1] Root Val[0] Select.1
+$[0:3:2] -> [0:3:2] Root Val[0] Select.1
+$[0:4:2] -> [0:4:2] Root Val[0] Select.1
+$[0:5] -> [0:5] Root Val[0] Select.1
+$[0] -> Root Val(0) Select.1
+$[0]['c','d'] -> "c" "d" Root Val(0) Select.1 Val[0] Val[1] Union.2
+$[113667776004:2:-1] -> [113667776004:2:-1] Root Val[0] Select.1
+$[1:10] -> [1:10] Root Val[0] Select.1
+$[1:3,4] -> [1:3] Root Val[0] Val(4) Union.2
+$[1:3:] -> [1:3] Root Val[0] Select.1
+$[1:3] -> [1:3] Root Val[0] Select.1
+$[1:] -> [1:] Root Val[0] Select.1
+$[1] -> Root Val(1) Select.1
+$[2:-113667776004:-1] -> [2:-113667776004:-1] Root Val[0] Select.1
+$[2:113667776004] -> [2:113667776004] Root Val[0] Select.1
+$[2:1] -> [2:1] Root Val[0] Select.1
+$[2] -> Root Val(2) Select.1
+$[3:-2] -> [3:-2] Root Val[0] Select.1
+$[3:-3] -> [3:-3] Root Val[0] Select.1
+$[3:-4] -> [3:-4] Root Val[0] Select.1
+$[3:0:-2] -> [3:0:-2] Root Val[0] Select.1
+$[3::-1] -> [3::-1] Root Val[0] Select.1
+$[4,1] -> Root Val(4) Val(1) Union.2
+$[7:10] -> [7:10] Root Val[0] Select.1
+$[7:3:-1] -> [7:3:-1] Root Val[0] Select.1
+$[:2:-1] -> [:2:-1] Root Val[0] Select.1
+$[:2] -> [:2] Root Val[0] Select.1
+$[::-2] -> [::-2] Root Val[0] Select.1
+$[::2] -> [::2] Root Val[0] Select.1
+$[::] -> [:] Root Val[0] Select.1
+$[:] -> [:] Root Val[0] Select.1
+$[:]['c','d'] -> [:] "c" "d" Root Val[0] Select.1 Val[1] Val[2] Union.2
+$[?(!(@.key<42))] -> key Root Current ID[0] Select.2 Int(42) LT.2 Not.1 Filter.1
+$[?(!(@.key==42))] -> key Root Current ID[0] Select.2 Int(42) EQ.2 Not.1 Filter.1
+$[?(!@.key)] -> key Root Current ID[0] Select.2 Not.1 Filter.1
 $[?()] -> !unexpected token ) in expression term
-$[?(1==1)] -> Root 1 1 EQ Filter
+$[?(1==1)] -> Root Int(1) Int(1) EQ.2 Filter.1
 $[?(2 in @.d)] -> !expected ")" at offset 7, got identifier
-$[?(@)] -> Root @ Filter
+$[?(@)] -> Root Current Filter.1
 $[?(@.*==2)] -> !expected identifier in '.' selection
 $[?(@.*==[1,2])] -> !expected identifier in '.' selection
-$[?(@.a && (@.b || @.c))] -> Root @ a Select @ b Select @ c Select Or And Filter
-$[?(@.a && @.b || @.c)] -> Root @ a Select @ b Select And @ c Select Or Filter
+$[?(@.a && (@.b || @.c))] -> a b c Root Current ID[0] Select.2 Current ID[1] Select.2 Current ID[2] Select.2 Or.2 And.2 Filter.1
+$[?(@.a && @.b || @.c)] -> a b c Root Current ID[0] Select.2 Current ID[1] Select.2 And.2 Current ID[2] Select.2 Or.2 Filter.1
 $[?(@.a[?(@.price>10)])] -> !unexpected character '?' at offset 8
-$[?(@.address.city=='Berlin')] -> Root @ address Select city Select "Berlin" EQ Filter
+$[?(@.address.city=='Berlin')] -> address city "Berlin" Root Current ID[0] Select.2 ID[1] Select.2 String[2] EQ.2 Filter.1
 $[?(@.d in [2, 3])] -> !expected ")" at offset 9, got identifier
-$[?(@.d==['v1','v2'])] -> Root @ d Select "v1" "v2" Array EQ Filter
-$[?(@.d==["v1","v2"])] -> Root @ d Select "v1" "v2" Array EQ Filter
+$[?(@.d==['v1','v2'])] -> d "v1" "v2" Root Current ID[0] Select.2 String[1] String[2] Array.2 EQ.2 Filter.1
+$[?(@.d==["v1","v2"])] -> d "v1" "v2" Root Current ID[0] Select.2 String[1] String[2] Array.2 EQ.2 Filter.1
 $[?(@.d=={"k":"v"})] -> !unexpected character '{' at offset 9
-$[?(@.id==2)] -> Root @ id Select 2 EQ Filter
-$[?(@.id==42)].name -> Root @ id Select 42 EQ Filter name ID
-$[?(@.key!=42)] -> Root @ key Select 42 NE Filter
-$[?(@.key)] -> Root @ key Select Filter
-$[?(@.key*2==100)] -> Root @ key Select 2 Mul 100 EQ Filter
-$[?(@.key+50==100)] -> Root @ key Select 50 Add 100 EQ Filter
-$[?(@.key-50==-100)] -> Root @ key Select 50 Sub 100 Neg EQ Filter
-$[?(@.key/10==5)] -> Root @ key Select 10 Div 5 EQ Filter
+$[?(@.id==2)] -> id Root Current ID[0] Select.2 Int(2) EQ.2 Filter.1
+$[?(@.id==42)].name -> id name Root Current ID[0] Select.2 Int(42) EQ.2 Filter.1 ID[1]
+$[?(@.key!=42)] -> key Root Current ID[0] Select.2 Int(42) NE.2 Filter.1
+$[?(@.key)] -> key Root Current ID[0] Select.2 Filter.1
+$[?(@.key*2==100)] -> key Root Current ID[0] Select.2 Int(2) Mul.2 Int(100) EQ.2 Filter.1
+$[?(@.key+50==100)] -> key Root Current ID[0] Select.2 Int(50) Add.2 Int(100) EQ.2 Filter.1
+$[?(@.key-50==-100)] -> key Root Current ID[0] Select.2 Int(50) Sub.2 Int(100) Neg.1 EQ.2 Filter.1
+$[?(@.key/10==5)] -> key Root Current ID[0] Select.2 Int(10) Div.2 Int(5) EQ.2 Filter.1
 $[?(@.key<3),?(@.key>6)] -> !?(filter) cannot be in a union element list
-$[?(@.key<42)] -> Root @ key Select 42 LT Filter
-$[?(@.key<=42)] -> Root @ key Select 42 LE Filter
+$[?(@.key<42)] -> key Root Current ID[0] Select.2 Int(42) LT.2 Filter.1
+$[?(@.key<=42)] -> key Root Current ID[0] Select.2 Int(42) LE.2 Filter.1
 $[?(@.key=42)] -> !expected ")" at offset 9, got =
-$[?(@.key=='value')] -> Root @ key Select "value" EQ Filter
-$[?(@.key==-0.123e2)] -> Root @ key Select 1232 Neg EQ Filter
-$[?(@.key==010)] -> Root @ key Select 10 EQ Filter
-$[?(@.key==42)] -> Root @ key Select 42 EQ Filter
-$[?(@.key==43)] -> Root @ key Select 43 EQ Filter
+$[?(@.key=='value')] -> key "value" Root Current ID[0] Select.2 String[1] EQ.2 Filter.1
+$[?(@.key==-0.123e2)] -> key 1232 Root Current ID[0] Select.2 Real[1] Neg.1 EQ.2 Filter.1
+$[?(@.key==010)] -> key Root Current ID[0] Select.2 Int(10) EQ.2 Filter.1
+$[?(@.key==42)] -> key Root Current ID[0] Select.2 Int(42) EQ.2 Filter.1
+$[?(@.key==43)] -> key Root Current ID[0] Select.2 Int(43) EQ.2 Filter.1
 $[?(@.key===42)] -> !unexpected token = in expression term
-$[?(@.key=="hi@example.com")] -> Root @ key Select "hi@example.com" EQ Filter
-$[?(@.key=="some.value")] -> Root @ key Select "some.value" EQ Filter
-$[?(@.key=="value")] -> Root @ key Select "value" EQ Filter
-$[?(@.key==false)] -> Root @ key Select false EQ Filter
-$[?(@.key==null)] -> Root @ key Select null EQ Filter
-$[?(@.key==true)] -> Root @ key Select true EQ Filter
-$[?(@.key>42 && @.key<44)] -> Root @ key Select 42 GT @ key Select 44 LT And Filter
-$[?(@.key>42)] -> Root @ key Select 42 GT Filter
-$[?(@.key>43 || @.key<43)] -> Root @ key Select 43 GT @ key Select 43 LT Or Filter
-$[?(@.key>=42)] -> Root @ key Select 42 GE Filter
-$[?(@.name=~/hello.*/)] -> Root @ name Select Regexp("hello.*") Match Filter
-$[?(@==42)] -> Root @ 42 EQ Filter
-$[?(@['@key']==42)] -> Root @ "@key" Index 42 EQ Filter
-$[?(@['key']==42)] -> Root @ "key" Index 42 EQ Filter
+$[?(@.key=="hi@example.com")] -> key "hi@example.com" Root Current ID[0] Select.2 String[1] EQ.2 Filter.1
+$[?(@.key=="some.value")] -> key "some.value" Root Current ID[0] Select.2 String[1] EQ.2 Filter.1
+$[?(@.key=="value")] -> key "value" Root Current ID[0] Select.2 String[1] EQ.2 Filter.1
+$[?(@.key==false)] -> key false Root Current ID[0] Select.2 ID[1] EQ.2 Filter.1
+$[?(@.key==null)] -> key null Root Current ID[0] Select.2 ID[1] EQ.2 Filter.1
+$[?(@.key==true)] -> key true Root Current ID[0] Select.2 ID[1] EQ.2 Filter.1
+$[?(@.key>42 && @.key<44)] -> key Root Current ID[0] Select.2 Int(42) GT.2 Current ID[0] Select.2 Int(44) LT.2 And.2 Filter.1
+$[?(@.key>42)] -> key Root Current ID[0] Select.2 Int(42) GT.2 Filter.1
+$[?(@.key>43 || @.key<43)] -> key Root Current ID[0] Select.2 Int(43) GT.2 Current ID[0] Select.2 Int(43) LT.2 Or.2 Filter.1
+$[?(@.key>=42)] -> key Root Current ID[0] Select.2 Int(42) GE.2 Filter.1
+$[?(@.name=~/hello.*/)] -> name "hello.*" Root Current ID[0] Select.2 RE[1] Match.2 Filter.1
+$[?(@==42)] -> Root Current Int(42) EQ.2 Filter.1
+$[?(@['@key']==42)] -> "@key" Root Current String[0] Index.2 Int(42) EQ.2 Filter.1
+$[?(@['key']==42)] -> "key" Root Current String[0] Index.2 Int(42) EQ.2 Filter.1
 $[?(@[*]==2)] -> !unexpected token * in expression term
-$[?(@[-1]==2)] -> Root @ 1 Neg Index 2 EQ Filter
+$[?(@[-1]==2)] -> Root Current Int(1) Neg.1 Index.2 Int(2) EQ.2 Filter.1
 $[?(@[0:1]==1)] -> !unexpected character ':' at offset 7
 $[?(@[0:1]==[1])] -> !unexpected character ':' at offset 7
-$[?(@[1]=='b')] -> Root @ 1 Index "b" EQ Filter
-$[?(false)] -> Root false Filter
-$[?(null)] -> Root null Filter
-$[?(true)] -> Root true Filter
+$[?(@[1]=='b')] -> "b" Root Current Int(1) Index.2 String[0] EQ.2 Filter.1
+$[?(false)] -> false Root ID[0] Filter.1
+$[?(null)] -> null Root ID[0] Filter.1
+$[?(true)] -> true Root ID[0] Filter.1
 $[?@.key==42] -> !unexpected char '@' after '(' at offset 2
-$[""] -> Root "" Select
-$["key"] -> Root "key" Select
+$[""] -> "" Root Val[0] Select.1
+$["key"] -> "key" Root Val[0] Select.1
 $[] -> !unexpected ] at offset 2
-$[key] -> Root key Select
+$[key] -> key Root Val[0] Select.1
 $[two.some] -> !expected "]" at offset 5, got .
-$.store.book[?(@.price < 10)].title -> Root store ID book ID @ price Select 10 LT Filter title ID
-$['store'].book[?(@.price < 10)].title -> Root "store" Select book ID @ price Select 10 LT Filter title ID
-$..book[(@.length-1)] -> Root book Nest @ length Select 1 Sub Index
-$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> Root "store" Select book ID @ price Select 20 GE @ price Select 50 LE And true Or Filter title ID
+$.store.book[?(@.price < 10)].title -> store book price title Root ID[0] ID[1] Current ID[2] Select.2 Int(10) LT.2 Filter.1 ID[3]
+$['store'].book[?(@.price < 10)].title -> "store" book price title Root Val[0] Select.1 ID[1] Current ID[2] Select.2 Int(10) LT.2 Filter.1 ID[3]
+$..book[(@.length-1)] -> book length Root Val[0] Nest.1 Current ID[1] Select.2 Int(1) Sub.2 Index.1
+$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title Root Val[0] Select.1 ID[1] Current ID[2] Select.2 Int(20) GE.2 Current ID[2] Select.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 ID[4]
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
-$[?(-9223372036854775807 > 0)] -> Root 9223372036854775807 Neg 0 GT Filter
+$[?(-9223372036854775807 > 0)] -> 9223372036854775807 Root Int[0] Neg.1 Int(0) GT.2 Filter.1
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
-$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> Root @ book Select Regexp("fruitbat.*/$|(help|need|somebody)") Match NestFilter
-$[?(@.d==['v1',3*7+5])] -> Root @ d Select "v1" 3 7 Mul 5 Add Array EQ Filter
+$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> book "fruitbat.*/$|(help|need|somebody)" Root Current ID[0] Select.2 RE[1] Match.2 NestFilter.1
+$[?(@.d==['v1',3*7+5])] -> d "v1" Root Current ID[0] Select.2 String[1] Int(3) Int(7) Mul.2 Int(5) Add.2 Array.2 EQ.2 Filter.1

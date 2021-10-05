@@ -53,7 +53,11 @@ func TestPathParse(t *testing.T) {
 			}
 			continue
 		}
-		code := codePath(path)
+		code, err := codePath(path)
+		if err != nil {
+			t.Errorf("line %d, sample %s, compilation error: %s", lno, sam, err)
+			continue
+		}
 		if building {
 			fmt.Print(code)
 			fmt.Printf("\n")
@@ -65,4 +69,57 @@ func TestPathParse(t *testing.T) {
 	if err := samples.Err(); err != nil {
 		t.Fatalf("error reading %s (line %d): %s", testFile, lno, err)
 	}
+}
+
+// build a program for the Path and return a readable version as a string
+func codePath(path Path) (string, error) {
+	var sb strings.Builder
+	prog, err := CodePath(path)
+	if err != nil {
+		return "", err
+	}
+	for i, val := range prog.vals {
+		if i > 0 {
+			sb.WriteByte(' ')
+		}
+		sb.WriteString(val.String())
+	}
+	if len(prog.vals) > 0 {
+		sb.WriteByte(' ')
+	}
+	for i, ord := range prog.orders {
+		if i > 0 {
+			sb.WriteByte(' ')
+		}
+		op := ord.op()
+		sb.WriteString(trimOp(op))
+		if op.IsLeaf() {
+			if !op.HasVal() {
+				continue
+			}
+			if ord.isSmallInt() {
+				sb.WriteByte('(')
+				sb.WriteString(fmt.Sprint(ord.smallInt()))
+				sb.WriteByte(')')
+			} else {
+				sb.WriteByte('[')
+				sb.WriteString(fmt.Sprint(ord.index()))
+				sb.WriteByte(']')
+			}
+			continue
+		}
+		if ord.isSmallInt() && ord.smallInt() != 0 {
+			sb.WriteByte('.')
+			sb.WriteString(fmt.Sprint(ord.smallInt()))
+		}
+	}
+	return sb.String(), nil
+}
+
+func trimOp(op Op) string {
+	name := opNames[op]
+	if name == "" {
+		panic("unknown op in opNames")
+	}
+	return name[2:]
 }
