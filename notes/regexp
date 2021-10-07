@@ -1,0 +1,6 @@
+In any regular expression, we can use the following flags:
+g: matches the pattern multiple times
+i: makes the regex case insensitive
+m: enables multi-line mode. Where ^ and $ match the start and end of the entire string. Without this, multi-line strings match the beginning and end of each line.
+u: enables support for unicode
+s: short for single line, it causes the . to also match new line characters
