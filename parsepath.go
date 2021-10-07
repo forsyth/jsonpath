@@ -1,7 +1,6 @@
 package JSONPath
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -37,7 +36,7 @@ func (p *parser) parsePath() (Path, error) {
 	if err != nil {
 		return nil, err
 	}
-	path := []*Step{&Step{OpRoot, nil}}
+	path := []*Step{}
 	for {
 		lx := p.lexPath()
 		switch lx.tok {
@@ -55,6 +54,7 @@ func (p *parser) parsePath() (Path, error) {
 			} else {
 				path = append(path, &Step{op, []Val{name}})
 			}
+			path = append(path, &Step{OpDot, nil})
 		case tokNest:
 			if p.lookPath() == '[' {
 				// ".." "[" subscript "]"
@@ -89,7 +89,9 @@ func (p *parser) parsePath() (Path, error) {
 				return nil, err
 			}
 			if op == OpWild {
-				return nil, errors.New("..* not allowed") // or is it?
+				// $..* is allowed
+				path = append(path, &Step{OpNestWild, nil})
+				break
 			}
 			path = append(path, &Step{OpNest, []Val{name}})
 		case '[':
