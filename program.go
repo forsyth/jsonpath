@@ -60,11 +60,20 @@ func isSmallInt(i int64) bool {
 	return i >= -indexTop && i <= indexTop-1
 }
 
-// FloatVal extends Val to include floating-point in a Program.
-type FloatVal float64
+// floatVal extends Val to include floating-point in a Program.
+type floatVal float64
 
-func (f FloatVal) String() string {
+func (f floatVal) String() string {
 	return fmt.Sprint(float64(f))
+}
+
+func (f floatVal) F() float64 {
+	return float64(f)
+}
+
+func isFloat(v Val) bool {
+	_, ok := v.(floatVal)
+	return ok
 }
 
 // Program is the compiled form of a Path and associated expressions.
@@ -84,4 +93,8 @@ func (p *Program) data(val Val) uint32 {
 	o := uint32(len(p.vals))
 	p.vals = append(p.vals, val)
 	return o
+}
+
+func (p *Program) valOf(index uint32) Val {
+	return p.vals[index]
 }
