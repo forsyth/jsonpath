@@ -73,11 +73,15 @@ func TestPathParse(t *testing.T) {
 
 // build a program for the Path and return a readable version as a string
 func codePath(path Path) (string, error) {
-	var sb strings.Builder
 	prog, err := CompilePath(path)
 	if err != nil {
 		return "", err
 	}
+	return progString(prog), nil
+}
+
+func progString(prog *Program) string {
+	var sb strings.Builder
 	for i, val := range prog.vals {
 		if i > 0 {
 			sb.WriteByte(' ')
@@ -113,7 +117,7 @@ func codePath(path Path) (string, error) {
 			sb.WriteString(fmt.Sprint(ord.smallInt()))
 		}
 	}
-	return sb.String(), nil
+	return sb.String()
 }
 
 func trimOp(op Op) string {
