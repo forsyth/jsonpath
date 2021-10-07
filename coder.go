@@ -14,13 +14,6 @@ type builder struct {
 	prog *Program
 }
 
-// VM is the current state of the virtual machine.
-type VM struct {
-	root  interface{}   // $
-	json  []interface{} // current value set (@)
-	stack []Val         // expression stack
-}
-
 // CompilePath compiles the Path into a Program for a small virtual machine.
 func CompilePath(path Path) (*Program, error) {
 	prog := &Program{}
@@ -94,7 +87,7 @@ func (b *builder) codeLeaf(expr Expr) error {
 		}
 		return b.codeOp(op, IntVal(l.Val))
 	case *FloatLeaf:
-		return b.codeOp(op, FloatVal(l.Val))
+		return b.codeOp(op, floatVal(l.Val))
 	case *StringLeaf:
 		return b.codeOp(op, StringVal(l.Val))
 	case *NameLeaf:
