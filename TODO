@@ -4,5 +4,6 @@
 -	decide whether to use bufio instead of or underneath rd
 -	regexp flags (u is always on)
 -	evaluator
-	- ExprCode, ExprEngine, PathFinder
--	vm dictionary for identifier and strings
+	~ in progress
++	vm dictionary for identifier and strings
+-	OpNest, OpValues set vm.values <-JSON; stop and drain
