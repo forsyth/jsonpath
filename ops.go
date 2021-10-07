@@ -21,16 +21,14 @@ const (
 	OpRE               // /re/
 
 	// path operators
-	OpRoot    // $
-	OpCurrent // @
-	OpDot     // .
-	OpSelect  // [] when used for selection
-	OpIndex   // [] when used for indexing
-	OpSlice   // [lb: ub: stride] slice operator, Arg of OpIndex, OpUnion
-	OpUnion   // [key1, key2 ...]
-	OpWild    // *
-	OpFilter  // ?(...)
-	OpExp     // (...)
+	OpDot    // .
+	OpSelect // [] when used for selection
+	OpIndex  // [] when used for indexing
+	OpSlice  // [lb: ub: stride] slice operator, Arg of OpIndex, OpUnion
+	OpUnion  // [key1, key2 ...]
+	OpWild   // *
+	OpFilter // ?(...)
+	OpExp    // (...)
 
 	// path nest operators
 	OpNest       // .. member
@@ -41,26 +39,28 @@ const (
 	OpNestFilter // .. [?(expr)]
 
 	// expression operators, in both filters and "expression engines"
-	OpLT    // <
-	OpLE    // <=
-	OpEQ    // = or ==
-	OpNE    // !=
-	OpGE    // >=
-	OpGT    // >
-	OpAnd   // &&
-	OpOr    // ||
-	OpMul   // *
-	OpDiv   // /
-	OpMod   // %
-	OpNeg   // unary -
-	OpAdd   // +
-	OpSub   // binary -
-	OpCall  // function call id(args)
-	OpArray // [e-list]
-	OpIn    // "in"
-	OpNin   // "nin", not in
-	OpMatch // ~= (why not just ~)
-	OpNot   // unary !
+	OpRoot    // $ (use root as operand)
+	OpCurrent // @ (use current set as operand)
+	OpLT      // <
+	OpLE      // <=
+	OpEQ      // = or ==
+	OpNE      // !=
+	OpGE      // >=
+	OpGT      // >
+	OpAnd     // &&
+	OpOr      // ||
+	OpMul     // *
+	OpDiv     // /
+	OpMod     // %
+	OpNeg     // unary -
+	OpAdd     // +
+	OpSub     // binary -
+	OpCall    // function call id(args)
+	OpArray   // [e-list]
+	OpIn      // "in"
+	OpNin     // "nin", not in
+	OpMatch   // ~= (why not just ~)
+	OpNot     // unary !
 
 	// operators internal to the polish notation and stack VM
 	OpVal // operand
