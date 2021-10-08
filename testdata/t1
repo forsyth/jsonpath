@@ -63,7 +63,7 @@ $['single'quote'] -> !expected "]" at offset 14, got identifier
 $['two'.'some'] -> !expected "]" at offset 7, got .
 $['two.some'] -> "two.some" Val[0] Select.1
 $['ü'] -> "ü" Val[0] Select.1
-$[(@.length-1)] -> length Current ID[0] Select.2 Int(1) Sub.2 Index.1
+$[(@.length-1)] -> length Current ID[0] Select.2 Int(1) Sub.2 Select.1
 $[*,1] -> !* cannot be in a union element list
 $[*] -> Wild
 $[*].a -> a Wild ID[0] Dot
@@ -185,7 +185,7 @@ $[key] -> key Val[0] Select.1
 $[two.some] -> !expected "]" at offset 5, got .
 $.store.book[?(@.price < 10)].title -> store book price title ID[0] Dot ID[1] Dot Current ID[2] Select.2 Int(10) LT.2 Filter.1 ID[3] Dot
 $['store'].book[?(@.price < 10)].title -> "store" book price title Val[0] Select.1 ID[1] Dot Current ID[2] Select.2 Int(10) LT.2 Filter.1 ID[3] Dot
-$..book[(@.length-1)] -> book length Val[0] Nest.1 Current ID[1] Select.2 Int(1) Sub.2 Index.1
+$..book[(@.length-1)] -> book length Val[0] Nest.1 Current ID[1] Select.2 Int(1) Sub.2 Select.1
 $['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title Val[0] Select.1 ID[1] Dot Current ID[2] Select.2 Int(20) GE.2 Current ID[2] Select.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 ID[4] Dot
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
