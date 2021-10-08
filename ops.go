@@ -39,7 +39,7 @@ const (
 	// expression operators, in both filters and "expression engines"
 	OpRoot    // $ (use root as operand)
 	OpCurrent // @ (use current set as operand)
-	OpIndex  // [] indexing an array
+	OpIndex   // [] indexing an array
 	OpLT      // <
 	OpLE      // <=
 	OpEQ      // = or ==
