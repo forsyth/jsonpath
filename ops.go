@@ -23,7 +23,6 @@ const (
 	// path operators
 	OpDot    // .
 	OpSelect // [] when used for selection
-	OpIndex  // [] when used for indexing
 	OpSlice  // [lb: ub: stride] slice operator, Arg of OpIndex, OpUnion
 	OpUnion  // [key1, key2 ...]
 	OpWild   // *
@@ -33,7 +32,6 @@ const (
 	// path nest operators
 	OpNest       // .. member
 	OpNestSelect // OpNest + OpSelect
-	OpNestIndex  // OpNest + OpIndex
 	OpNestUnion  // .. [key1, key2, ...]
 	OpNestWild   // .. [*]
 	OpNestFilter // .. [?(expr)]
@@ -41,6 +39,7 @@ const (
 	// expression operators, in both filters and "expression engines"
 	OpRoot    // $ (use root as operand)
 	OpCurrent // @ (use current set as operand)
+	OpIndex  // [] indexing an array
 	OpLT      // <
 	OpLE      // <=
 	OpEQ      // = or ==
@@ -86,7 +85,6 @@ var opNames map[Op]string = map[Op]string{
 	OpExp:        "OpExp",
 	OpNest:       "OpNest",
 	OpNestSelect: "OpNestSelect",
-	OpNestIndex:  "OpNestIndex",
 	OpNestUnion:  "OpNestUnion",
 	OpNestWild:   "OpNestWild",
 	OpNestFilter: "OpNestFilter",
@@ -132,8 +130,7 @@ var opText map[Op]string = map[Op]string{
 	OpFilter:     "?(filter)",
 	OpExp:        "(exp)",
 	OpNest:       "..",
-	OpNestSelect: "..[[selection",
-	OpNestIndex:  "..[]index",
+	OpNestSelect: "..[]selection",
 	OpNestUnion:  "..[]union",
 	OpNestWild:   "..*",
 	OpNestFilter: "..$(filter)",

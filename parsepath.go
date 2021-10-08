@@ -67,8 +67,6 @@ func (p *parser) parsePath() (Path, error) {
 				switch sub.Op {
 				case OpSelect:
 					op = OpNestSelect
-				case OpIndex:
-					op = OpNestIndex
 				case OpUnion:
 					op = OpNestUnion
 				case OpWild:
@@ -148,7 +146,7 @@ func (p *parser) parseSubscript() (*Step, error) {
 	case OpWild, OpFilter:
 		return steps[0], nil
 	case OpExp:
-		steps[0].Op = OpIndex
+		steps[0].Op = OpSelect
 		return steps[0], nil
 	default:
 		args := []Val{}
