@@ -100,7 +100,7 @@ func (p *parser) primary() (Expr, error) {
 			if err != nil {
 				return nil, err
 			}
-			return &Inner{OpIndex, []Expr{e, index}}, nil
+			e = &Inner{OpIndex, []Expr{e, index}}
 		case '.':
 			// field selection
 			p.advanceExpr()
