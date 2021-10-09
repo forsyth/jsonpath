@@ -2,6 +2,7 @@ package JSONPath
 
 import (
 	"fmt"
+	"regexp"
 )
 
 // order holds a single order for the path machine.
@@ -74,6 +75,15 @@ func (f floatVal) F() float64 {
 func isFloat(v Val) bool {
 	_, ok := v.(floatVal)
 	return ok
+}
+
+// regexpVal extends Val to include compiled regular expressions in a Program.
+type regexpVal	struct {
+	*regexp.Regexp
+}
+
+func (r regexpVal) String() string {
+	return fmt.Sprintf("%q", r.Regexp.String())
 }
 
 // Program is the compiled form of a Path and associated expressions.

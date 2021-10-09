@@ -93,11 +93,9 @@ func (b *builder) codeLeaf(expr Expr) error {
 	case *NameLeaf:
 		return b.codeOp(op, NameVal(l.Name))
 	case *RegexpLeaf:
-		// might need a RegexpVal to hold compiled version
-		return b.codeOp(op, StringVal(l.Pattern))
+		return b.codeOp(op, regexpVal{l.Prog})
 	default:
 		panic("unexpected Leaf op: " + op.GoString())
-		return nil
 	}
 }
 
