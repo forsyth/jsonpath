@@ -29,6 +29,30 @@ func (p *parser) lookExpr() token {
 	return p.look(p.lexExpr())
 }
 
+// lexOp looks in the expression lexical syntax for infix operators and keywords.
+func (p *parser) lexOp() lexeme {
+	lx := p.lexExpr()
+	if lx.err != nil {
+		lx.tok = tokError
+	}
+	if lx.tok == tokID {
+		switch lx.s() {
+		case "in":
+			lx.tok = tokIn
+		case "nin":
+			lx.tok = tokNin
+		}
+	}
+	return lx
+}
+
+// lookOp looks ahead one token using lexOp.
+func (p *parser) lookOp() token {
+	lx := p.lexOp()
+	p.unget(lx)
+	return lx.tok
+}
+
 // advanceExpr consumes a token in the expression lexical syntax.
 func (p *parser) advanceExpr() {
 	_ = p.lexExpr()
@@ -49,8 +73,8 @@ func (p *parser) expr(pri int) (Expr, error) {
 		return nil, err
 	}
 	// build tree nodes until a lower-priority operator is seen (including all non-binary-operators)
-	for tok2op(p.lookExpr()).precedence() >= pri {
-		lx := p.lexExpr()
+	for tok2op(p.lookOp()).precedence() >= pri {
+		lx := p.lexOp()
 		if lx.err != nil {
 			return nil, lx.err
 		}

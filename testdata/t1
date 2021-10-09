@@ -125,7 +125,7 @@ $[?(!(@.key==42))] -> key Current ID[0] Select.2 Int(42) EQ.2 Not.1 Filter.1
 $[?(!@.key)] -> key Current ID[0] Select.2 Not.1 Filter.1
 $[?()] -> !unexpected token ) in expression term
 $[?(1==1)] -> Int(1) Int(1) EQ.2 Filter.1
-$[?(2 in @.d)] -> !expected ")" at offset 7, got identifier
+$[?(2 in @.d)] -> d Int(2) Current ID[0] Select.2 In.2 Filter.1
 $[?(@)] -> Current Filter.1
 $[?(@.*==2)] -> !expected identifier in '.' selection
 $[?(@.*==[1,2])] -> !expected identifier in '.' selection
@@ -133,7 +133,7 @@ $[?(@.a && (@.b || @.c))] -> a b c Current ID[0] Select.2 Current ID[1] Select.2
 $[?(@.a && @.b || @.c)] -> a b c Current ID[0] Select.2 Current ID[1] Select.2 And.2 Current ID[2] Select.2 Or.2 Filter.1
 $[?(@.a[?(@.price>10)])] -> !unexpected character '?' at offset 8
 $[?(@.address.city=='Berlin')] -> address city "Berlin" Current ID[0] Select.2 ID[1] Select.2 String[2] EQ.2 Filter.1
-$[?(@.d in [2, 3])] -> !expected ")" at offset 9, got identifier
+$[?(@.d in [2, 3])] -> d Current ID[0] Select.2 Int(2) Int(3) Array.2 In.2 Filter.1
 $[?(@.d==['v1','v2'])] -> d "v1" "v2" Current ID[0] Select.2 String[1] String[2] Array.2 EQ.2 Filter.1
 $[?(@.d==["v1","v2"])] -> d "v1" "v2" Current ID[0] Select.2 String[1] String[2] Array.2 EQ.2 Filter.1
 $[?(@.d=={"k":"v"})] -> !unexpected character '{' at offset 9
@@ -193,3 +193,4 @@ $[?(-9223372036854775807 > 0)] -> 9223372036854775807 Int[0] Neg.1 Int(0) GT.2 F
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
 $..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> book "fruitbat.*/$|(help|need|somebody)" Current ID[0] Select.2 RE[1] Match.2 NestFilter.1
 $[?(@.d==['v1',3*7+5])] -> d "v1" Current ID[0] Select.2 String[1] Int(3) Int(7) Mul.2 Int(5) Add.2 Array.2 EQ.2 Filter.1
+$..[?(@.book =~ /incorrect regexp)/] -> !error parsing regexp: unexpected ): `incorrect regexp)` at offset 16
