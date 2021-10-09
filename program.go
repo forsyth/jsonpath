@@ -78,7 +78,7 @@ func isFloat(v Val) bool {
 }
 
 // regexpVal extends Val to include compiled regular expressions in a Program.
-type regexpVal	struct {
+type regexpVal struct {
 	*regexp.Regexp
 }
 
