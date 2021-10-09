@@ -181,7 +181,7 @@ func (p *parser) primary1() (Expr, error) {
 		}
 		prog, err := regexp.CompilePOSIX(lx.s())
 		if err != nil {
-			return nil, fmt.Errorf("%s at %s", err ,off)
+			return nil, fmt.Errorf("%s at %s", err, off)
 		}
 		return &RegexpLeaf{OpRE, lx.s(), prog}, nil
 	case '@':

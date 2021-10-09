@@ -83,7 +83,7 @@ func (l *NameLeaf) String() string {
 type RegexpLeaf struct {
 	Op
 	Pattern string
-	Prog	*regexp.Regexp
+	Prog    *regexp.Regexp
 }
 
 func (l *RegexpLeaf) String() string {
