@@ -95,6 +95,13 @@ func (p *Program) data(val Val) uint32 {
 	return o
 }
 
-func (p *Program) valOf(index uint32) Val {
+// value returns the data value at the given index.
+func (p *Program) value(index uint32) Val {
 	return p.vals[index]
+}
+
+// size returns the current size of the program in orders,
+// which acts as current pc value during assembly.
+func (p *Program) size() int {
+	return len(p.orders)
 }
