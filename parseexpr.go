@@ -6,6 +6,7 @@ package JSONPath
 import (
 	//	"errors"
 	"fmt"
+	"regexp"
 )
 
 // ParseScriptExpression gives direct access to the secondary parser for expressions, returning an Expr tree representing
@@ -173,11 +174,16 @@ func (p *parser) primary1() (Expr, error) {
 	case tokString:
 		return &StringLeaf{OpString, lx.s()}, nil
 	case '/':
+		off := p.offset()
 		lx = p.lexRegExp('/')
 		if lx.err != nil {
 			return nil, lx.err
 		}
-		return &RegexpLeaf{OpRE, lx.s()}, nil
+		prog, err := regexp.CompilePOSIX(lx.s())
+		if err != nil {
+			return nil, fmt.Errorf("%s at %s", err ,off)
+		}
+		return &RegexpLeaf{OpRE, lx.s(), prog}, nil
 	case '@':
 		return &NameLeaf{OpCurrent, "@"}, nil
 	case '$':

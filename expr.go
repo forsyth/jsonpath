@@ -2,7 +2,10 @@ package JSONPath
 
 // Elements of an expression tree (Expr)
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+)
 
 // Expr represents an arbitrary expression tree; it can be converted to one of the ...Leaf types or Inner, depending on Opcode,
 // or using a type switch on an Expr value. Note that Expr satisfies Val, and can appear directly as a value
@@ -80,6 +83,7 @@ func (l *NameLeaf) String() string {
 type RegexpLeaf struct {
 	Op
 	Pattern string
+	Prog	*regexp.Regexp
 }
 
 func (l *RegexpLeaf) String() string {
