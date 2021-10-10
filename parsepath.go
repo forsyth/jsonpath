@@ -143,7 +143,7 @@ func (p *parser) parseSubscript() (*Step, error) {
 	}
 	// distinguish union from subscript expression
 	switch steps[0].Op {
-	case OpWild, OpFilter:
+	case OpWild, OpFilter, OpSlice:
 		return steps[0], nil
 	case OpExp:
 		steps[0].Op = OpSelect
