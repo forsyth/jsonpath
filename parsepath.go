@@ -52,9 +52,8 @@ func (p *parser) parsePath() (Path, error) {
 			if op == OpWild {
 				path = append(path, &Step{OpWild, nil})
 			} else {
-				path = append(path, &Step{op, []Val{name}})
+				path = append(path, &Step{OpSelect, []Val{name}})
 			}
-			path = append(path, &Step{OpDot, nil})
 		case tokNest:
 			if p.lookPath() == '[' {
 				// ".." "[" subscript "]"
@@ -144,8 +143,10 @@ func (p *parser) parseSubscript() (*Step, error) {
 	// distinguish union from subscript expression
 	switch steps[0].Op {
 	case OpWild, OpFilter:
+		// [*] => *, [?(E)] -> ?(E)
 		return steps[0], nil
 	case OpExp:
+		// Exp(E) -> Select(E)
 		steps[0].Op = OpSelect
 		return steps[0], nil
 	default:
@@ -312,8 +313,9 @@ func (p *parser) parseMember() (Op, Val, error) {
 		return OpWild, nil, nil
 	case tokID:
 		return OpID, NameVal(lx.s()), nil
-	case tokString:
-		return OpString, NameVal(lx.s()), nil
+	//case tokString:
+	//	// accept .'key' too
+	//	return OpString, NameVal(lx.s()), nil
 	case tokInt:
 		return OpInt, IntVal(lx.i()), nil
 	case '(':

@@ -34,7 +34,7 @@ func CompilePath(path Path) (*Program, error) {
 		}
 		if len(step.Args) > 0 {
 			for _, arg := range step.Args {
-				err := b.codeVal(OpVal, arg)
+				err := b.codeVal(valOp(arg), arg)
 				if err != nil {
 					return nil, err
 				}
@@ -43,6 +43,20 @@ func CompilePath(path Path) (*Program, error) {
 		prog.asm(mkSmall(step.Op, len(step.Args)))
 	}
 	return prog, nil
+}
+
+// valOp returns the best op for the value.
+func valOp(arg Val) Op {
+	switch arg.(type) {
+	case NameVal:
+		return OpID
+	case IntVal:
+		return OpInt
+	case StringVal:
+		return OpString
+	default:
+		return OpVal
+	}
 }
 
 func (b *builder) codeVal(op Op, val Val) error {

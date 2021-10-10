@@ -136,7 +136,7 @@ func (p *parser) primary() (Expr, error) {
 			if lx.tok != tokID {
 				return nil, fmt.Errorf("expected identifier in '.' selection")
 			}
-			e = &Inner{OpSelect, []Expr{e, &NameLeaf{OpID, lx.s()}}}
+			e = &Inner{OpDot, []Expr{e, &NameLeaf{OpID, lx.s()}}}
 		default:
 			return e, nil
 		}

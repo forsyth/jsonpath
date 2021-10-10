@@ -21,8 +21,7 @@ const (
 	OpRE               // /re/
 
 	// path operators
-	OpDot    // .
-	OpSelect // [] when used for selection (single int, key or slice)
+	OpSelect // . or [] when used for selection (single int, key or slice)
 	OpUnion  // [union-element, union-element ...]
 	OpWild   // *
 	OpFilter // ?(...)
@@ -38,6 +37,7 @@ const (
 	// expression operators, in both filters and "expression engines"
 	OpRoot    // $ (use root as operand)
 	OpCurrent // @ (use current set as operand)
+	OpDot     // . field selection (in an expression)
 	OpIndex   // [] indexing an array
 	OpSlice   // [lb: ub: stride] slice operator on array value
 	OpLT      // <
