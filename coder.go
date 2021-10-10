@@ -19,25 +19,19 @@ func CompilePath(path Path) (*Program, error) {
 	prog := &Program{}
 	b := &builder{vals: make(map[Val]uint32), prog: prog}
 	for _, step := range path {
-		if step.Op.IsLeaf() {
-			if step.Op.HasVal() {
-				// leaf carries a value index
-				err := b.codeVal(step.Op, step.Args[0])
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				// leaf Op implies a value
-				prog.asm(mkSmall(step.Op, 0))
+		if step.Op.IsLeaf() && step.Op.HasVal() {
+			// leaf carries a value index
+			err := b.codeVal(step.Op, step.Args[0])
+			if err != nil {
+				return nil, err
 			}
 			continue
 		}
-		if len(step.Args) > 0 {
-			for _, arg := range step.Args {
-				err := b.codeVal(valOp(arg), arg)
-				if err != nil {
-					return nil, err
-				}
+		// general case
+		for _, arg := range step.Args {
+			err := b.codeVal(valOp(arg), arg)
+			if err != nil {
+				return nil, err
 			}
 		}
 		prog.asm(mkSmall(step.Op, len(step.Args)))
