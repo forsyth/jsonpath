@@ -22,9 +22,8 @@ const (
 
 	// path operators
 	OpDot    // .
-	OpSelect // [] when used for selection
-	OpSlice  // [lb: ub: stride] slice operator, Arg of OpIndex, OpUnion
-	OpUnion  // [key1, key2 ...]
+	OpSelect // [] when used for selection (single int, key or slice)
+	OpUnion  // [union-element, union-element ...]
 	OpWild   // *
 	OpFilter // ?(...)
 	OpExp    // (...)
@@ -40,6 +39,7 @@ const (
 	OpRoot    // $ (use root as operand)
 	OpCurrent // @ (use current set as operand)
 	OpIndex   // [] indexing an array
+	OpSlice   // [lb: ub: stride] slice operator on array value
 	OpLT      // <
 	OpLE      // <=
 	OpEQ      // = or ==

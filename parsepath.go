@@ -143,7 +143,7 @@ func (p *parser) parseSubscript() (*Step, error) {
 	}
 	// distinguish union from subscript expression
 	switch steps[0].Op {
-	case OpWild, OpFilter, OpSlice:
+	case OpWild, OpFilter:
 		return steps[0], nil
 	case OpExp:
 		steps[0].Op = OpSelect
@@ -222,7 +222,7 @@ func (p *parser) parseVal() (*Step, error) {
 	// definitely union-element
 	case tokInt:
 		// integer or start element of slice
-		// need to lookahead for ":" (OpIndex vs OpSlice)
+		// need to lookahead for ":" (path index vs path slice)
 		n := IntVal(lx.i())
 		if p.lookPath() == ':' {
 			p.lexPath()
@@ -248,7 +248,7 @@ func (p *parser) parseVal() (*Step, error) {
 // and then "]" if there's no stride, or there's a stride expression.
 func (p *parser) parseSlice(start Val) (*Step, error) {
 	slice := &Slice{start, nil, nil}
-	step := &Step{OpSlice, []Val{slice}}
+	step := &Step{OpSelect, []Val{slice}}
 	tok := p.lookPath()
 	if tok == ',' || tok == ']' {
 		// neither end nor stride, ie x[s:], make them empty
