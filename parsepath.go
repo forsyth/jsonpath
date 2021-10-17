@@ -52,7 +52,7 @@ func (p *parser) parsePath() (Path, error) {
 			if op == OpWild {
 				path = append(path, &Step{OpWild, nil})
 			} else {
-				path = append(path, &Step{OpSelect, []Val{name}})
+				path = append(path, &Step{OpMember, []Val{name}})
 			}
 		case tokNest:
 			if p.lookPath() == '[' {

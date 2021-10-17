@@ -21,7 +21,8 @@ const (
 	OpRE               // /re/
 
 	// path operators
-	OpSelect // . or [] when used for selection (single int, key or slice)
+	OpMember // . used for path selection (single int, key or expr)
+	OpSelect // [] for path selection (single int, string, expr or filter
 	OpUnion  // [union-element, union-element ...]
 	OpWild   // *
 	OpFilter // ?(...)
@@ -77,6 +78,7 @@ var opNames map[Op]string = map[Op]string{
 	OpCurrent:    "OpCurrent",
 	OpDot:        "OpDot",
 	OpSelect:     "OpSelect",
+	OpMember:     "OpMember",
 	OpIndex:      "OpIndex",
 	OpSlice:      "OpSlice",
 	OpUnion:      "OpUnion",
@@ -123,6 +125,7 @@ var opText map[Op]string = map[Op]string{
 	OpCurrent:    "@",
 	OpDot:        ".",
 	OpSelect:     "[]selection",
+	OpMember:     ". selection",
 	OpIndex:      "[]index",
 	OpSlice:      "[]slice",
 	OpUnion:      "[]union",

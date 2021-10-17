@@ -6,38 +6,38 @@ $.'key' -> !unexpected string literal at offset 6
 $.'some.key' -> !unexpected string literal at offset 11
 $.* -> Wild
 $.*.* -> Wild Wild
-$.*.bar.* -> bar Wild ID[0] Select.1 Wild
+$.*.bar.* -> bar Wild ID[0] Member.1 Wild
 $.*['c','d'] -> "c" "d" Wild String[0] String[1] Union.2
 $.*[1] -> Wild Int(1) Select.1
-$.-1 -> Int(-1) Select.1
+$.-1 -> Int(-1) Member.1
 $.. -> !unexpected end of file at offset 2
 $..'key' -> !unexpected string literal at offset 7
 $..* -> NestWild
 $..*[?(@.id>2)] -> id NestWild Current ID[0] Dot.2 Int(2) GT.2 Filter.1
 $..[*] -> NestWild
 $..[0] -> Int(0) NestSelect.1
-$..[1].key -> key Int(1) NestSelect.1 ID[0] Select.1
+$..[1].key -> key Int(1) NestSelect.1 ID[0] Member.1
 $..[?(@.id)] -> id Current ID[0] Dot.2 NestFilter.1
 $..[?(@.id==2)] -> id Current ID[0] Dot.2 Int(2) EQ.2 NestFilter.1
 $.."key" -> !unexpected string literal at offset 7
 $..key -> key ID[0] Nest.1
-$.2 -> Int(2) Select.1
+$.2 -> Int(2) Member.1
 $.['key'] -> !unexpected [ at offset 2
 $.["key"] -> !unexpected [ at offset 2
 $.[key] -> !unexpected [ at offset 2
 $."key" -> !unexpected string literal at offset 6
-$.id -> id ID[0] Select.1
-$.in -> in ID[0] Select.1
-$.items[?(@.key==$.value)] -> items key value ID[0] Select.1 Current ID[1] Dot.2 Root ID[2] Dot.2 EQ.2 Filter.1
-$.key -> key ID[0] Select.1
-$.key-dash -> key-dash ID[0] Select.1
+$.id -> id ID[0] Member.1
+$.in -> in ID[0] Member.1
+$.items[?(@.key==$.value)] -> items key value ID[0] Member.1 Current ID[1] Dot.2 Root ID[2] Dot.2 EQ.2 Filter.1
+$.key -> key ID[0] Member.1
+$.key-dash -> key-dash ID[0] Member.1
 $.key.. -> !unexpected end of file at offset 6
-$.length -> length ID[0] Select.1
-$.missing -> missing ID[0] Select.1
-$.null -> null ID[0] Select.1
-$.store..price -> store price ID[0] Select.1 ID[1] Nest.1
-$.true -> true ID[0] Select.1
-$.屬性 -> 屬性 ID[0] Select.1
+$.length -> length ID[0] Member.1
+$.missing -> missing ID[0] Member.1
+$.null -> null ID[0] Member.1
+$.store..price -> store price ID[0] Member.1 ID[1] Nest.1
+$.true -> true ID[0] Member.1
+$.屬性 -> 屬性 ID[0] Member.1
 $[ 0 , 1 ] -> Int(0) Int(1) Union.2
 $['$'] -> "$" String[0] Select.1
 $[''] -> "" String[0] Select.1
@@ -58,7 +58,7 @@ $['key'] -> "key" String[0] Select.1
 $['missing','key'] -> "missing" "key" String[0] String[1] Union.2
 $['missing'] -> "missing" String[0] Select.1
 $['ni.*'] -> "ni.*" String[0] Select.1
-$['one','three'].key -> "one" "three" key String[0] String[1] Union.2 ID[2] Select.1
+$['one','three'].key -> "one" "three" key String[0] String[1] Union.2 ID[2] Member.1
 $['single'quote'] -> !expected "]" at offset 14, got identifier
 $['two'.'some'] -> !expected "]" at offset 7, got .
 $['two.some'] -> "two.some" String[0] Select.1
@@ -66,8 +66,8 @@ $['ü'] -> "ü" String[0] Select.1
 $[(@.length-1)] -> length Current ID[0] Dot.2 Int(1) Sub.2 Select.1
 $[*,1] -> !* cannot be in a union element list
 $[*] -> Wild
-$[*].a -> a Wild ID[0] Select.1
-$[*].bar[*] -> bar Wild ID[0] Select.1 Wild
+$[*].a -> a Wild ID[0] Member.1
+$[*].bar[*] -> bar Wild ID[0] Member.1 Wild
 $[-113667776004:2] -> [-113667776004:2] Val[0] Select.1
 $[-1:] -> [-1:] Val[0] Select.1
 $[-1] -> Int(-1) Select.1
@@ -81,7 +81,7 @@ $[-4:2] -> [-4:2] Val[0] Select.1
 $[-4:3] -> [-4:3] Val[0] Select.1
 $[-4:] -> [-4:] Val[0] Select.1
 $[0,1] -> Int(0) Int(1) Union.2
-$[0,2].key -> key Int(0) Int(2) Union.2 ID[0] Select.1
+$[0,2].key -> key Int(0) Int(2) Union.2 ID[0] Member.1
 $[010:024:010] -> [10:24:10] Val[0] Select.1
 $[0:0] -> [0:0] Val[0] Select.1
 $[0:1] -> [0:1] Val[0] Select.1
@@ -138,7 +138,7 @@ $[?(@.d==['v1','v2'])] -> d "v1" "v2" Current ID[0] Dot.2 String[1] String[2] Ar
 $[?(@.d==["v1","v2"])] -> d "v1" "v2" Current ID[0] Dot.2 String[1] String[2] Array.2 EQ.2 Filter.1
 $[?(@.d=={"k":"v"})] -> !unexpected character '{' at offset 9
 $[?(@.id==2)] -> id Current ID[0] Dot.2 Int(2) EQ.2 Filter.1
-$[?(@.id==42)].name -> id name Current ID[0] Dot.2 Int(42) EQ.2 Filter.1 ID[1] Select.1
+$[?(@.id==42)].name -> id name Current ID[0] Dot.2 Int(42) EQ.2 Filter.1 ID[1] Member.1
 $[?(@.key!=42)] -> key Current ID[0] Dot.2 Int(42) NE.2 Filter.1
 $[?(@.key)] -> key Current ID[0] Dot.2 Filter.1
 $[?(@.key*2==100)] -> key Current ID[0] Dot.2 Int(2) Mul.2 Int(100) EQ.2 Filter.1
@@ -183,10 +183,10 @@ $["key"] -> "key" String[0] Select.1
 $[] -> !unexpected ] at offset 2
 $[key] -> key ID[0] Select.1
 $[two.some] -> !expected "]" at offset 5, got .
-$.store.book[?(@.price < 10)].title -> store book price title ID[0] Select.1 ID[1] Select.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Select.1
-$['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Select.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Select.1
+$.store.book[?(@.price < 10)].title -> store book price title ID[0] Member.1 ID[1] Member.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Member.1
+$['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Member.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Member.1
 $..book[(@.length-1)] -> book length ID[0] Nest.1 Current ID[1] Dot.2 Int(1) Sub.2 Select.1
-$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Select.1 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 ID[4] Select.1
+$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Member.1 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 ID[4] Member.1
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
 $[?(-9223372036854775807 > 0)] -> 9223372036854775807 Int[0] Neg.1 Int(0) GT.2 Filter.1
