@@ -28,6 +28,9 @@ const (
 	OpFilter // ?(...)
 	OpExp    // (...)
 
+	OpFor // start of OpFilter or OpNest* sequence
+	OpRep // repeat sequence if values left
+
 	// path nest operators
 	OpNest       // .. member
 	OpNestSelect // OpNest + OpSelect
@@ -85,6 +88,8 @@ var opNames map[Op]string = map[Op]string{
 	OpWild:       "OpWild",
 	OpFilter:     "OpFilter",
 	OpExp:        "OpExp",
+	OpFor:        "OpFor",
+	OpRep:        "OpRep",
 	OpNest:       "OpNest",
 	OpNestSelect: "OpNestSelect",
 	OpNestUnion:  "OpNestUnion",
@@ -132,6 +137,8 @@ var opText map[Op]string = map[Op]string{
 	OpWild:       "*",
 	OpFilter:     "?(filter)",
 	OpExp:        "(exp)",
+	OpFor:        "loop start",
+	OpRep:        "loop end",
 	OpNest:       "..",
 	OpNestSelect: "..[]selection",
 	OpNestUnion:  "..[]union",

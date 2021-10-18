@@ -46,6 +46,9 @@ func (o order) isSmallInt() bool {
 // index returns the index field as a Val table index.
 // smallFlag must be zero (or the index will cause a panic if used).
 func (o order) index() uint32 {
+	if o&smallFlag != 0 {
+		panic("index cannot be small int")
+	}
 	return uint32(o) >> indexOffset
 }
 
@@ -59,6 +62,14 @@ func (o order) smallInt() int64 {
 // isSmallInt returns true if signed integer i can be encoded in the index field.
 func isSmallInt(i int64) bool {
 	return i >= -indexTop && i <= indexTop-1
+}
+
+// pc extracts a pc value stored as a small int.
+func (o order) pc() int {
+	if o&smallFlag == 0 {
+		panic("pc must be small int")
+	}
+	return int(o.smallInt())
 }
 
 // floatVal extends Val to include floating-point in a Program.
@@ -93,9 +104,15 @@ type Program struct {
 	orders []order // program text
 }
 
-// asm adds an instruction to the program.
-func (p *Program) asm(o order) {
+// asm adds an instruction to the program and returns its pc.
+func (p *Program) asm(o order) int {
 	p.orders = append(p.orders, o)
+	return p.size() - 1
+}
+
+// patch replaces the order at the given pc.
+func (p *Program) patch(pc int, o order) {
+	p.orders[pc] = o
 }
 
 // data adds a data value to the program and returns its index.

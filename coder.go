@@ -27,16 +27,31 @@ func CompilePath(path Path) (*Program, error) {
 			}
 			continue
 		}
-		// general case
-		for _, arg := range step.Args {
-			err := b.codeVal(valOp(arg), arg)
-			if err != nil {
-				return nil, err
-			}
+		switch step.Op {
+		case OpFilter:
+			fpc := prog.asm(mkSmall(OpFor, 0))
+			lpc := prog.size()
+			b.codeArgs(step.Args)
+			prog.asm(mkSmall(step.Op, len(step.Args)))
+			prog.asm(mkSmall(OpRep, lpc))
+			prog.patch(fpc, mkSmall(OpFor, prog.size()))
+		default:
+			// general case
+			b.codeArgs(step.Args)
+			prog.asm(mkSmall(step.Op, len(step.Args)))
 		}
-		prog.asm(mkSmall(step.Op, len(step.Args)))
 	}
 	return prog, nil
+}
+
+func (b *builder) codeArgs(args []Val) error {
+	for _, arg := range args {
+		err := b.codeVal(valOp(arg), arg)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // valOp returns the best op for the value.

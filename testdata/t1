@@ -13,7 +13,7 @@ $.-1 -> Int(-1) Member.1
 $.. -> !unexpected end of file at offset 2
 $..'key' -> !unexpected string literal at offset 7
 $..* -> NestWild
-$..*[?(@.id>2)] -> id NestWild Current ID[0] Dot.2 Int(2) GT.2 Filter.1
+$..*[?(@.id>2)] -> id NestWild For.9 Current ID[0] Dot.2 Int(2) GT.2 Filter.1 Rep.1
 $..[*] -> NestWild
 $..[0] -> Int(0) NestSelect.1
 $..[1].key -> key Int(1) NestSelect.1 ID[0] Member.1
@@ -28,7 +28,7 @@ $.[key] -> !unexpected [ at offset 2
 $."key" -> !unexpected string literal at offset 6
 $.id -> id ID[0] Member.1
 $.in -> in ID[0] Member.1
-$.items[?(@.key==$.value)] -> items key value ID[0] Member.1 Current ID[1] Dot.2 Root ID[2] Dot.2 EQ.2 Filter.1
+$.items[?(@.key==$.value)] -> items key value ID[0] Member.1 For.12 Current ID[1] Dot.2 Root ID[2] Dot.2 EQ.2 Filter.1 Rep.2
 $.key -> key ID[0] Member.1
 $.key-dash -> key-dash ID[0] Member.1
 $.key.. -> !unexpected end of file at offset 6
@@ -120,77 +120,77 @@ $[::2] -> [::2] Val[0] Select.1
 $[::] -> [:] Val[0] Select.1
 $[:] -> [:] Val[0] Select.1
 $[:]['c','d'] -> [:] "c" "d" Val[0] Select.1 String[1] String[2] Union.2
-$[?(!(@.key<42))] -> key Current ID[0] Dot.2 Int(42) LT.2 Not.1 Filter.1
-$[?(!(@.key==42))] -> key Current ID[0] Dot.2 Int(42) EQ.2 Not.1 Filter.1
-$[?(!@.key)] -> key Current ID[0] Dot.2 Not.1 Filter.1
+$[?(!(@.key<42))] -> key For.9 Current ID[0] Dot.2 Int(42) LT.2 Not.1 Filter.1 Rep
+$[?(!(@.key==42))] -> key For.9 Current ID[0] Dot.2 Int(42) EQ.2 Not.1 Filter.1 Rep
+$[?(!@.key)] -> key For.7 Current ID[0] Dot.2 Not.1 Filter.1 Rep
 $[?()] -> !unexpected token ) in expression term
-$[?(1==1)] -> Int(1) Int(1) EQ.2 Filter.1
-$[?(2 in @.d)] -> d Int(2) Current ID[0] Dot.2 In.2 Filter.1
-$[?(@)] -> Current Filter.1
+$[?(1==1)] -> For.6 Int(1) Int(1) EQ.2 Filter.1 Rep
+$[?(2 in @.d)] -> d For.8 Int(2) Current ID[0] Dot.2 In.2 Filter.1 Rep
+$[?(@)] -> For.4 Current Filter.1 Rep
 $[?(@.*==2)] -> !expected identifier in '.' selection
 $[?(@.*==[1,2])] -> !expected identifier in '.' selection
-$[?(@.a && (@.b || @.c))] -> a b c Current ID[0] Dot.2 Current ID[1] Dot.2 Current ID[2] Dot.2 Or.2 And.2 Filter.1
-$[?(@.a && @.b || @.c)] -> a b c Current ID[0] Dot.2 Current ID[1] Dot.2 And.2 Current ID[2] Dot.2 Or.2 Filter.1
+$[?(@.a && (@.b || @.c))] -> a b c For.14 Current ID[0] Dot.2 Current ID[1] Dot.2 Current ID[2] Dot.2 Or.2 And.2 Filter.1 Rep
+$[?(@.a && @.b || @.c)] -> a b c For.14 Current ID[0] Dot.2 Current ID[1] Dot.2 And.2 Current ID[2] Dot.2 Or.2 Filter.1 Rep
 $[?(@.a[?(@.price>10)])] -> !unexpected character '?' at offset 8
-$[?(@.address.city=='Berlin')] -> address city "Berlin" Current ID[0] Dot.2 ID[1] Dot.2 String[2] EQ.2 Filter.1
-$[?(@.d in [2, 3])] -> d Current ID[0] Dot.2 Int(2) Int(3) Array.2 In.2 Filter.1
-$[?(@.d==['v1','v2'])] -> d "v1" "v2" Current ID[0] Dot.2 String[1] String[2] Array.2 EQ.2 Filter.1
-$[?(@.d==["v1","v2"])] -> d "v1" "v2" Current ID[0] Dot.2 String[1] String[2] Array.2 EQ.2 Filter.1
+$[?(@.address.city=='Berlin')] -> address city "Berlin" For.10 Current ID[0] Dot.2 ID[1] Dot.2 String[2] EQ.2 Filter.1 Rep
+$[?(@.d in [2, 3])] -> d For.10 Current ID[0] Dot.2 Int(2) Int(3) Array.2 In.2 Filter.1 Rep
+$[?(@.d==['v1','v2'])] -> d "v1" "v2" For.10 Current ID[0] Dot.2 String[1] String[2] Array.2 EQ.2 Filter.1 Rep
+$[?(@.d==["v1","v2"])] -> d "v1" "v2" For.10 Current ID[0] Dot.2 String[1] String[2] Array.2 EQ.2 Filter.1 Rep
 $[?(@.d=={"k":"v"})] -> !unexpected character '{' at offset 9
-$[?(@.id==2)] -> id Current ID[0] Dot.2 Int(2) EQ.2 Filter.1
-$[?(@.id==42)].name -> id name Current ID[0] Dot.2 Int(42) EQ.2 Filter.1 ID[1] Member.1
-$[?(@.key!=42)] -> key Current ID[0] Dot.2 Int(42) NE.2 Filter.1
-$[?(@.key)] -> key Current ID[0] Dot.2 Filter.1
-$[?(@.key*2==100)] -> key Current ID[0] Dot.2 Int(2) Mul.2 Int(100) EQ.2 Filter.1
-$[?(@.key+50==100)] -> key Current ID[0] Dot.2 Int(50) Add.2 Int(100) EQ.2 Filter.1
-$[?(@.key-50==-100)] -> key Current ID[0] Dot.2 Int(50) Sub.2 Int(100) Neg.1 EQ.2 Filter.1
-$[?(@.key/10==5)] -> key Current ID[0] Dot.2 Int(10) Div.2 Int(5) EQ.2 Filter.1
+$[?(@.id==2)] -> id For.8 Current ID[0] Dot.2 Int(2) EQ.2 Filter.1 Rep
+$[?(@.id==42)].name -> id name For.8 Current ID[0] Dot.2 Int(42) EQ.2 Filter.1 Rep ID[1] Member.1
+$[?(@.key!=42)] -> key For.8 Current ID[0] Dot.2 Int(42) NE.2 Filter.1 Rep
+$[?(@.key)] -> key For.6 Current ID[0] Dot.2 Filter.1 Rep
+$[?(@.key*2==100)] -> key For.10 Current ID[0] Dot.2 Int(2) Mul.2 Int(100) EQ.2 Filter.1 Rep
+$[?(@.key+50==100)] -> key For.10 Current ID[0] Dot.2 Int(50) Add.2 Int(100) EQ.2 Filter.1 Rep
+$[?(@.key-50==-100)] -> key For.11 Current ID[0] Dot.2 Int(50) Sub.2 Int(100) Neg.1 EQ.2 Filter.1 Rep
+$[?(@.key/10==5)] -> key For.10 Current ID[0] Dot.2 Int(10) Div.2 Int(5) EQ.2 Filter.1 Rep
 $[?(@.key<3),?(@.key>6)] -> !?(filter) cannot be in a union element list
-$[?(@.key<42)] -> key Current ID[0] Dot.2 Int(42) LT.2 Filter.1
-$[?(@.key<=42)] -> key Current ID[0] Dot.2 Int(42) LE.2 Filter.1
+$[?(@.key<42)] -> key For.8 Current ID[0] Dot.2 Int(42) LT.2 Filter.1 Rep
+$[?(@.key<=42)] -> key For.8 Current ID[0] Dot.2 Int(42) LE.2 Filter.1 Rep
 $[?(@.key=42)] -> !expected ")" at offset 9, got =
-$[?(@.key=='value')] -> key "value" Current ID[0] Dot.2 String[1] EQ.2 Filter.1
-$[?(@.key==-0.123e2)] -> key 1232 Current ID[0] Dot.2 Real[1] Neg.1 EQ.2 Filter.1
-$[?(@.key==010)] -> key Current ID[0] Dot.2 Int(10) EQ.2 Filter.1
-$[?(@.key==42)] -> key Current ID[0] Dot.2 Int(42) EQ.2 Filter.1
-$[?(@.key==43)] -> key Current ID[0] Dot.2 Int(43) EQ.2 Filter.1
+$[?(@.key=='value')] -> key "value" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep
+$[?(@.key==-0.123e2)] -> key 1232 For.9 Current ID[0] Dot.2 Real[1] Neg.1 EQ.2 Filter.1 Rep
+$[?(@.key==010)] -> key For.8 Current ID[0] Dot.2 Int(10) EQ.2 Filter.1 Rep
+$[?(@.key==42)] -> key For.8 Current ID[0] Dot.2 Int(42) EQ.2 Filter.1 Rep
+$[?(@.key==43)] -> key For.8 Current ID[0] Dot.2 Int(43) EQ.2 Filter.1 Rep
 $[?(@.key===42)] -> !unexpected token = in expression term
-$[?(@.key=="hi@example.com")] -> key "hi@example.com" Current ID[0] Dot.2 String[1] EQ.2 Filter.1
-$[?(@.key=="some.value")] -> key "some.value" Current ID[0] Dot.2 String[1] EQ.2 Filter.1
-$[?(@.key=="value")] -> key "value" Current ID[0] Dot.2 String[1] EQ.2 Filter.1
-$[?(@.key==false)] -> key false Current ID[0] Dot.2 ID[1] EQ.2 Filter.1
-$[?(@.key==null)] -> key null Current ID[0] Dot.2 ID[1] EQ.2 Filter.1
-$[?(@.key==true)] -> key true Current ID[0] Dot.2 ID[1] EQ.2 Filter.1
-$[?(@.key>42 && @.key<44)] -> key Current ID[0] Dot.2 Int(42) GT.2 Current ID[0] Dot.2 Int(44) LT.2 And.2 Filter.1
-$[?(@.key>42)] -> key Current ID[0] Dot.2 Int(42) GT.2 Filter.1
-$[?(@.key>43 || @.key<43)] -> key Current ID[0] Dot.2 Int(43) GT.2 Current ID[0] Dot.2 Int(43) LT.2 Or.2 Filter.1
-$[?(@.key>=42)] -> key Current ID[0] Dot.2 Int(42) GE.2 Filter.1
-$[?(@.name=~/hello.*/)] -> name "hello.*" Current ID[0] Dot.2 RE[1] Match.2 Filter.1
-$[?(@==42)] -> Current Int(42) EQ.2 Filter.1
-$[?(@['@key']==42)] -> "@key" Current String[0] Index.2 Int(42) EQ.2 Filter.1
-$[?(@['key']==42)] -> "key" Current String[0] Index.2 Int(42) EQ.2 Filter.1
+$[?(@.key=="hi@example.com")] -> key "hi@example.com" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep
+$[?(@.key=="some.value")] -> key "some.value" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep
+$[?(@.key=="value")] -> key "value" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep
+$[?(@.key==false)] -> key false For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep
+$[?(@.key==null)] -> key null For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep
+$[?(@.key==true)] -> key true For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep
+$[?(@.key>42 && @.key<44)] -> key For.14 Current ID[0] Dot.2 Int(42) GT.2 Current ID[0] Dot.2 Int(44) LT.2 And.2 Filter.1 Rep
+$[?(@.key>42)] -> key For.8 Current ID[0] Dot.2 Int(42) GT.2 Filter.1 Rep
+$[?(@.key>43 || @.key<43)] -> key For.14 Current ID[0] Dot.2 Int(43) GT.2 Current ID[0] Dot.2 Int(43) LT.2 Or.2 Filter.1 Rep
+$[?(@.key>=42)] -> key For.8 Current ID[0] Dot.2 Int(42) GE.2 Filter.1 Rep
+$[?(@.name=~/hello.*/)] -> name "hello.*" For.8 Current ID[0] Dot.2 RE[1] Match.2 Filter.1 Rep
+$[?(@==42)] -> For.6 Current Int(42) EQ.2 Filter.1 Rep
+$[?(@['@key']==42)] -> "@key" For.8 Current String[0] Index.2 Int(42) EQ.2 Filter.1 Rep
+$[?(@['key']==42)] -> "key" For.8 Current String[0] Index.2 Int(42) EQ.2 Filter.1 Rep
 $[?(@[*]==2)] -> !unexpected token * in expression term
-$[?(@[-1]==2)] -> Current Int(1) Neg.1 Index.2 Int(2) EQ.2 Filter.1
+$[?(@[-1]==2)] -> For.9 Current Int(1) Neg.1 Index.2 Int(2) EQ.2 Filter.1 Rep
 $[?(@[0:1]==1)] -> !unexpected character ':' at offset 7
 $[?(@[0:1]==[1])] -> !unexpected character ':' at offset 7
-$[?(@[1]=='b')] -> "b" Current Int(1) Index.2 String[0] EQ.2 Filter.1
-$[?(false)] -> false ID[0] Filter.1
-$[?(null)] -> null ID[0] Filter.1
-$[?(true)] -> true ID[0] Filter.1
+$[?(@[1]=='b')] -> "b" For.8 Current Int(1) Index.2 String[0] EQ.2 Filter.1 Rep
+$[?(false)] -> false For.4 ID[0] Filter.1 Rep
+$[?(null)] -> null For.4 ID[0] Filter.1 Rep
+$[?(true)] -> true For.4 ID[0] Filter.1 Rep
 $[?@.key==42] -> !unexpected char '@' after '(' at offset 2
 $[""] -> "" String[0] Select.1
 $["key"] -> "key" String[0] Select.1
 $[] -> !unexpected ] at offset 2
 $[key] -> key ID[0] Select.1
 $[two.some] -> !expected "]" at offset 5, got .
-$.store.book[?(@.price < 10)].title -> store book price title ID[0] Member.1 ID[1] Member.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Member.1
-$['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Member.1 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 ID[3] Member.1
+$.store.book[?(@.price < 10)].title -> store book price title ID[0] Member.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.4 ID[3] Member.1
+$['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.4 ID[3] Member.1
 $..book[(@.length-1)] -> book length ID[0] Nest.1 Current ID[1] Dot.2 Int(1) Sub.2 Select.1
-$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Member.1 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 ID[4] Member.1
+$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Member.1 For.20 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 Rep.4 ID[4] Member.1
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
-$[?(-9223372036854775807 > 0)] -> 9223372036854775807 Int[0] Neg.1 Int(0) GT.2 Filter.1
+$[?(-9223372036854775807 > 0)] -> 9223372036854775807 For.7 Int[0] Neg.1 Int(0) GT.2 Filter.1 Rep
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
 $..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> book "fruitbat.*/$|(help|need|somebody)" Current ID[0] Dot.2 RE[1] Match.2 NestFilter.1
-$[?(@.d==['v1',3*7+5])] -> d "v1" Current ID[0] Dot.2 String[1] Int(3) Int(7) Mul.2 Int(5) Add.2 Array.2 EQ.2 Filter.1
+$[?(@.d==['v1',3*7+5])] -> d "v1" For.14 Current ID[0] Dot.2 String[1] Int(3) Int(7) Mul.2 Int(5) Add.2 Array.2 EQ.2 Filter.1 Rep
 $..[?(@.book =~ /incorrect regexp)/] -> !error parsing regexp: unexpected ): `incorrect regexp)` at offset 16
