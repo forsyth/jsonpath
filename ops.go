@@ -19,7 +19,7 @@ const (
 	OpInt              // integer
 	OpReal             // real number (might be used in expressions)
 	OpRE               // /re/
-	OpBounds	// [lb: ub: stride]
+	OpBounds           // [lb: ub: stride]
 
 	// path operators
 	OpMember // . used for path selection (single int, key or expr)
@@ -77,7 +77,7 @@ var opNames map[Op]string = map[Op]string{
 	OpInt:        "OpInt",
 	OpReal:       "OpReal",
 	OpRE:         "OpRE",
-	OpBounds:	"OpBounds",
+	OpBounds:     "OpBounds",
 	OpRoot:       "OpRoot",
 	OpCurrent:    "OpCurrent",
 	OpDot:        "OpDot",
@@ -127,7 +127,7 @@ var opText map[Op]string = map[Op]string{
 	OpInt:        "integer",
 	OpReal:       "real number",
 	OpRE:         "regular expression",
-	OpBounds:	"[lb:ub:stride]",
+	OpBounds:     "[lb:ub:stride]",
 	OpRoot:       "$",
 	OpCurrent:    "@",
 	OpDot:        ".",
