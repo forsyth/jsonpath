@@ -2,6 +2,7 @@ package JSONPath
 
 import (
 	"errors"
+	"fmt"
 )
 
 var (
@@ -88,17 +89,21 @@ func valOp(arg Val) Op {
 		return OpInt
 	case StringVal:
 		return OpString
+	case *Slice:
+		return OpBounds
+	case Expr:
+		return OpExp
 	default:
-		return OpVal
+		panic(fmt.Sprintf("unexpected valOp: %#v", arg))
 	}
 }
 
 func (b *builder) codeVal(op Op, val Val) error {
-	if !op.HasVal() || val == nil {
-		return b.codeOp(op, nil)
-	}
 	if expr, ok := val.(Expr); ok {
 		return b.codeExpr(expr)
+	}
+	if !op.HasVal() || val == nil {
+		return b.codeOp(op, nil)
 	}
 	return b.codeOp(op, val)
 }

@@ -83,11 +83,6 @@ func (f floatVal) F() float64 {
 	return float64(f)
 }
 
-func isFloat(v Val) bool {
-	_, ok := v.(floatVal)
-	return ok
-}
-
 // regexpVal extends Val to include compiled regular expressions in a Program.
 type regexpVal struct {
 	*regexp.Regexp

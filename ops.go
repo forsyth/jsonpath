@@ -19,6 +19,7 @@ const (
 	OpInt              // integer
 	OpReal             // real number (might be used in expressions)
 	OpRE               // /re/
+	OpBounds	// [lb: ub: stride]
 
 	// path operators
 	OpMember // . used for path selection (single int, key or expr)
@@ -66,9 +67,6 @@ const (
 	OpNin     // "nin", not in
 	OpMatch   // ~= (why not just ~)
 	OpNot     // unary !
-
-	// operators internal to the polish notation and stack VM
-	OpVal // operand
 )
 
 var opNames map[Op]string = map[Op]string{
@@ -79,6 +77,7 @@ var opNames map[Op]string = map[Op]string{
 	OpInt:        "OpInt",
 	OpReal:       "OpReal",
 	OpRE:         "OpRE",
+	OpBounds:	"OpBounds",
 	OpRoot:       "OpRoot",
 	OpCurrent:    "OpCurrent",
 	OpDot:        "OpDot",
@@ -118,7 +117,6 @@ var opNames map[Op]string = map[Op]string{
 	OpNin:        "OpNin",
 	OpMatch:      "OpMatch",
 	OpNot:        "OpNot",
-	OpVal:        "OpVal",
 }
 
 var opText map[Op]string = map[Op]string{
@@ -129,6 +127,7 @@ var opText map[Op]string = map[Op]string{
 	OpInt:        "integer",
 	OpReal:       "real number",
 	OpRE:         "regular expression",
+	OpBounds:	"[lb:ub:stride]",
 	OpRoot:       "$",
 	OpCurrent:    "@",
 	OpDot:        ".",
@@ -168,7 +167,6 @@ var opText map[Op]string = map[Op]string{
 	OpNin:        "nin",
 	OpMatch:      "~",
 	OpNot:        "!",
-	OpVal:        ":",
 }
 
 // GoString returns the internal name of Op o, for debugging
@@ -189,7 +187,7 @@ func (o Op) Opcode() Op {
 // IsLeaf returns true if o is a leaf operator
 func (o Op) IsLeaf() bool {
 	switch o {
-	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild, OpVal:
+	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild, OpBounds:
 		return true
 	default:
 		return false
@@ -199,7 +197,7 @@ func (o Op) IsLeaf() bool {
 // HasVal returns true if o is a leaf operator that carries a value.
 func (o Op) HasVal() bool {
 	switch o {
-	case OpID, OpString, OpInt, OpReal, OpRE, OpVal:
+	case OpID, OpString, OpInt, OpReal, OpRE, OpBounds:
 		return true
 	default:
 		return false
