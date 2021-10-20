@@ -28,19 +28,21 @@ const (
 	OpFilter // ?(...)
 	OpExp    // (...)
 
-	OpFor // start of OpFilter or OpNest* sequence
-	OpRep // repeat sequence if values left
+	// path iteration operators
+	OpFor  // start of OpFilter sequence, selecting on output candidates
+	OpNest // start of OpNest* sequence, selecting on dot
+	OpRep  // repeat sequence if values left
 
 	// path nest operators
-	OpNest       // .. member
-	OpNestSelect // OpNest + OpSelect
+	OpNestMember // .. member
+	OpNestSelect // .. [subscript]
 	OpNestUnion  // .. [key1, key2, ...]
 	OpNestWild   // .. [*]
 	OpNestFilter // .. [?(expr)]
 
 	// expression operators, in both filters and "expression engines"
 	OpRoot    // $ (use root as operand)
-	OpCurrent // @ (use current set as operand)
+	OpCurrent // @ (use current candidate as operand)
 	OpDot     // . field selection (in an expression)
 	OpIndex   // [] indexing an array
 	OpSlice   // [lb: ub: stride] slice operator on array value
@@ -91,6 +93,7 @@ var opNames map[Op]string = map[Op]string{
 	OpFor:        "OpFor",
 	OpRep:        "OpRep",
 	OpNest:       "OpNest",
+	OpNestMember: "OpNestMember",
 	OpNestSelect: "OpNestSelect",
 	OpNestUnion:  "OpNestUnion",
 	OpNestWild:   "OpNestWild",
@@ -140,6 +143,7 @@ var opText map[Op]string = map[Op]string{
 	OpFor:        "loop start",
 	OpRep:        "loop end",
 	OpNest:       "..",
+	OpNestMember: "..member",
 	OpNestSelect: "..[]selection",
 	OpNestUnion:  "..[]union",
 	OpNestWild:   "..*",

@@ -64,7 +64,7 @@ func (p *parser) parsePath() (Path, error) {
 				}
 				var op Op
 				switch sub.Op {
-				case OpSelect:
+				case OpSelect, OpExp:
 					op = OpNestSelect
 				case OpUnion:
 					op = OpNestUnion
@@ -72,8 +72,6 @@ func (p *parser) parsePath() (Path, error) {
 					op = OpNestWild
 				case OpFilter:
 					op = OpNestFilter
-				case OpExp:
-					op = OpNest
 				default:
 					panic(fmt.Sprintf("unexpected Nest Op %#v", sub.Op))
 				}
@@ -90,7 +88,7 @@ func (p *parser) parsePath() (Path, error) {
 				path = append(path, &Step{OpNestWild, nil})
 				break
 			}
-			path = append(path, &Step{OpNest, []Val{name}})
+			path = append(path, &Step{OpNestMember, []Val{name}})
 		case '[':
 			sub, err := p.parseBrackets()
 			if err != nil {

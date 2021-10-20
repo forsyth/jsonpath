@@ -28,20 +28,45 @@ func CompilePath(path Path) (*Program, error) {
 			continue
 		}
 		switch step.Op {
+		case OpNestMember, OpNestFilter, OpNestSelect, OpNestUnion, OpNestWild:
+			err := b.codeLoop(step, OpNest)
+			if err != nil {
+				return nil, err
+			}
 		case OpFilter:
-			fpc := prog.asm(mkSmall(OpFor, 0))
-			lpc := prog.size()
-			b.codeArgs(step.Args)
-			prog.asm(mkSmall(step.Op, len(step.Args)))
-			prog.asm(mkSmall(OpRep, lpc))
-			prog.patch(fpc, mkSmall(OpFor, prog.size()))
+			err := b.codeLoop(step, OpFor)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			// general case
-			b.codeArgs(step.Args)
-			prog.asm(mkSmall(step.Op, len(step.Args)))
+			_, err := b.codeStep(step)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return prog, nil
+}
+
+func (b *builder) codeLoop(step *Step, intro Op) error {
+	prog := b.prog
+	fpc := prog.asm(mkSmall(intro, 0))
+	lpc, err := b.codeStep(step)
+	if err != nil {
+		return err
+	}
+	prog.asm(mkSmall(OpRep, lpc))
+	prog.patch(fpc, mkSmall(intro, prog.size()))
+	return nil
+}
+
+func (b *builder) codeStep(step *Step) (int, error) {
+	prog := b.prog
+	pc := prog.size()
+	err := b.codeArgs(step.Args)
+	prog.asm(mkSmall(step.Op, len(step.Args)))
+	return pc, err
 }
 
 func (b *builder) codeArgs(args []Val) error {

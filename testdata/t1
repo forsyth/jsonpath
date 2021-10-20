@@ -12,15 +12,15 @@ $.*[1] -> Wild Int(1) Select.1
 $.-1 -> Int(-1) Member.1
 $.. -> !unexpected end of file at offset 2
 $..'key' -> !unexpected string literal at offset 7
-$..* -> NestWild
-$..*[?(@.id>2)] -> id NestWild For.9 Current ID[0] Dot.2 Int(2) GT.2 Filter.1 Rep.2
-$..[*] -> NestWild
-$..[0] -> Int(0) NestSelect.1
-$..[1].key -> key Int(1) NestSelect.1 ID[0] Member.1
-$..[?(@.id)] -> id Current ID[0] Dot.2 NestFilter.1
-$..[?(@.id==2)] -> id Current ID[0] Dot.2 Int(2) EQ.2 NestFilter.1
+$..* -> Nest.3 NestWild Rep.1
+$..*[?(@.id>2)] -> id Nest.3 NestWild Rep.1 For.11 Current ID[0] Dot.2 Int(2) GT.2 Filter.1 Rep.4
+$..[*] -> Nest.3 NestWild Rep.1
+$..[0] -> Nest.4 Int(0) NestSelect.1 Rep.1
+$..[1].key -> key Nest.4 Int(1) NestSelect.1 Rep.1 ID[0] Member.1
+$..[?(@.id)] -> id Nest.6 Current ID[0] Dot.2 NestFilter.1 Rep.1
+$..[?(@.id==2)] -> id Nest.8 Current ID[0] Dot.2 Int(2) EQ.2 NestFilter.1 Rep.1
 $.."key" -> !unexpected string literal at offset 7
-$..key -> key ID[0] Nest.1
+$..key -> key Nest.4 ID[0] NestMember.1 Rep.1
 $.2 -> Int(2) Member.1
 $.['key'] -> !unexpected [ at offset 2
 $.["key"] -> !unexpected [ at offset 2
@@ -35,7 +35,7 @@ $.key.. -> !unexpected end of file at offset 6
 $.length -> length ID[0] Member.1
 $.missing -> missing ID[0] Member.1
 $.null -> null ID[0] Member.1
-$.store..price -> store price ID[0] Member.1 ID[1] Nest.1
+$.store..price -> store price ID[0] Member.1 Nest.6 ID[1] NestMember.1 Rep.3
 $.true -> true ID[0] Member.1
 $.屬性 -> 屬性 ID[0] Member.1
 $[ 0 , 1 ] -> Int(0) Int(1) Union.2
@@ -185,12 +185,12 @@ $[key] -> key ID[0] Select.1
 $[two.some] -> !expected "]" at offset 5, got .
 $.store.book[?(@.price < 10)].title -> store book price title ID[0] Member.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.5 ID[3] Member.1
 $['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.5 ID[3] Member.1
-$..book[(@.length-1)] -> book length ID[0] Nest.1 Current ID[1] Dot.2 Int(1) Sub.2 Select.1
+$..book[(@.length-1)] -> book length Nest.4 ID[0] NestMember.1 Rep.1 Current ID[1] Dot.2 Int(1) Sub.2 Select.1
 $['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Member.1 For.20 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 Rep.5 ID[4] Member.1
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
 $[?(-9223372036854775807 > 0)] -> 9223372036854775807 For.7 Int[0] Neg.1 Int(0) GT.2 Filter.1 Rep.1
 $[?(-9223372036854775808 > 0)] -> !strconv.ParseInt: parsing "9223372036854775808": value out of range
-$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> book "fruitbat.*/$|(help|need|somebody)" Current ID[0] Dot.2 RE[1] Match.2 NestFilter.1
+$..[?(@.book =~ /fruitbat.*\/$|(help|need|somebody)/)] -> book "fruitbat.*/$|(help|need|somebody)" Nest.8 Current ID[0] Dot.2 RE[1] Match.2 NestFilter.1 Rep.1
 $[?(@.d==['v1',3*7+5])] -> d "v1" For.14 Current ID[0] Dot.2 String[1] Int(3) Int(7) Mul.2 Int(5) Add.2 Array.2 EQ.2 Filter.1 Rep.1
 $..[?(@.book =~ /incorrect regexp)/] -> !error parsing regexp: unexpected ): `incorrect regexp)` at offset 16
