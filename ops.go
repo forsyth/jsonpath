@@ -1,13 +1,16 @@
 package JSONPath
 
 // Op represents path expression leaf and expression operators, and filter and expression engine operators.
-// Op values also are the tokens produced by the lexical analyser.
 //
-// Nest is tricky because it's a portmanteau, thanks to ".." "[" subscript "]".
-// It can be applied to the full syntax of "subscript", including union.
-// As a plain Op, uniquely it would be a Step Op with another Step as its Arg value,
-// and having an OpNestFlag turned out to be clumsy too,
-// whereas having OpNest variants is slightly tedious but avoids special cases.
+// The "." operator in the grammar is transformed to different Ops that identify
+// the following component (eg, OpMember, OpSelect).
+// The ".." operator is similarly transformed, to distinguish the various
+// cases of "subscript" in ".." "[" subscript "]".
+// OpFor marks the start of an iteration over the current output set,
+// refining it by applying the OpFilter expression to each set member.
+// OpNest similarly marks the start of an iteration over the results of the
+// recursive walk specified by "..", and sets up machine state to consider
+// each value from the substructure as it is produced by the walk.
 
 type Op int
 
@@ -169,12 +172,12 @@ var opText map[Op]string = map[Op]string{
 	OpNot:        "!",
 }
 
-// GoString returns the internal name of Op o, for debugging
+// GoString returns the internal name of Op o, for debugging.
 func (o Op) GoString() string {
 	return opNames[o]
 }
 
-// String returns a source-level representation of Op o for diagnostics
+// String returns a source-level representation of Op o for diagnostics.
 func (o Op) String() string {
 	return opText[o]
 }
@@ -184,7 +187,7 @@ func (o Op) Opcode() Op {
 	return o
 }
 
-// IsLeaf returns true if o is a leaf operator
+// IsLeaf returns true if o is a leaf operator.
 func (o Op) IsLeaf() bool {
 	switch o {
 	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild, OpBounds:

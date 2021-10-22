@@ -23,7 +23,7 @@ type lexeme struct {
 	//	loc Loc	// starting location
 }
 
-// String returns a vaguely user-readable representation of a token
+// String returns a vaguely user-readable representation of a token.
 func (lx lexeme) String() string {
 	if lx.err != nil {
 		return "!" + lx.err.Error()

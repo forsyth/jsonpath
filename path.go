@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// Path is a sequence of Steps, following the grammar.
-// The first step is always OpRoot.
+// Path is a sequence of Steps, starting from "$" (the document root),  following the grammar.
+// The initial "$" has no explicit representation in the Path: it's the starting point.
 type Path []*Step
 
 // Step represents a single step in the path: an operation with zero or more parameters, each represented by a Val,

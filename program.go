@@ -79,6 +79,11 @@ func (f floatVal) String() string {
 	return fmt.Sprint(float64(f))
 }
 
+// Value satisfies Valuer, boxing an ordinary floating-point number.
+func (f floatVal) Value() JSON {
+	return float64(f)
+}
+
 func (f floatVal) F() float64 {
 	return float64(f)
 }
@@ -88,6 +93,11 @@ type regexpVal struct {
 	*regexp.Regexp
 }
 
+// Value satisfies Valuer, boxing the compiled regular expression.
+func (r regexpVal) Value() JSON {
+	return r.Regexp
+}
+
 func (r regexpVal) String() string {
 	return fmt.Sprintf("%q", r.Regexp.String())
 }
@@ -95,7 +105,7 @@ func (r regexpVal) String() string {
 // Program is the compiled form of a Path and associated expressions.
 // It is a program for a simple stack machine, although the details are hidden.
 type Program struct {
-	vals   []Val   // unique data values, indexed by MachOp's index value
+	vals   []Val   // unique data values, indexed by an order's index value
 	orders []order // program text
 }
 

@@ -9,13 +9,13 @@ import (
 
 // Expr represents an arbitrary expression tree; it can be converted to one of the ...Leaf types or Inner, depending on Opcode,
 // or using a type switch on an Expr value. Note that Expr satisfies Val, and can appear directly as a value
-// or argument in a Path.
+// or argument in a Path. Since it is not a constant value, it is not a Valuer.
 type Expr interface {
 	// Opcode gives the node's operator, which determines the detailed structure.
 	// Useful to avoid .(type) for simple routing.
 	Opcode() Op
 
-	// IsLeaf is Op().IsLeaf() for convenience. If !IsLeaf(), it's an Inner operator.
+	// IsLeaf is Opcode().IsLeaf() for convenience. If !IsLeaf(), it's an Inner operator.
 	IsLeaf() bool
 
 	String() string
@@ -79,11 +79,11 @@ func (l *NameLeaf) String() string {
 	return l.Name
 }
 
-// RegexpLeaf represents the text of a regular expression an Expr tree.
+// RegexpLeaf represents the text of a regular expression in an Expr tree.
 type RegexpLeaf struct {
 	Op
-	Pattern string
-	Prog    *regexp.Regexp
+	Pattern string	// Pattern is the text of the expression.
+	Prog    *regexp.Regexp	// Prog is the compiled version of the same.
 }
 
 func (l *RegexpLeaf) String() string {
