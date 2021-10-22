@@ -117,13 +117,12 @@ func isSlice(v JSON) bool {
 	return ok
 }
 
-
 func isArith(v JSON) bool {
 	switch v.(type) {
 	case int, int64, float64:
 		return true
 	case bool:
-		return true	// surprise!
+		return true // surprise!
 	default:
 		return false
 	}
@@ -148,6 +147,7 @@ func isNothing(v JSON) bool {
 	_, ok := v.(error)
 	return ok
 }
+
 // valOK checks that v is something and returns true if so.
 // Otherwise it pushes nothing and returns false.
 func (m *machine) valOK(v JSON) bool {
