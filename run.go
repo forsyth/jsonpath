@@ -448,19 +448,11 @@ func (p *Program) Run(root JSON) (JSON, error) {
 		case OpEQ:
 			b := vm.pop()
 			a := vm.pop()
-			//x := relation(a, b, func(i, j int64) bool { return i == j },
-			//	func(x, y float64) bool { return x == y }, func(s, t string) bool { return s == t })
-			x := eqVal(a, b)
-			vm.push(x)
-			fmt.Printf("EQ: %#v %#v -> %v\n", a, b, x)
-			//vm.push(relation(a, b, func(i, j int64) bool { return i == j },
-			//	func(x, y float64) bool { return x == y }, func(s, t string) bool { return s == t }))
+			vm.push(eqVal(a, b))
 		case OpNE:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(!eqVal(a, b))
-			//vm.push(relation(a, b, func(i, j int64) bool { return i != j },
-			//	func(x, y float64) bool { return x != y }, func(s, t string) bool { return s != t }))
 		case OpLT:
 			b := vm.pop()
 			a := vm.pop()
@@ -474,12 +466,8 @@ func (p *Program) Run(root JSON) (JSON, error) {
 		case OpGE:
 			b := vm.pop()
 			a := vm.pop()
-			x := relation(a, b, func(i, j int64) bool { return i >= j },
-				func(x, y float64) bool { return x >= y }, func(s, t string) bool { return s >= t })
-			vm.push(x)
-			fmt.Printf("GE: %#v %#v -> %v\n", a, b, x)
-			//vm.push(relation(a, b, func(i, j int64) bool { return i >= j },
-			//	func(x, y float64) bool { return x >= y }, func(s, t string) bool { return s >= t }))
+			vm.push(relation(a, b, func(i, j int64) bool { return i >= j },
+				func(x, y float64) bool { return x >= y }, func(s, t string) bool { return s >= t }))
 		case OpGT:
 			b := vm.pop()
 			a := vm.pop()
@@ -732,7 +720,7 @@ func cvf(v JSON) float64 {
 		}
 		return f
 	default:
-		fmt.Printf("cvf(%#v)", v)
+		//fmt.Printf("cvf(%#v)", v)
 		return 0.0
 	}
 }
