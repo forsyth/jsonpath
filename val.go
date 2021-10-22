@@ -15,7 +15,7 @@ import (
 //
 // Other files in this package add their own Val variants.
 type Val interface {
-	String() string	// String returns a text representation, mainly for tracing and testing.
+	String() string // String returns a text representation, mainly for tracing and testing.
 }
 
 // Valuer instances return an underlying constant value boxed as JSON (which can then be inspected by type switch).
@@ -23,7 +23,7 @@ type Val interface {
 // or is simply the original value, boxed, allowing it to continue to be distinguished by type switch.
 // See NameVal for an example. Not all Vals are Valuers: for instance, Expr has no underlying constant value.
 type Valuer interface {
-	Value() JSON	// Value returns a suitable internal representation for use by the machine.
+	Value() JSON // Value returns a suitable internal representation for use by the machine.
 }
 
 // IntVal represents an integer value, satisfying Val.

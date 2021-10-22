@@ -82,8 +82,8 @@ func (l *NameLeaf) String() string {
 // RegexpLeaf represents the text of a regular expression in an Expr tree.
 type RegexpLeaf struct {
 	Op
-	Pattern string	// Pattern is the text of the expression.
-	Prog    *regexp.Regexp	// Prog is the compiled version of the same.
+	Pattern string         // Pattern is the text of the expression.
+	Prog    *regexp.Regexp // Prog is the compiled version of the same.
 }
 
 func (l *RegexpLeaf) String() string {

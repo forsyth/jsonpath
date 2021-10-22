@@ -690,7 +690,7 @@ func cvi(v JSON) int64 {
 			return 0
 		}
 		return n
-	case IntVal:	// appears in Slice (via OpBounds)
+	case IntVal: // appears in Slice (via OpBounds)
 		return v.V()
 	default:
 		return 0
