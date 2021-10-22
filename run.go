@@ -126,32 +126,16 @@ func isSimple(v JSON) bool {
 	}
 }
 
-// error value to propagate
-type errorVal struct {
-	err error
-	// TO DO: add context
-}
+// nothing represents an evaluation without a usable result.
+// Any error will do.
+// ("nothing is better than Advil")
+var nothing = ErrFailure
 
-// Error satisfies error.
-func (e errorVal) Error() string {
-	return e.err.Error() // TO DO: add original Loc
-}
-
-// String satisfies Val.
-func (e errorVal) String() string {
-	return e.err.Error()
-}
-
+// isNothing returns true if v represents an evaluation failure.
 func isNothing(v JSON) bool {
-	_, ok := v.(errorVal)
+	_, ok := v.(error)
 	return ok
 }
-
-// nothing represents an evaluation without a usable result.
-// Any errorVal will do.
-// ("nothing is better than Advil")
-var nothing errorVal = errorVal{errors.New("nothing")}
-
 // valOK checks that v is something and returns true if so.
 // Otherwise it pushes nothing and returns false.
 func (m *machine) valOK(v JSON) bool {
@@ -731,7 +715,7 @@ func cvf(v JSON) float64 {
 // convert a JSON value to boolean, the "truthy" JavaScript way.
 func cvb(v JSON) bool {
 	switch v := v.(type) {
-	case nil, errorVal:
+	case nil, error:
 		return false
 	case bool:
 		return v

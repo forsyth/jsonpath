@@ -5,9 +5,9 @@
 -	regexp flags (u is always on)
 -	evaluator
 	~ in progress
-+	vm dictionary for identifier and strings
--	OpNest, OpValues set vm.values <-JSON; stop and drain
--	give up on []Val as the stack state, given JSON structure, just use the real types
--	errorVal can just be error now
+x	vm dictionary for identifier and strings
+x	OpNest, OpValues set vm.values <-JSON; stop and drain
+x	give up on []Val as the stack state, given JSON structure, just use the real types
+x	errorVal can just be error now
 -	check isReordered against
 	    run_test.go:227: testdata/test_suite.yaml: sample 131: dot_notation_with_wildcard_on_object: got result ([{"key":"value"},[0,1],"string",42]) expected ([42,{"key":"value"},[0,1],"string"])
