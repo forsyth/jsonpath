@@ -87,11 +87,38 @@ type exclusion struct {
 	err string
 }
 
-var exclusions map[string]string = map[string]string{ // samples excluded by this implementation
+var exclusions map[string]string = map[string]string{ // samples excluded by this implementation, usually unacceptable syntax
 	"dot_notation_with_key_root_literal": "unexpected $ at offset 2",                    // reject
 	"filter_expression_with_subfilter":   "unexpected character '?' at offset 8",        // TO DO: consider nested filters
 	"union_with_filter":                  "?(filter) cannot be in a union element list", // reject
 	"union_with_wildcard_and_number":     "* cannot be in a union element list",         // reject
+	"bracket_notation_with_empty_path":	"unexpected ] at offset 2",
+	"bracket_notation_with_quoted_string_and_unescaped_single_quote": "expected \"]\" at offset 14, got identifier",
+	"bracket_notation_with_two_literals_separated_by_dot": "expected \"]\" at offset 7, got .",
+	"bracket_notation_with_two_literals_separated_by_dot_without_quotes": "expected \"]\" at offset 5, got .",
+	"dot_bracket_notation": "unexpected [ at offset 2",
+	"dot_bracket_notation_with_double_quotes": "unexpected [ at offset 2",
+	"dot_bracket_notation_without_quotes": "unexpected [ at offset 2",
+	"dot_notation_with_double_quotes": "unexpected string literal at offset 6",
+	"dot_notation_with_double_quotes_after_recursive_descent": "unexpected string literal at offset 7",
+	"dot_notation_with_empty_path": "unexpected end of file at offset 1",
+	"dot_notation_with_single_quotes": "unexpected string literal at offset 6",
+	"dot_notation_with_single_quotes_after_recursive_descent": "unexpected string literal at offset 7",
+	"dot_notation_with_single_quotes_and_dot": "unexpected string literal at offset 11",
+	"dot_notation_without_root": "expected \"$\" at offset 2, got identifier",
+	"filter_expression_with_empty_expression": "unexpected token ) in expression term",
+	"filter_expression_with_equals_array_for_array_slice_with_range_1": "unexpected character ':' at offset 7",
+	"filter_expression_with_equals_array_for_dot_notation_with_star": "expected identifier in '.' selection",
+	"filter_expression_with_equals_number_for_array_slice_with_range_1": "unexpected character ':' at offset 7",
+	"filter_expression_with_equals_number_for_bracket_notation_with_star": "unexpected token * in expression term",
+	"filter_expression_with_equals_number_for_dot_notation_with_star": "expected identifier in '.' selection",
+	"filter_expression_with_equals_object": "unexpected character '{' at offset 9",
+	"filter_expression_with_single_equal": "expected \")\" at offset 9, got =",
+	"filter_expression_with_triple_equal": "unexpected token = in expression term",
+	"filter_expression_without_parens": "unexpected char '@' after '(' at offset 2",
+	"parens_notation": "unexpected token (",
+	"recursive_descent": "unexpected end of file at offset 2",
+	"recursive_descent_after_dot_notation": "unexpected end of file at offset 6",
 }
 
 var differences map[string]string = map[string]string{ // samples where this implementation gives a known different result
