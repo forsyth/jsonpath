@@ -35,6 +35,7 @@ type machine struct {
 	sp     int           // expression stack pointer
 	pc     int           // next instruction
 	values []<-chan JSON // values from OpFor for OpFilter or OpNest
+	tracing	bool
 }
 
 func (m *machine) push(val JSON) {
@@ -173,7 +174,7 @@ func (m *machine) valsOK(a, b JSON) bool {
 
 // Run applies the current Program to the root of a JSON structure, returning an array of selections from it, or an error.
 func (p *Program) Run(root JSON) (JSON, error) {
-	vm := &machine{prog: p, root: root, out: []JSON{root}, pc: 0}
+	vm := &machine{prog: p, root: root, out: []JSON{root}, pc: 0, tracing: false}
 	for vm.pc < len(p.orders) {
 		ord := p.orders[vm.pc]
 		vm.pc++
@@ -519,15 +520,17 @@ func (p *Program) Run(root JSON) (JSON, error) {
 		default:
 			return nil, fmt.Errorf("unimplemented %#v at pc %d", ord.op(), vm.pc-1)
 		}
-		fmt.Printf("%#v ->\n", ord.op())
-		fmt.Printf("\t[")
-		for i, x := range vm.out {
-			if i != 0 {
-				fmt.Print(", ")
+		if vm.tracing {
+			fmt.Printf("%#v ->\n", ord.op())
+			fmt.Printf("\t[")
+			for i, x := range vm.out {
+				if i != 0 {
+					fmt.Print(", ")
+				}
+				fmt.Printf("%s", jsonString(x))
 			}
-			fmt.Printf("%s", jsonString(x))
+			fmt.Printf("]\n")
 		}
-		fmt.Printf("]\n")
 	}
 	if vm.out == nil {
 		return []JSON{}, nil
