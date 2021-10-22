@@ -145,8 +145,9 @@ Search:
 		}
 		return false
 	}
-	for i := range b {
-		if !used[i] {
+	for _, v := range used {
+		if !v {
+			// some element of b wasn't matched
 			return false
 		}
 	}
