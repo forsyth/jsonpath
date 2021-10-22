@@ -117,6 +117,18 @@ func isSlice(v JSON) bool {
 	return ok
 }
 
+
+func isArith(v JSON) bool {
+	switch v.(type) {
+	case int, int64, float64:
+		return true
+	case bool:
+		return true	// surprise!
+	default:
+		return false
+	}
+}
+
 func isSimple(v JSON) bool {
 	switch v.(type) {
 	case bool, int, int64, float64, string:
@@ -737,7 +749,7 @@ func arith(a, b JSON, intf func(int64, int64) int64, floatf func(float64, float6
 	if isNothing(a) || isNothing(b) {
 		return nothing
 	}
-	if !(isSimple(a) && isSimple(b)) {
+	if !(isArith(a) && isArith(b)) {
 		return nothing
 	}
 	if isFloat(a) || isFloat(b) {
@@ -752,7 +764,7 @@ func divide(a, b JSON, intf func(int64, int64) int64, floatf func(float64, float
 	if isNothing(a) || isNothing(b) {
 		return nothing
 	}
-	if !(isSimple(a) && isSimple(b)) {
+	if !(isArith(a) && isArith(b)) {
 		return nothing
 	}
 	if isFloat(a) || isFloat(b) {
