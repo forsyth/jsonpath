@@ -11,3 +11,5 @@ x	give up on []Val as the stack state, given JSON structure, just use the real t
 x	errorVal can just be error now
 -	check isReordered against
 	    run_test.go:227: testdata/test_suite.yaml: sample 131: dot_notation_with_wildcard_on_object: got result ([{"key":"value"},[0,1],"string",42]) expected ([42,{"key":"value"},[0,1],"string"])
+-	currently grammar allows expr for slice bound but most implementations don't seem to support it
+	(this one allows it syntactically but doesn't yet expand *Slice into 3 stacked values)
