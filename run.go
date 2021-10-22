@@ -27,15 +27,15 @@ type JSON = interface{}
 
 // machine is the current state of the virtual machine.
 type machine struct {
-	prog   *Program
-	root   JSON          // $
-	out    []JSON        // current set of output values
-	dot    JSON          // @ in a filter
-	stack  []JSON        // expression stack
-	sp     int           // expression stack pointer
-	pc     int           // next instruction
-	values []<-chan JSON // values from OpFor for OpFilter or OpNest
-	tracing	bool
+	prog    *Program
+	root    JSON          // $
+	out     []JSON        // current set of output values
+	dot     JSON          // @ in a filter
+	stack   []JSON        // expression stack
+	sp      int           // expression stack pointer
+	pc      int           // next instruction
+	values  []<-chan JSON // values from OpFor for OpFilter or OpNest
+	tracing bool
 }
 
 func (m *machine) push(val JSON) {
