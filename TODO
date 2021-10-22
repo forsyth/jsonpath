@@ -8,3 +8,4 @@
 +	vm dictionary for identifier and strings
 -	OpNest, OpValues set vm.values <-JSON; stop and drain
 -	give up on []Val as the stack state, given JSON structure, just use the real types
+-	errorVal can just be error now
