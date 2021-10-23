@@ -19,6 +19,8 @@ var (
 	ErrNotArray  = errors.New("not an array")
 	ErrNotObject = errors.New("not an object")
 	ErrFailure   = errors.New("failed")
+	ErrType      = errors.New("operand or parameter has wrong type")
+	ErrOverflow  = errors.New("arithmetic overflow")
 )
 
 // machine is the current state of the virtual machine.
