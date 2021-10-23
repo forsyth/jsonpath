@@ -97,7 +97,7 @@ var functions = map[string]Function{
 			}
 		},
 	},
-	"end_with": {
+	"ends_with": {
 		2,
 		func(args []JSON) JSON {
 			a, b, ok := stringArgs(args)
@@ -141,7 +141,7 @@ var functions = map[string]Function{
 			case map[string]JSON:
 				return int64(len(a))
 			default:
-				return ErrType
+				return nil
 			}
 		},
 	},
@@ -184,10 +184,13 @@ var functions = map[string]Function{
 		func(args []JSON) JSON {
 			if a, ok := args[0].([]JSON); ok {
 				if len(a) == 0 {
-					return float64(0.0)
+					return nil
 				}
 				return arithArrayOp(a, func(index int, result, el float64) float64 {
-					return result * el
+					if index > 0 {
+						return result * el
+					}
+					return el
 				})
 			}
 			return ErrType

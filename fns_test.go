@@ -1,7 +1,6 @@
 package JSONPath
 
 import (
-//	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -16,6 +15,34 @@ var funcTests = []funcTest {
 	{"abs(20)", "20"},
 	{"avg([1, 2, 3, 4, 5])", "3"},
 	{"ceil(1.5)", "2"},
+	{"ceil(2)", "2"},
+	{"ceil(-1.75)", "-1"},
+	{"contains('subject stringy', 'ject')", "true"},
+	{"contains('subject stringy', 'queen')", "false"},
+	{"contains([1, 2, 3.5, 'hat', 6], 'hat')", "true"},
+	{"ends_with('and another thing', 'other thing')", "true"},
+	{"ends_with('christmas', 'dinner')", "false"},
+	{"floor(-1.75)", "-2"},
+	{"floor(1.75)", "1"},
+	{"floor(1)", "1"},
+	// without object literals, keys can't yet be tested this way: needs to be part of path test
+	{"length('hello, sailor')", "13"},
+	{"length([1, 2, 3, 4, 5])", "5"},
+	{"length([])", "0"},
+	{"length(2.5)", "null"},
+	{"max(1, 2, 3, 5, 4)", "5"},
+	{"max([-1, -2, -3, 5, 4])", "5"},
+	{"min(5, 3, 1, -1, 0)", "-1"},
+	{"min([5, 3.5, 1, -1.5, 0])", "-1.5"},
+	{"prod([])", "null"},
+	{"prod([1, 2, 3, 4, 5])", "120"},
+	{"starts_with('christmas', 'chr')", "true"},
+	{"starts_with('christmas', 'all hallows')", "false"},
+	{"sum([])", "0"},
+	{"sum([1, 2, 3, 4, 5.55])", "15.55"},
+	{"to_number(1.75)", "1.75"},
+//	{"to_number('apple')", ""},
+	{"to_number('1.75e5')", "175000"},
 }
 
 func TestFunctions(t *testing.T) {
@@ -24,21 +51,27 @@ func TestFunctions(t *testing.T) {
 		if err != nil {
 			t.Fatalf("function test %d: parse %q: %s", i, ft.expr, err)
 		}
+		var result JSON
 		switch expr.Opcode() {
 		case OpCall:
-			_ = call(t, i, &ft, expr.(*Inner).kids)
+			result = call(t, i, &ft, expr.(*Inner).kids)
 		case OpArray:
 			a := expr.(*Inner)
-			result := []JSON{}
+			array := []JSON{}
 			for _, v := range a.kids {
 				if v.Opcode() != OpCall {
 					t.Fatalf("function test %d: unexpected operator in array: %#v", i, v.Opcode())
 				}
-				result = append(result, call(t, i, &ft, v.(*Inner).kids))
+				array = append(array, call(t, i, &ft, v.(*Inner).kids))
 			}
-			_ = result
+			result = array
 		default:
 			t.Fatalf("function test %d: unexpected root op: %#v", i, expr.Opcode())
+		}
+		got := jsonString(result)
+		fmt.Printf("%s: %#v\n", ft.expr, got)
+		if got != ft.expect {
+			t.Errorf("function test %d: %q: got (%s) expected (%s)", i, ft.expr, got, ft.expect)
 		}
 	}
 }
@@ -49,6 +82,7 @@ func call(t *testing.T, tno int, ft *funcTest, kids []Expr) JSON {
 	}
 	if nm, ok := kids[0].(*NameLeaf); !ok {
 		t.Fatalf("function test %d: %q: got %#v, expected OpID", tno, ft.expr, kids[0].Opcode())
+		return nil
 	} else {
 		id := nm.Name
 		fn := functions[id]
@@ -62,10 +96,8 @@ func call(t *testing.T, tno int, ft *funcTest, kids []Expr) JSON {
 		if err != nil {
 			t.Fatalf("function test %d: %q: %s", tno, ft.expr, err)
 		}
-		result := fn.fn(args)
-		fmt.Printf("%s: %#v\n", id, result)
+		return fn.fn(args)
 	}
-	return nil
 }
 
 func collect(kids []Expr, args []JSON) ([]JSON, error) {
