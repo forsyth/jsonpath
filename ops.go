@@ -72,7 +72,7 @@ const (
 	OpNot     // unary !
 )
 
-var opNames map[Op]string = map[Op]string{
+var opNames = map[Op]string{
 	OpError:      "OpError",
 	OpEof:        "OpEof",
 	OpID:         "OpID",
@@ -122,7 +122,7 @@ var opNames map[Op]string = map[Op]string{
 	OpNot:        "OpNot",
 }
 
-var opText map[Op]string = map[Op]string{
+var opText = map[Op]string{
 	OpError:      "(error)",
 	OpEof:        "(eof)",
 	OpID:         "identifier",
