@@ -44,9 +44,9 @@ Script expressions (filters and calculations) share the same syntax:
 	e ::= primary | e binary-op e
 	binary-op ::= "+" | "-" | "*" | "/" | "%" | "<" | ">" | ">=" | "<=" | "==" | "!=" | "=~" | "in" | "nin"  | "&&" | "||"
 	unary-op ::= "-" | "!"
-	primary ::= primary1 ("(" e-list ")" | "[" e "]" | "." identifier)*
+	primary ::= primary1 ("(" e-list? ")" | "[" e "]" | "." identifier)*
 	e-list ::= e ("," e)*
-	primary1 ::= identifier | integer | real | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list "]" | unary-op primary1
+	primary1 ::= identifier | integer | real | string | "/" re "/" | "@" | "$" | "(" e ")" | "[" e-list? "]" | unary-op primary1
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
 	real ::= integer "." integer? ("e" [+-]? integer)?
 

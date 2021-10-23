@@ -145,6 +145,10 @@ func (p *parser) primary() (Expr, error) {
 
 // apply optional expression e to an expression list (terminated by a given end token) as operator op
 func (p *parser) application(op Op, end token, e Expr) (Expr, error) {
+	if p.lookExpr() == end {
+		p.advanceExpr()
+		return &Inner{op, []Expr{}}, nil
+	}
 	args, err := p.parseExprList(e)
 	if err != nil {
 		return nil, err
