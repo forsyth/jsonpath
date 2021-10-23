@@ -14,3 +14,4 @@ x	errorVal can just be error now
 -	currently grammar allows expr for slice bound but most implementations don't seem to support it
 	(this one allows it syntactically but doesn't yet expand *Slice into 3 stacked values)
 -	test functions and connect to machine using Program
+	- implement tokenize
