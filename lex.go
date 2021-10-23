@@ -125,12 +125,12 @@ func (l *lexer) lexNumber(real bool) lexeme {
 		}
 		return lexeme{tokInt, v, nil}
 	}
-	r.get()
+	sb.WriteByte(byte(r.get()))
 	for isDigit(r.look()) {
 		sb.WriteByte(byte(r.get()))
 	}
-	if r.look() == 'e' { // e[+-]?[0-9]+
-		r.get()
+	if r.look() == 'e' || r.look() == 'E' { // e[+-]?[0-9]+
+		sb.WriteByte(byte(r.get()))
 		c := r.look()
 		if c == '+' || c == '-' {
 			sb.WriteByte(byte(r.get()))

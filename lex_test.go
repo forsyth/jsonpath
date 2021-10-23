@@ -10,7 +10,7 @@ type lexOutput struct {
 	ops []string
 }
 
-var samples []lexOutput = []lexOutput{
+var samples = []lexOutput{
 	lexOutput{"$", []string{"$", "tokEOF"}},
 	lexOutput{"$[-99]",
 		[]string{
@@ -51,6 +51,9 @@ var samples []lexOutput = []lexOutput{
 	lexOutput{"$[':@.\"$,*\\\\'\\\\\\\\']",
 		[]string{"$", "[", "tokString:\":@.\\\"$,*\\\\\"", "tokError:unexpected character '\\\\' at offset 13"},
 	},
+	lexOutput{"(1.5 + 31.0e-1)",
+		[]string{"(", "tokReal:1.5", "+", "tokReal:3.1", ")"},
+	},
 }
 
 func testForm(lx lexeme) string {
@@ -61,6 +64,8 @@ func testForm(lx lexeme) string {
 		switch lx.tok {
 		case tokInt:
 			f += ":" + fmt.Sprint(lx.i())
+		case tokReal:
+			f += ":" + fmt.Sprint(lx.f())
 		case tokID:
 			f += ":" + lx.s()
 		case tokString:
