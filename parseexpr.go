@@ -199,7 +199,7 @@ func (p *parser) primary1() (Expr, error) {
 		return &StringLeaf{OpString, lx.s()}, nil
 	case '/':
 		off := p.offset()
-		lx = p.lexRegExp('/')
+		lx = p.lexRegexp('/')
 		if lx.err != nil {
 			return nil, lx.err
 		}

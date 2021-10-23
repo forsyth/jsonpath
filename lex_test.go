@@ -54,6 +54,9 @@ var samples = []lexOutput{
 	lexOutput{"(1.5 + 31.0e-1)",
 		[]string{"(", "tokReal:1.5", "+", "tokReal:3.1", ")"},
 	},
+	lexOutput{"(@.fred =~ /price.*of.*(everything|nothing)/)",
+		[]string{"(", "@", ".", "tokID:fred", "tokMatch", "tokRE:price.*of.*(everything|nothing)", ")"},
+	},
 }
 
 func testForm(lx lexeme) string {
@@ -70,6 +73,8 @@ func testForm(lx lexeme) string {
 			f += ":" + lx.s()
 		case tokString:
 			f += ":" + fmt.Sprintf("%#v", lx.s())
+		case tokRE:
+			f += ":" + lx.s()
 		}
 	}
 	return f
@@ -79,6 +84,7 @@ func testForm(lx lexeme) string {
 type lexState struct {
 	lexer
 	nestp int // nesting count for ()
+	match bool	// =~ just seen
 }
 
 // lex switches between the path lexer and expression lexer, at the outermost ( or ?( and back at the closing )
@@ -91,6 +97,13 @@ func (ls *lexState) lex() lexeme {
 		case ')':
 			if ls.nestp > 0 {
 				ls.nestp--
+			}
+		case tokMatch:
+			ls.match = true
+		case '/':
+			if ls.match {
+				ls.match = false
+				lx = ls.lexRegexp('/')
 			}
 		}
 		return lx

@@ -49,9 +49,9 @@ func (l *lexer) lexExpr() lexeme {
 	}
 }
 
-// lexRegExp can be called by the parser when it consumes a token (eg, '/') that must introduce a regular expression,
+// lexRegexp can be called by the parser when it consumes a token (eg, '/') that must introduce a regular expression,
 // gathering the text of the expression here and returning it.
-func (l *lexer) lexRegExp(c int) lexeme {
+func (l *lexer) lexRegexp(c int) lexeme {
 	s, err := l.lexString(c)
 	return lexeme{tokRE, s, err}
 }
