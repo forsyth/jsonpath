@@ -15,7 +15,7 @@ import (
 
 const testJSON = "testdata/book.json"
 
-var testQueries []string = []string{
+var testQueries = []string{
 	"$.store",
 	"$.*",
 	"$.*.*",
@@ -87,7 +87,7 @@ type exclusion struct {
 	err string
 }
 
-var exclusions map[string]string = map[string]string{ // samples excluded by this implementation, usually unacceptable syntax
+var exclusions = map[string]string{ // samples excluded by this implementation, usually unacceptable syntax
 	"dot_notation_with_key_root_literal":                                  "unexpected $ at offset 2",                    // reject
 	"filter_expression_with_subfilter":                                    "unexpected character '?' at offset 8",        // TO DO: consider nested filters
 	"union_with_filter":                                                   "?(filter) cannot be in a union element list", // reject
@@ -121,7 +121,7 @@ var exclusions map[string]string = map[string]string{ // samples excluded by thi
 	"recursive_descent_after_dot_notation":                                "unexpected end of file at offset 6",
 }
 
-var differences map[string]string = map[string]string{ // samples where this implementation gives a known different result
+var differences = map[string]string{ // samples where this implementation gives a known different result
 	"bracket_notation_with_number_on_object": "[\"value\"]",
 	"dot_notation_with_wildcard_on_object":   "[42,{\"key\":\"value\"},[0,1],\"string\"]",
 	"dot_notation_with_number":               "[\"third\"]",
