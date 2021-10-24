@@ -83,8 +83,8 @@ func testForm(lx lexeme) string {
 // keep enough state to handle nested script-expressions [nested ()]
 type lexState struct {
 	lexer
-	nestp int // nesting count for ()
-	match bool	// =~ just seen
+	nestp int  // nesting count for ()
+	match bool // =~ just seen
 }
 
 // lex switches between the path lexer and expression lexer, at the outermost ( or ?( and back at the closing )
