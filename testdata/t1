@@ -158,9 +158,9 @@ $[?(@.key===42)] -> !unexpected token = in expression term
 $[?(@.key=="hi@example.com")] -> key "hi@example.com" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep.1
 $[?(@.key=="some.value")] -> key "some.value" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep.1
 $[?(@.key=="value")] -> key "value" For.8 Current ID[0] Dot.2 String[1] EQ.2 Filter.1 Rep.1
-$[?(@.key==false)] -> key false For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep.1
-$[?(@.key==null)] -> key null For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep.1
-$[?(@.key==true)] -> key true For.8 Current ID[0] Dot.2 ID[1] EQ.2 Filter.1 Rep.1
+$[?(@.key==false)] -> key For.8 Current ID[0] Dot.2 Bool(0) EQ.2 Filter.1 Rep.1
+$[?(@.key==null)] -> key For.8 Current ID[0] Dot.2 Null EQ.2 Filter.1 Rep.1
+$[?(@.key==true)] -> key For.8 Current ID[0] Dot.2 Bool(1) EQ.2 Filter.1 Rep.1
 $[?(@.key>42 && @.key<44)] -> key For.14 Current ID[0] Dot.2 Int(42) GT.2 Current ID[0] Dot.2 Int(44) LT.2 And.2 Filter.1 Rep.1
 $[?(@.key>42)] -> key For.8 Current ID[0] Dot.2 Int(42) GT.2 Filter.1 Rep.1
 $[?(@.key>43 || @.key<43)] -> key For.14 Current ID[0] Dot.2 Int(43) GT.2 Current ID[0] Dot.2 Int(43) LT.2 Or.2 Filter.1 Rep.1
@@ -174,9 +174,9 @@ $[?(@[-1]==2)] -> For.9 Current Int(1) Neg.1 Index.2 Int(2) EQ.2 Filter.1 Rep.1
 $[?(@[0:1]==1)] -> !unexpected character ':' at offset 7
 $[?(@[0:1]==[1])] -> !unexpected character ':' at offset 7
 $[?(@[1]=='b')] -> "b" For.8 Current Int(1) Index.2 String[0] EQ.2 Filter.1 Rep.1
-$[?(false)] -> false For.4 ID[0] Filter.1 Rep.1
-$[?(null)] -> null For.4 ID[0] Filter.1 Rep.1
-$[?(true)] -> true For.4 ID[0] Filter.1 Rep.1
+$[?(false)] -> For.4 Bool(0) Filter.1 Rep.1
+$[?(null)] -> For.4 Null Filter.1 Rep.1
+$[?(true)] -> For.4 Bool(1) Filter.1 Rep.1
 $[?@.key==42] -> !unexpected char '@' after '(' at offset 2
 $[""] -> "" String[0] Select.1
 $["key"] -> "key" String[0] Select.1
@@ -186,7 +186,7 @@ $[two.some] -> !expected "]" at offset 5, got .
 $.store.book[?(@.price < 10)].title -> store book price title ID[0] Member.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.5 ID[3] Member.1
 $['store'].book[?(@.price < 10)].title -> "store" book price title String[0] Select.1 ID[1] Member.1 For.12 Current ID[2] Dot.2 Int(10) LT.2 Filter.1 Rep.5 ID[3] Member.1
 $..book[(@.length-1)] -> book length Nest.4 ID[0] NestMember.1 Rep.1 Current ID[1] Dot.2 Int(1) Sub.2 Select.1
-$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price true title String[0] Select.1 ID[1] Member.1 For.20 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 ID[3] Or.2 Filter.1 Rep.5 ID[4] Member.1
+$['store'].book[?(@.price >= 20 && @.price <= 50 || (  true 	))].title -> "store" book price title String[0] Select.1 ID[1] Member.1 For.20 Current ID[2] Dot.2 Int(20) GE.2 Current ID[2] Dot.2 Int(50) LE.2 And.2 Bool(1) Or.2 Filter.1 Rep.5 ID[3] Member.1
 $[':@.\"$,*\\'\\\\'] -> !unknown character escape sequence
 # (chf) added tests not covered above
 $[?(-9223372036854775807 > 0)] -> 9223372036854775807 For.7 Int[0] Neg.1 Int(0) GT.2 Filter.1 Rep.1
