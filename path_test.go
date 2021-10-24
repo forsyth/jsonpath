@@ -73,7 +73,7 @@ func TestPathParse(t *testing.T) {
 
 // build a program for the Path and return a readable version as a string
 func codePath(path Path) (string, error) {
-	prog, err := CompilePath(path)
+	prog, err := path.Compile()
 	if err != nil {
 		return "", err
 	}

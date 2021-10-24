@@ -15,8 +15,8 @@ type builder struct {
 	prog *Program
 }
 
-// CompilePath compiles the Path into a Program for a small virtual machine.
-func CompilePath(path Path) (*Program, error) {
+// Compile compiles a Path into a Program for a small abstract machine that evaluates paths and expressions.
+func (path Path) Compile() (*Program, error) {
 	prog := &Program{}
 	b := &builder{vals: make(map[Val]uint32), prog: prog}
 	for _, step := range path {

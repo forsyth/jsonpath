@@ -50,14 +50,19 @@ Script expressions (filters and calculations) share the same syntax:
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
 	real ::= integer "." integer? ("e" [+-]? integer)?
 
-Paths are represented by a Path type, which is just a sequence of Steps. Expressions are represented by a type Expr, which is an expression tree.
+Paths are represented by a Path type, which is just a sequence of Steps, each with some parameter values (Val). Expressions are represented by a type Expr, which is an expression tree.
 
 ParsePath returns a Path that represents the JSONpath provided as text.
-That result Path, and the Steps and Expr trees it contains, can then be evaluated against a subject JSON structure (document).
+That result Path, and the Steps and Expr trees it contains, can then be evaluated against a subject JSON structure ("document").
 
-ParseScriptExpression parses a string that contains only a script expression (not a path) and returns the Expr tree. It is not normally needed, because ParsePath will parse any script expressions in a path string, but might be useful for calculating using values in a JSON document.
+ParseScriptExpression parses a string that contains only a script expression (not a path) and returns the Expr tree. It is not normally needed, because ParsePath will parse any script expressions in a path string, but might be useful for calculating using values in a JSON structure.
 
-(The evaluator is not yet complete, and the Path, Step and Expr structures are still subject to change, since this project is not yet an initial release.
+Path.Compile compiles a parsed Path into a Program for a small abstract machine.
+
+Program.Run runs the program with a JSON structure as input ("the root document", or "$"), yielding the collection of JSON structures selected by the original path expression.
+Several threads can Run the same Program simultaneously, since each Run gets its own abstract machine state.
+
+(The evaluator is almost complete, but it and the Path, Step and Expr structures are still subject to change, since this project is not yet an initial release.
 No issues yet, please!)
 */
 package JSONPath

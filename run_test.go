@@ -46,7 +46,7 @@ func TestRun(t *testing.T) {
 			t.Errorf("sample %d: %s: parse: %s", i, q, err)
 			continue
 		}
-		prog, err := CompilePath(path)
+		prog, err := path.Compile()
 		if err != nil {
 			t.Errorf("sample %d: %s: compile: %s", i, q, err)
 			continue
@@ -203,7 +203,7 @@ func TestTestSuite(t *testing.T) {
 			// skip ones for which no consensus
 			continue
 		}
-		prog, err := CompilePath(path)
+		prog, err := path.Compile()
 		if err != nil {
 			t.Errorf("%s: sample %d: %s: compile %q: %s", testSuiteFile, qno, query.ID, query.Selector, err)
 			continue
