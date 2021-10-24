@@ -147,6 +147,15 @@ func (b *builder) codeLeaf(expr Expr) error {
 		return b.codeOp(op, NameVal(l.Name))
 	case *RegexpLeaf:
 		return b.codeOp(op, regexpVal{l.Prog})
+	case *BoolLeaf:
+		var v int
+		if l.Val {
+			v = 1
+		}
+		b.prog.asm(mkSmall(op, v))
+		return nil
+	case *NullLeaf:
+		return b.codeOp(op, nil)
 	default:
 		panic("unexpected Leaf op: " + op.GoString())
 	}

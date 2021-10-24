@@ -193,7 +193,16 @@ func (p *parser) primary1() (Expr, error) {
 	case '!':
 		return p.unary(OpNot)
 	case tokID:
-		return &NameLeaf{OpID, lx.s()}, nil
+		switch id := lx.s(); id {
+		case "true":
+			return &BoolLeaf{OpBool, true}, nil
+		case "false":
+			return &BoolLeaf{OpBool, false}, nil
+		case "null":
+			return &NullLeaf{OpNull}, nil
+		default:
+			return &NameLeaf{OpID, id}, nil
+		}
 	case tokInt:
 		return &IntLeaf{OpInt, lx.i()}, nil
 	case tokReal:

@@ -134,18 +134,22 @@ func (p *Program) Run(root JSON) (JSON, error) {
 				break
 			}
 			vm.push(p.value(ord.index()).(Valuer).Value())
+		case OpBool:
+			if !ord.isSmallInt() {
+				panic("require smallInt")
+			}
+			v := ord.smallInt()
+			if v != 0 {
+				vm.push(true)
+			} else {
+				vm.push(false)
+			}
+		case OpNull:
+			vm.push(nil)
 		case OpReal, OpRE, OpBounds, OpString:
 			vm.push(p.value(ord.index()).(Valuer).Value())
 		case OpID:
-			v := p.value(ord.index())
-			switch v.(NameVal).S() {
-			case "true":
-				vm.push(true)
-			case "false":
-				vm.push(false)
-			default:
-				vm.push(v)
-			}
+			vm.push(p.value(ord.index()))
 		case OpExp:
 			// expression in path is either string or integer (a key or index);
 			// other values are converted to integer.

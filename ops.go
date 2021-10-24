@@ -16,12 +16,13 @@ type Op int
 
 const (
 	OpError  Op = iota // illegal token, deliberately the same as the zero value
-	OpEof              // end of file
-	OpID               // identifier
-	OpString           // single- or double-quoted string
 	OpInt              // integer
+	OpBool             // true, false
+	OpID               // identifier
 	OpReal             // real number (might be used in expressions)
+	OpString           // single- or double-quoted string
 	OpRE               // /re/
+	OpNull             // JS "null"
 	OpBounds           // [lb: ub: stride]
 
 	// path operators
@@ -74,12 +75,13 @@ const (
 
 var opNames = map[Op]string{
 	OpError:      "OpError",
-	OpEof:        "OpEof",
 	OpID:         "OpID",
 	OpString:     "OpString",
 	OpInt:        "OpInt",
+	OpBool:       "OpBool",
 	OpReal:       "OpReal",
 	OpRE:         "OpRE",
+	OpNull:       "OpNull",
 	OpBounds:     "OpBounds",
 	OpRoot:       "OpRoot",
 	OpCurrent:    "OpCurrent",
@@ -124,12 +126,13 @@ var opNames = map[Op]string{
 
 var opText = map[Op]string{
 	OpError:      "(error)",
-	OpEof:        "(eof)",
 	OpID:         "identifier",
 	OpString:     "string",
 	OpInt:        "integer",
+	OpBool:       "bool",
 	OpReal:       "real number",
 	OpRE:         "regular expression",
+	OpNull:       "null",
 	OpBounds:     "[lb:ub:stride]",
 	OpRoot:       "$",
 	OpCurrent:    "@",
@@ -190,7 +193,7 @@ func (o Op) Opcode() Op {
 // IsLeaf returns true if o is a leaf operator.
 func (o Op) IsLeaf() bool {
 	switch o {
-	case OpID, OpString, OpInt, OpReal, OpRE, OpRoot, OpCurrent, OpWild, OpBounds:
+	case OpID, OpString, OpInt, OpBool, OpReal, OpRE, OpNull, OpRoot, OpCurrent, OpWild, OpBounds:
 		return true
 	default:
 		return false
@@ -200,7 +203,7 @@ func (o Op) IsLeaf() bool {
 // HasVal returns true if o is a leaf operator that carries a value.
 func (o Op) HasVal() bool {
 	switch o {
-	case OpID, OpString, OpInt, OpReal, OpRE, OpBounds:
+	case OpID, OpString, OpInt, OpBool, OpReal, OpRE, OpBounds:
 		return true
 	default:
 		return false

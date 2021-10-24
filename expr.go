@@ -69,6 +69,25 @@ func (l *StringLeaf) String() string {
 	return fmt.Sprintf("%q", l.Val)
 }
 
+// BoolLeaf represents a Boolean in an Expr tree.
+type BoolLeaf struct {
+	Op
+	Val bool
+}
+
+func (l *BoolLeaf) String() string {
+	return fmt.Sprint(l.Val)
+}
+
+// NullLeaf represents JS "null" in an Expr tree.
+type NullLeaf struct {
+	Op
+}
+
+func (l *NullLeaf) String() string {
+	return "null"
+}
+
 // NameLeaf represents a user-defined name (OpID), "@" (OpCurrent) and "$" (OpRoot) in an Expr tree.
 type NameLeaf struct {
 	Op
