@@ -460,7 +460,15 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			default:
 				return nil, fmt.Errorf("%s requires array right operand, not %s", ord.op(), b)
 			}
-		//case OpCall:
+		case OpCall:
+			n := ord.smallInt()
+			args := vm.popN(n)
+			id := args[0].(NameVal)
+			result, err := call(id.S(), args[1:])
+			if err != nil {
+				return nil, err
+			}
+			vm.push(result)			
 		default:
 			return nil, fmt.Errorf("unimplemented %#v at pc %d", ord.op(), vm.pc-1)
 		}
@@ -480,6 +488,18 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 		return []JSON{}, nil
 	}
 	return vm.out, nil
+}
+
+// call invokes function named id with the given arguments, returning a result or an error.
+func call(id string, args []JSON) (JSON, error) {
+	fn := functions[id]
+	if fn.fn == nil {
+		return nil, fmt.Errorf("call of unknown function: %s", id)
+	}
+	if fn.na != AnyNumber && len(args) != fn.na {
+		return nil, fmt.Errorf("%s: wrong argument count: need %d", id, fn.na)
+	}
+	return fn.fn(args), nil
 }
 
 // apply runs the selection function f on each element of the src array, returning a new array with the results.

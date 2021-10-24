@@ -1,6 +1,7 @@
 package JSONPath
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 )
@@ -52,10 +53,14 @@ func TestFunctions(t *testing.T) {
 		if err != nil {
 			t.Fatalf("function test %d: parse %q: %s", i, ft.expr, err)
 		}
-		var result JSON
+		var got string
 		switch expr.Opcode() {
 		case OpCall:
-			result = call(t, i, &ft, expr.(*Inner).kids)
+			ret, err := testcall(expr.(*Inner).kids)
+			if err != nil {
+				t.Fatalf("function test %d: %q: %s", i, ft.expr, err)
+			}
+			got = jsonString(ret)
 		case OpArray:
 			a := expr.(*Inner)
 			array := []JSON{}
@@ -63,13 +68,16 @@ func TestFunctions(t *testing.T) {
 				if v.Opcode() != OpCall {
 					t.Fatalf("function test %d: unexpected operator in array: %#v", i, v.Opcode())
 				}
-				array = append(array, call(t, i, &ft, v.(*Inner).kids))
+				ret, err := testcall(v.(*Inner).kids)
+				if err != nil {
+					t.Fatalf("function test %d: %q: %s", i, ft.expr, err)
+				}
+				array = append(array, ret)
 			}
-			result = array
+			got = jsonString(array)
 		default:
 			t.Fatalf("function test %d: unexpected root op: %#v", i, expr.Opcode())
 		}
-		got := jsonString(result)
 		fmt.Printf("%s: %#v\n", ft.expr, got)
 		if got != ft.expect {
 			t.Errorf("function test %d: %q: got (%s) expected (%s)", i, ft.expr, got, ft.expect)
@@ -77,28 +85,19 @@ func TestFunctions(t *testing.T) {
 	}
 }
 
-func call(t *testing.T, tno int, ft *funcTest, kids []Expr) JSON {
-	if len(kids) < 2 {
-		t.Fatalf("function test %d: %q: too few children", tno, ft.expr)
+func testcall(kids []Expr) (JSON, error) {
+	if len(kids) == 0 {
+		return nil, errors.New("no identifier child in call")
 	}
-	if nm, ok := kids[0].(*NameLeaf); !ok {
-		t.Fatalf("function test %d: %q: got %#v, expected OpID", tno, ft.expr, kids[0].Opcode())
-		return nil
-	} else {
-		id := nm.Name
-		fn := functions[id]
-		if fn.fn == nil {
-			t.Fatalf("function test %d: %q: unknown function %s", tno, ft.expr, id)
-		}
-		if fn.na != AnyNumber && len(kids) != fn.na+1 {
-			t.Fatalf("function test %d: %q: wrong arg count (need %d)", tno, ft.expr, fn.na)
-		}
-		args, err := collect(kids[1:], []JSON{})
-		if err != nil {
-			t.Fatalf("function test %d: %q: %s", tno, ft.expr, err)
-		}
-		return fn.fn(args)
+	nm, ok := kids[0].(*NameLeaf)
+	if !ok {
+		return nil, fmt.Errorf("got %#v, expected OpID", kids[0].Opcode())
 	}
+	args, err := collect(kids[1:], []JSON{})
+	if err != nil {
+		return nil, fmt.Errorf("call to %s: %w", nm.Name, err)
+	}
+	return call(nm.Name, args)
 }
 
 func collect(kids []Expr, args []JSON) ([]JSON, error) {

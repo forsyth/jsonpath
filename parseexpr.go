@@ -109,6 +109,9 @@ func (p *parser) primary() (Expr, error) {
 		switch p.lookExpr() {
 		case '(':
 			// function call
+			if e.Opcode() != OpID {
+				return nil, fmt.Errorf("expected identifier before '(', not %v", e.Opcode())
+			}
 			p.advanceExpr()
 			e, err = p.application(OpCall, ')', e)
 			if err != nil {
