@@ -1,5 +1,5 @@
 # jsonpath
-Experimental Go implementation of JSONpath
+Developing Go implementation of JSONpath
 
 This is a Go implementation of lexing and parsing of JSONpath, with a conventional split between
 lexical analysis (tokenising) and parsing (building from the token stream an abstract representation of a path sequence,
