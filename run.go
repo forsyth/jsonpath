@@ -468,7 +468,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			if err != nil {
 				return nil, err
 			}
-			vm.push(result)			
+			vm.push(result)
 		default:
 			return nil, fmt.Errorf("unimplemented %#v at pc %d", ord.op(), vm.pc-1)
 		}
