@@ -6,11 +6,11 @@ import (
 )
 
 type funcTest struct {
-	expr	string	// expression with a single call or array of calls
-	expect	string	// expected result
+	expr   string // expression with a single call or array of calls
+	expect string // expected result
 }
 
-var funcTests = []funcTest {
+var funcTests = []funcTest{
 	{"abs(-1.5)", "1.5"},
 	{"abs(20)", "20"},
 	{"avg([1, 2, 3, 4, 5])", "3"},
@@ -41,7 +41,7 @@ var funcTests = []funcTest {
 	{"sum([])", "0"},
 	{"sum([1, 2, 3, 4, 5.55])", "15.55"},
 	{"to_number(1.75)", "1.75"},
-//	{"to_number('apple')", ""},
+	//	{"to_number('apple')", ""},
 	{"to_number('1.75e5')", "175000"},
 }
 
@@ -89,7 +89,7 @@ func call(t *testing.T, tno int, ft *funcTest, kids []Expr) JSON {
 		if fn.fn == nil {
 			t.Fatalf("function test %d: %q: unknown function %s", tno, ft.expr, id)
 		}
-		if fn.na != AnyNumber && len(kids) != fn.na + 1 {
+		if fn.na != AnyNumber && len(kids) != fn.na+1 {
 			t.Fatalf("function test %d: %q: wrong arg count (need %d)", tno, ft.expr, fn.na)
 		}
 		args, err := collect(kids[1:], []JSON{})
