@@ -265,22 +265,16 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				break
 			}
 			//fmt.Printf("Dot: %#v . %s", val, key.S())
-			switch el := val.(type) {
-			case []JSON:
-				//fmt.Printf(".%s of array\n", key.S())
-				vm.push(nothing)
-			case map[string]JSON:
+			if el, ok := val.(map[string]JSON); ok {
 				fv, ok := valByKey(el, sel, false)
-				//fmt.Printf("%#v -> %#v\n", fv, fv)
+				//fmt.Printf(" -> %#v\n", fv)
 				if !ok {
 					vm.push(nothing)
 					break
 				}
 				vm.push(fv)
-			case string:
-				vm.push(nothing)
-			default:
-				//fmt.Printf(". of non-object: %#v %#v\n", el, key)
+			} else {
+				//fmt.Printf(" -> . of non-object: %#v %#v\n", el, key)
 				vm.push(nothing)
 			}
 		case OpIndex:
