@@ -4,6 +4,7 @@ Developing Go implementation of JSONpath
 This is a Go implementation of lexing and parsing of JSONpath, with a conventional split between
 lexical analysis (tokenising) and parsing (building from the token stream an abstract representation of a path sequence,
 with nested expression trees).
+That representation is converted into orders for a small abstract machine that evaluates a path expression given a root JSON value, yielding a collection of JSON values selected by the path expression.
 
 It is currently in development, subject to change and not yet ready for use.
 
