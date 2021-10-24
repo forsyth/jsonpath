@@ -117,7 +117,8 @@ func (m *machine) valsOK(a, b JSON) bool {
 	return true
 }
 
-// Run applies the current Program to the root of a JSON structure, returning an array of selections from it, or an error.
+// Run applies the current Program to the root of a JSON structure, returning a collection of JSON structures from it (which might be empty) as selected by the original path expression, or a fatal run-time error.
+// Following the usual JavaScript conventions, many errors are not fatal, but yield a null result.
 func (p *Program) Run(root JSON) ([]JSON, error) {
 	vm := &machine{prog: p, root: root, out: []JSON{root}, pc: 0, tracing: false}
 	for vm.pc < len(p.orders) {
