@@ -15,3 +15,4 @@ x	errorVal can just be error now
 	(this one allows it syntactically but doesn't yet expand *Slice into 3 stacked values)
 -	test functions and connect to machine using Program
 	- implement tokenize
+-	more thorough test of expressions than testdata/test_suite.yaml provides
