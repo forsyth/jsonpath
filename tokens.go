@@ -41,90 +41,60 @@ func (t token) hasVal() bool {
 	}
 }
 
+var tokNames = map[token]string{
+	tokError:  "tokError",
+	tokEOF:    "tokEOF",
+	tokID:     "tokID",
+	tokString: "tokString",
+	tokInt:    "tokInt",
+	tokNest:   "tokNest",
+	tokReal:   "tokReal",
+	tokRE:     "tokRE",
+	tokLE:     "tokLE",
+	tokGE:     "tokGE",
+	tokEQ:     "tokEQ",
+	tokNE:     "tokNE",
+	tokFilter: "tokFilter",
+	tokAnd:    "tokAnd",
+	tokOr:     "tokOr",
+	tokMatch:  "tokMatch",
+	tokIn:     "tokIn",
+	tokNin:    "tokNin",
+}
+
 // GoString returns the internal name of a token (for debugging)
 func (t token) GoString() string {
-	switch t {
-	case tokError:
-		return "tokError"
-	case tokEOF:
-		return "tokEOF"
-	case tokID:
-		return "tokID"
-	case tokString:
-		return "tokString"
-	case tokInt:
-		return "tokInt"
-	case tokNest:
-		return "tokNest"
-	case tokReal:
-		return "tokReal"
-	case tokRE:
-		return "tokRE"
-	case tokLE:
-		return "tokLE"
-	case tokGE:
-		return "tokGE"
-	case tokEQ:
-		return "tokEQ"
-	case tokNE:
-		return "tokNE"
-	case tokFilter:
-		return "tokFilter"
-	case tokAnd:
-		return "tokAnd"
-	case tokOr:
-		return "tokOr"
-	case tokMatch:
-		return "tokMatch"
-	case tokIn:
-		return "tokIn"
-	case tokNin:
-		return "tokNin"
-	default:
-		return string(t)
+	if s := tokNames[t]; s != "" {
+		return s
 	}
+	return string(t)
+}
+
+var tokText = map[token]string{
+	tokError:  "(invalid token)",
+	tokEOF:    "end of file",
+	tokID:     "identifier",
+	tokString: "string literal",
+	tokInt:    "integer literal",
+	tokNest:   "..",
+	tokReal:   "floating-point literal",
+	tokRE:     "regular expression",
+	tokLE:     "<=",
+	tokGE:     ">=",
+	tokEQ:     "==",
+	tokNE:     "!=",
+	tokFilter: "?(",
+	tokAnd:    "&&",
+	tokOr:     "||",
+	tokMatch:  "=~",
+	tokIn:     "in",
+	tokNin:    "nin",
 }
 
 // String returns an readable form of a token for diagnostics
 func (t token) String() string {
-	switch t {
-	case tokError:
-		return "(invalid token)"
-	case tokEOF:
-		return "end of file"
-	case tokID:
-		return "identifier"
-	case tokString:
-		return "string literal"
-	case tokInt:
-		return "integer literal"
-	case tokNest:
-		return ".."
-	case tokReal:
-		return "floating-point literal"
-	case tokRE:
-		return "regular expression"
-	case tokLE:
-		return "<="
-	case tokGE:
-		return ">="
-	case tokEQ:
-		return "=="
-	case tokNE:
-		return "!="
-	case tokFilter:
-		return "?("
-	case tokAnd:
-		return "&&"
-	case tokOr:
-		return "||"
-	case tokMatch:
-		return "=~"
-	case tokIn:
-		return "in"
-	case tokNin:
-		return "nin"
-	default:
-		return string(t)
+	if s := tokText[t]; s != "" {
+		return s
 	}
+	return string(t)
 }
