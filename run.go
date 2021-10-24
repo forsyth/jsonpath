@@ -376,7 +376,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			if !vm.valsOK(a, b) {
 				break
 			}
-			vm.push(divide(a, b, func(i, j int64) int64 { return i / j }, func(x, y float64) float64 { return math.Mod(x, y) }))
+			vm.push(divide(a, b, func(i, j int64) int64 { return i % j }, func(x, y float64) float64 { return math.Mod(x, y) }))
 		case OpNeg:
 			v := vm.pop()
 			if !vm.valOK(v) {
