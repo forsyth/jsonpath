@@ -248,7 +248,7 @@ var functions = map[string]Function{
 			if err != nil {
 				return err
 			}
-			matches := prog.FindAllString(s, -1)
+			matches := prog.Split(s, -1)
 			result := []JSON{}
 			for _, m := range matches {
 				result = append(result, m)

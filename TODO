@@ -16,3 +16,4 @@ x	errorVal can just be error now
 -	test functions and connect to machine using Program
 	- implement tokenize
 -	more thorough test of expressions than testdata/test_suite.yaml provides
+-	character escapes if regexp as string, RE type Posix or not
