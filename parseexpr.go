@@ -145,13 +145,16 @@ func (p *parser) primary() (Expr, error) {
 
 // apply optional expression e to an expression list (terminated by a given end token) as operator op
 func (p *parser) application(op Op, end token, e Expr) (Expr, error) {
-	if p.lookExpr() == end {
-		p.advanceExpr()
-		return &Inner{op, []Expr{}}, nil
+	var err error
+	args := []Expr{}
+	if e != nil {
+		args = append(args, e)
 	}
-	args, err := p.parseExprList(e)
-	if err != nil {
-		return nil, err
+	if p.lookExpr() != end {
+		args, err = p.parseExprList(args)
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = p.expect(p.lexExpr, end)
 	if err != nil {
@@ -161,12 +164,8 @@ func (p *parser) application(op Op, end token, e Expr) (Expr, error) {
 }
 
 // e-list ::= expr ("," expr)*
-// the base expression appears as the first entry in the array returned
-func (p *parser) parseExprList(base Expr) ([]Expr, error) {
-	list := []Expr{}
-	if base != nil {
-		list = append(list, base)
-	}
+// add the expressions to the given list
+func (p *parser) parseExprList(list []Expr) ([]Expr, error) {
 	for {
 		e, err := p.expr(0)
 		if err != nil {

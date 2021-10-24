@@ -106,7 +106,6 @@ func collect(kids []Expr, args []JSON) ([]JSON, error) {
 		case *IntLeaf:
 			args = append(args, t.Val)
 		case *FloatLeaf:
-fmt.Printf("float: %#v\n", t.Val)
 			args = append(args, t.Val)
 		case *StringLeaf:
 			args = append(args, t.Val)
