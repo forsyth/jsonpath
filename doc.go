@@ -50,7 +50,7 @@ Script expressions (filters and calculations) share the same syntax:
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
 	real ::= integer "." integer? ("e" [+-]? integer)?
 
-The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying JSONPath systematically instead of providing a few examples —  although this grammar is more restrictive (eg, as regards the content of a union expression).
+The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying JSONPath systematically instead of providing a few examples —  although this grammar is more restrictive (eg, as regards the content of a union expression). Some of its extensions (eg, the parent operator) are also not provided.
 
 Paths are represented by a Path type, which is just a sequence of Steps, each with some parameter values (Val). Expressions are represented by a type Expr, which is an expression tree.
 
