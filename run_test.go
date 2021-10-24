@@ -229,9 +229,8 @@ func TestTestSuite(t *testing.T) {
 						note = "(differ, but ok)"
 					}
 				} else {
-					a, ok1 := results.([]interface{})
-					b, ok2 := query.Consensus.([]interface{})
-					if ok1 && ok2 && isReordered(a, b) {
+					b, ok := query.Consensus.([]interface{})
+					if ok && isReordered(results, b) {
 						note = "(differ, but reordered)"
 					}
 				}
