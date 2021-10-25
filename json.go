@@ -154,7 +154,6 @@ func cvi(v JSON) int64 {
 	default:
 		return 0
 	}
-	return 0
 }
 
 // convert a value to floating-point.
