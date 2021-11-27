@@ -44,7 +44,7 @@ var funcTests = []funcTest{
 	{"to_number(1.75)", "1.75"},
 	//	{"to_number('apple')", ""},
 	{"to_number('1.75e5')", "175000"},
-	{"tokenize('J. R. R. Tolkien', '[[:space:]]+')", "[\"J.\",\"R.\",\"R.\",\"Tolkien\"]"},
+	{"tokenize('J. R. R. Tolkien', '\\\\s+')", "[\"J.\",\"R.\",\"R.\",\"Tolkien\"]"},
 }
 
 func TestFunctions(t *testing.T) {

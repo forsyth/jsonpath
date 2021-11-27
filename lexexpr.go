@@ -1,5 +1,14 @@
 package JSONPath
 
+import (
+	"errors"
+	"strings"
+)
+
+var (
+	ErrUnclosedRE = errors.New("unclosed regular expression literal")
+)
+
 // lexExpr returns the next token and an optional associated value (eg, int or string), or an error.
 // It interprets the tokens of "script expressions" (filter and plain expressions).
 func (l *lexer) lexExpr() lexeme {
@@ -49,9 +58,25 @@ func (l *lexer) lexExpr() lexeme {
 	}
 }
 
-// lexRegexp can be called by the parser when it consumes a token (eg, '/') that must introduce a regular expression,
-// gathering the text of the expression here and returning it.
-func (l *lexer) lexRegexp(c int) lexeme {
-	s, err := l.lexString(c)
-	return lexeme{tokRE, s, err}
+// lexRegexp collects and returns a regular expression text delimited by ec.
+// Escape sequences other than \ ec are kept as-is, because they will be
+// interpreted by the RE parser.
+func (l *lexer) lexRegexp(ec int) lexeme {
+	var s strings.Builder
+	r := l.r
+	for {
+		c := r.get()
+		if c == eof {
+			return lexeme{tokRE, s.String(), ErrUnclosedRE}
+		}
+		if c == ec {
+			break
+		}
+		if c == '\\' && r.look() == ec {
+			r.get()
+			c = ec
+		}
+		s.WriteByte(byte(c))
+	}
+	return lexeme{tokRE, s.String(), nil}
 }

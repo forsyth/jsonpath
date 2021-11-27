@@ -244,7 +244,7 @@ var functions = map[string]Function{
 			if !ok {
 				return ErrType
 			}
-			prog, err := regexp.CompilePOSIX(re)
+			prog, err := regexp.Compile(re)
 			if err != nil {
 				return err
 			}

@@ -435,7 +435,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				re = b
 			case string:
 				// dynamic string value, to be compiled now
-				re, err = regexp.CompilePOSIX(b)
+				re, err = regexp.Compile(b)
 				if err != nil {
 					return nil, err // user visible so don't include pc
 				}

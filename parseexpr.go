@@ -218,7 +218,7 @@ func (p *parser) primary1() (Expr, error) {
 		if lx.err != nil {
 			return nil, lx.err
 		}
-		prog, err := regexp.CompilePOSIX(lx.s())
+		prog, err := regexp.Compile(lx.s())
 		if err != nil {
 			return nil, fmt.Errorf("%s at %s", err, off)
 		}
