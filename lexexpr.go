@@ -66,13 +66,12 @@ func (l *lexer) lexRegexp(ec int) lexeme {
 	r := l.r
 	for {
 		c := r.get()
-		if c == eof {
+		switch {
+		case c == eof:
 			return lexeme{tokRE, s.String(), ErrUnclosedRE}
-		}
-		if c == ec {
-			break
-		}
-		if c == '\\' && r.look() == ec {
+		case c == ec:
+			return lexeme{tokRE, s.String(), nil} 
+		case c == '\\' && r.look() == ec:
 			r.get()
 			c = ec
 		}
