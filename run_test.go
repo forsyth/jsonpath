@@ -123,7 +123,6 @@ var exclusions = map[string]string{ // samples excluded by this implementation, 
 
 var differences = map[string]string{ // samples where this implementation gives a known different result
 	"bracket_notation_with_number_on_object": "[\"value\"]",
-	"dot_notation_with_wildcard_on_object":   "[42,{\"key\":\"value\"},[0,1],\"string\"]",
 	"dot_notation_with_number":               "[\"third\"]",
 	"filter_expression_with_subtraction":     "[{\"key\":-50}]", // they take - inside the expression as part of the key
 }
@@ -200,7 +199,7 @@ func TestTestSuite(t *testing.T) {
 			continue
 		}
 		if query.noConsensus() {
-			// skip ones for which no consensus
+			// skip ones with no consensus
 			continue
 		}
 		prog, err := path.Compile()
@@ -215,28 +214,28 @@ func TestTestSuite(t *testing.T) {
 			continue
 		}
 		s2 := jsonString(results)
-		note := ""
+		note := " "
 		if query.Consensus != nil {
 			s1 := jsonString(query.Consensus)
 			fmt.Printf("results0: %s\n", s1)
 			if s1 != s2 {
-				note = " (differ)"
-				s3 := query.runDifferent()
-				if s3 != "" {
-					if s2 != s3 {
-						t.Errorf("%s: sample %d: %s: got result (%s) expected (%s)", testSuiteFile, qno, query.ID, s2, s3)
-					} else {
-						note = "(differ, but ok)"
-					}
+				b, ok := query.Consensus.([]interface{})	// it's always a set
+				if ok && isReordered(results, b) {
+					note = " (differ, but reordered)"
 				} else {
-					b, ok := query.Consensus.([]interface{})
-					if ok && isReordered(results, b) {
-						note = "(differ, but reordered)"
+					note = " (differ)"
+					s3 := query.runDifferent()
+					if s3 != "" {
+						if s2 != s3 {
+							t.Errorf("%s: sample %d: %s: got result (%s) expected (%s)", testSuiteFile, qno, query.ID, s2, s3)
+						} else {
+							note = " (differ, but ok)"
+						}
 					}
 				}
 			}
 		}
-		fmt.Printf("results1: %s %s\n", s2, note)
+		fmt.Printf("results1: %s%s\n", s2, note)
 	}
 }
 
