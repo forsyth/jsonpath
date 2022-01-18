@@ -202,6 +202,8 @@ func escaped(r *rd, cq int) (rune, error) {
 		return '\n', nil
 	case 'r':
 		return '\r', nil
+	case 'b':
+		return '\b', nil
 	case 'u':
 		// unicode: exactly 4 hex digits (which isn't enough!)
 		var digits strings.Builder
