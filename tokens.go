@@ -72,7 +72,7 @@ func (t token) GoString() string {
 
 var tokText = map[token]string{
 	tokError:  "(invalid token)",
-	tokEOF:    "end of file",
+	tokEOF:    "end of expression",
 	tokID:     "identifier",
 	tokString: "string literal",
 	tokInt:    "integer literal",
