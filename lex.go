@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf16"
 )
 
 var (
@@ -13,6 +15,7 @@ var (
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 	ErrIntOverflow    = errors.New("overflow of negative integer literal")
 	ErrBadReal        = errors.New("invalid floating-point literal syntax")
+	ErrCtrlChar	= errors.New("must use escape to encode ctrl character")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error
@@ -160,7 +163,8 @@ func (l *lexer) lexID(isAlpha func(int) bool) lexeme {
 	return lexeme{tokID, sb.String(), nil}
 }
 
-// lexString consumes a string from r until the closing quote cq, interpreting escape sequences.
+// lexString consumes a string from r until the closing quote cq, interpreting escape sequences,
+// including the wretched surrogate pairs as escape sequences.
 func (l *lexer) lexString(cq int) (string, error) {
 	var s strings.Builder
 	r := l.r
@@ -173,12 +177,40 @@ func (l *lexer) lexString(cq int) (string, error) {
 			break
 		}
 		if c == '\\' {
-			r, err := escaped(r, cq)
-			if err != nil {
-				return s.String(), err
+			// need to decode surrogate pairs to match JSON's rules
+			surr := rune(0)
+			for ; c == '\\'; c = r.get() {
+				rv, err := escaped(r, cq)
+				if err != nil {
+					return s.String(), err
+				}
+				if surr != 0 {
+					// previous \u was surrogate, if this was \u too match it up
+					// note that if rv wasn't \u it won't be a valid successor.
+					paired := utf16.DecodeRune(surr, rv)
+					s.WriteRune(paired)
+					surr = 0
+					if paired != unicode.ReplacementChar {
+						// consume surrogate and its pair
+						continue
+					}
+					// invalid surrogate pair: already produced ReplacementChar
+				} else if utf16.IsSurrogate(rv) {
+					surr = rv
+					continue
+				}
+				s.WriteRune(rv)
 			}
-			s.WriteRune(r)
+			r.unget()
+			if surr != 0 {
+				// surrogate prefix without successor
+				s.WriteRune(unicode.ReplacementChar)
+			}
 		} else {
+			if c < 0x20 {
+				// cannot include control characters directly
+				return s.String(), ErrCtrlChar
+			}
 			s.WriteByte(byte(c))
 		}
 	}
@@ -223,7 +255,7 @@ func escaped(r *rd, cq int) (rune, error) {
 			}
 			digits.WriteByte(byte(c))
 		}
-		v, _ := strconv.ParseInt(digits.String(), 16, 32)
+		v, _ := strconv.ParseUint(digits.String(), 16, 32)
 		return rune(v), err
 	default:
 		if c != cq {
