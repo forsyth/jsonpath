@@ -81,11 +81,13 @@ var functions = map[string]Function{
 		func(args []JSON) JSON {
 			switch a := args[0].(type) {
 			case string:
+				// does string a contain args[1]?
 				if b, ok := args[1].(string); ok {
 					return strings.Contains(a, b)
 				}
 				return ErrType
 			case []JSON:
+				// look for value args[1] in slice a
 				for _, v := range a {
 					if eqVal(v, args[1]) {
 						return true
@@ -124,7 +126,11 @@ var functions = map[string]Function{
 		1,
 		func(args []JSON) JSON {
 			if obj, ok := args[0].(map[string]JSON); ok {
-				return int64(len(obj))
+				keys := make([]JSON, 0, len(obj))
+				for k, _ := range obj {
+					keys = append(keys, k)
+				}
+				return keys
 			} else {
 				return ErrType
 			}
