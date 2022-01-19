@@ -57,10 +57,11 @@ func (m *machine) popN(n int64) []JSON {
 	if int64(m.sp) < n {
 		panic("stack underflow")
 	}
+	esp := m.sp
 	m.sp -= int(n)
 	a := make([]JSON, n)
-	copy(a, m.stack)
-	for i := 0; i < int(n); i++ {
+	copy(a, m.stack[m.sp: esp])
+	for i := m.sp; i < esp; i++ {
 		m.stack[i] = nil
 	}
 	return a
@@ -287,6 +288,11 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			switch val := val.(type) {
 			case []JSON:
 				sel := cvi(index) // can be only int, or convertible
+				l := int64(len(val))
+				if sel < 0 {
+					// index from end: not JavaScript but path/filter convention
+					sel += l
+				}
 				//fmt.Printf("index=%#v\n", sel)
 				if sel < 0 || sel >= int64(len(val)) {
 					vm.push(nothing)
@@ -474,14 +480,24 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 		}
 		if vm.tracing {
 			fmt.Printf("%#v ->\n", ord.op())
+			// show the output set
 			fmt.Printf("\t[")
 			for i, x := range vm.out {
 				if i != 0 {
 					fmt.Print(", ")
 				}
-				fmt.Printf("%s", jsonString(x))
+				fmt.Print(jsonString(x))
 			}
 			fmt.Printf("]\n")
+			// show the stack
+			fmt.Printf("\t[")
+			for i := 0; i < vm.sp; i++ {
+				if i != 0 {
+					fmt.Print(", ")
+				}
+				fmt.Print(jsonString(vm.stack[i]))
+			}
+			fmt.Print("]\n")
 		}
 	}
 	if vm.out == nil {
@@ -497,7 +513,7 @@ func call(id string, args []JSON) (JSON, error) {
 		return nil, fmt.Errorf("call of unknown function: %s", id)
 	}
 	if fn.na != AnyNumber && len(args) != fn.na {
-		return nil, fmt.Errorf("%s: wrong argument count: need %d", id, fn.na)
+		return nil, fmt.Errorf("%s: wrong argument count: need %d, got %d", id, fn.na, len(args))
 	}
 	return fn.fn(args), nil
 }
