@@ -1,0 +1,14 @@
+[
+    {
+        "given" : ["a"],
+        "cases" : [
+            {
+                "comment" : "Union with duplication from array and nodups [modified: nodups not implemented]",
+                "expression" : "$[0,0]",
+                "nodups" : true,
+                "result": ["a", "a"],
+                "xresult" : ["a"]
+            }
+        ]
+    }
+]

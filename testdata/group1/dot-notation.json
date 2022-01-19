@@ -1,0 +1,121 @@
+[
+    {
+        "given" : {"key": "value"},
+        "cases" : [
+            {
+                "comment" : "dot notation",
+                "expression" : "$.key",
+                "result" : ["value"]
+            }
+        ]
+    },
+    {
+        "given" : {
+             "one": {"key": "value"},
+             "two": {"some": "more", "key": "other value"},
+             "two.some": "42"
+         },
+        "cases" : [
+            {
+                "comment" : "dot notation with another",
+                "expression" : "$.two.some",
+                "result" : ["more"]
+            }
+        ]
+    },
+    {
+        "given" : {
+           "key": "value",
+           "\"key\"": 42
+         },
+        "cases" : [
+            {
+                "skip": true,
+                "comment" : "Dot notation with double quotes",
+                "expression" : "$.\"key\"",
+                "result" : ["value"]
+            },
+            {
+                "skip": true,
+                "comment" : "Dot notation with single quotes",
+                "expression" : "$.'key'",
+                "result" : ["value"]
+            },
+            {
+                "comment" : "Index notation with double quotes",
+                "expression" : "$[\"key\"]",
+                "result" : ["value"]
+            },
+            {
+                "comment" : "Index notation with single quotes",
+                "expression" : "$['key']",
+                "result" : ["value"]
+            }
+        ]
+    },
+    {
+        "given" : {
+           "key": "value",
+           "\"key\"": 42
+         },
+        "cases" : [
+            {
+               "skip": true,
+               "comment" : "Dot notation with double quotes",
+                "expression" : "$.\"key\"",
+                "result" : ["value"]
+            },
+            {
+                "skip": true,
+                "comment" : "Dot notation with single quotes",
+                "expression" : "$.'key'",
+                "result" : ["value"]
+            }
+        ]
+    },
+    {
+        "given" : {
+			"屬性": "value"
+		},
+        "cases" : [
+            {
+                "comment" : "Dot notation with non ASCII key",
+                "expression" : "$.屬性",
+                "result" : ["value"]
+            }
+        ]
+    },
+    {
+        "source:" : "https://cburgmer.github.io/json-path-comparison/",
+        "given": {"key-dash": "value"},
+        "cases": [
+            {
+                "comment" : "Dot notation with dash [modified: allowed]",
+                "expression" : "$.key-dash",
+	       "result" : ["value"]
+            },
+            {
+                "skip": true,
+                "comment" : "Dot notation with dash",
+                "expression" : "$.'key-dash'",
+                "result" : ["value"]
+            },
+            {
+                "skip": true,
+                "comment" : "Dot notation with dash",
+                "expression" : "$.\"key-dash\"",
+                "result" : ["value"]
+            },
+            {
+                "comment" : "Index notation with dash",
+                "expression" : "$['key-dash']",
+                "result" : ["value"]
+            },
+            {
+                "comment" : "Index notation with dash",
+                "expression" : "$[\"key-dash\"]",
+                "result" : ["value"]
+            }
+        ]
+    }
+]

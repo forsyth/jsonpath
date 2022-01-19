@@ -1,0 +1,104 @@
+[
+    {
+        "given" : {
+             "object": {
+                 "key": "value",
+                 "array": [
+                     {"key": "something"},
+                     {"key": {"key": "russian dolls"}}
+                 ]
+             },
+             "key": "top"
+         },
+        "cases" : [
+            {
+                "comment" : "Dot notation after recursive descent",
+                "expression" : "$..key",
+                "result" : ["top","value","something",{"key":"russian dolls"},"russian dolls"],
+                "path" : ["$['key']","$['object']['key']","$['object']['array'][0]['key']","$['object']['array'][1]['key']","$['object']['array'][1]['key']['key']"]
+            }
+        ]
+    },
+    {
+        "given" : [
+             "first",
+             {
+                 "key": [
+                     "first nested",
+                     {
+                         "more": [
+                             {
+                                 "nested": ["deepest", "second"]
+                             },
+                             ["more", "values"]
+                         ]
+                     }
+                 ]
+             }
+         ],
+        "cases" : [
+            {
+                "comment" : "Bracket notation after recursive descent",
+                "expression" : "$..[0]",
+                "result" : ["first","first nested",{"nested":["deepest","second"]},"deepest","more"]
+            }
+        ]
+    },
+    {
+        "source" : "https://github.com/cburgmer/json-path-comparison",
+        "given" : { "key": "value", "another key": {"complex": "string", "primitives": [0, 1]}},
+        "cases" : [
+            {
+                "comment" : "jsonpath recursive descent with *",
+                "expression" : "$..*",
+                "result" : ["value",{"complex":"string","primitives":[0,1]},"string",[0,1],0,1]
+            }
+        ]
+    },
+    {
+        "given" : {"foo":[
+              {"a":"bar"},
+              {"b":"baz"},
+              {"b":"qux"}
+            ]},
+        "cases" : [
+            {
+                "comment" : "recursive descent",
+                "expression" : "$..b",
+                "result" : ["baz","qux"]
+            }
+        ]
+    },
+    {
+        "given" : [[1, 2, 3], [4, 5, 6]],
+        "cases" : [
+            {
+                "comment" : "jsonpath ending with recursive descent",
+                "expression" : "$..",
+                "error": "unexpected end of expression at offset 2",
+                "result" : [
+                   [[1, 2, 3], [4, 5, 6]],
+                   [1, 2, 3],
+                   [4, 5, 6]
+                ]
+            }
+        ]
+    },
+    {
+        "given" : [{"a": {"b": "c"}}, [0, 1]],
+        "cases" : [
+            {
+                "source" : "https://cburgmer.github.io/json-path-comparison/results/recursive_descent.html",
+                "comment" : "recursive descent",
+                "expression" : "$..",
+                "error": "unexpected end of expression at offset 2",
+                "result" : [
+                    [{"a": {"b": "c"}},[0,1]],
+                    {"a": {"b": "c"}},
+                    {"b": "c"},
+                    [0,1]
+                  ]
+            }
+        ]
+    }
+]
