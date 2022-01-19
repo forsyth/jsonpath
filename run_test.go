@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -101,7 +102,7 @@ var exclusions = map[string]string{ // samples excluded by this implementation, 
 	"dot_bracket_notation_without_quotes":                                 "unexpected [ at offset 2",
 	"dot_notation_with_double_quotes":                                     "unexpected string literal at offset 6",
 	"dot_notation_with_double_quotes_after_recursive_descent":             "unexpected string literal at offset 7",
-	"dot_notation_with_empty_path":                                        "unexpected end of file at offset 1",
+	"dot_notation_with_empty_path":                                        "unexpected end of expression at offset 1",
 	"dot_notation_with_single_quotes":                                     "unexpected string literal at offset 6",
 	"dot_notation_with_single_quotes_after_recursive_descent":             "unexpected string literal at offset 7",
 	"dot_notation_with_single_quotes_and_dot":                             "unexpected string literal at offset 11",
@@ -117,8 +118,8 @@ var exclusions = map[string]string{ // samples excluded by this implementation, 
 	"filter_expression_with_triple_equal":                                 "unexpected token = in expression term",
 	"filter_expression_without_parens":                                    "unexpected char '@' after '(' at offset 2",
 	"parens_notation":                                                     "unexpected token (",
-	"recursive_descent":                                                   "unexpected end of file at offset 2",
-	"recursive_descent_after_dot_notation":                                "unexpected end of file at offset 6",
+	"recursive_descent":                                                   "unexpected end of expression at offset 2",
+	"recursive_descent_after_dot_notation":                                "unexpected end of expression at offset 6",
 }
 
 var differences = map[string]string{ // samples where this implementation gives a known different result
@@ -237,6 +238,100 @@ func TestTestSuite(t *testing.T) {
 		}
 		fmt.Printf("results1: %s%s\n", s2, note)
 	}
+}
+
+// second test suite format from Daniel A Parker
+
+type PathTest struct {
+	Given	JSON  `json:"given"`	// either [] or {}
+	Cases	[]TestCase `json:"cases"`
+}
+
+type TestCase struct {
+	Source	string	`json:"source"`	// eg, github...
+	Comment	string	`json:"comment"`	// what it tests
+	Error	interface{}	`json:"error"`	// correct response is an error: sometimes a string, sometimes a bool
+	Skip	bool 	`json:"skip"`	// test marked to be skipped by this implementation
+	Expression	string	`json:"expression"`	// path expression
+	Nodups	bool	`json:"nodups"`	// remove duplicates from output set (not implemented)
+	Result	[]JSON	`json:"result"`
+	Path	[]string	`json:"path"`	// not used: expression for each subpath to result
+}
+
+// directory of tests in Parker's JSON format
+const testParker = "testdata/group1"
+
+// TestParkTests runs the set of tests adapted from Parker's C# implementation.
+func TestParkerTests(t *testing.T) {
+	dir, err := ioutil.ReadDir(testParker)
+	if err != nil {
+		t.Fatalf("%s: cannot read test directory: %s", testParker, err)
+	}
+	for _, file := range dir {
+		if !strings.HasSuffix(file.Name(), ".json") {
+			continue
+		}
+		fileName := testParker+"/"+file.Name()
+		tests := loadParkerTest(fileName, t)
+		fmt.Printf("%s: %d\n", fileName, len(tests))
+		for tno, test := range tests {
+			given := jsonString(test.Given)
+			fmt.Printf("example %d: given: %s\n", tno, given)
+			fmt.Printf("GIVEN: %#v\n", test.Given)
+			for tcno, tc := range test.Cases {
+				if tc.Comment != "" {
+					fmt.Printf("comment: %s", tc.Comment)
+					fmt.Printf("\n")
+				}
+				fmt.Printf("expr: %s", tc.Expression)
+				if tc.Skip {
+					fmt.Printf(" [skipped]\n")
+					continue
+				}
+				fmt.Printf("\n")
+				path, err := ParsePath(tc.Expression)
+				if err != nil {
+					if tc.Error == nil {
+						t.Errorf("%s: test %d.%d: path %s: %s", fileName, tno, tcno, tc.Expression, err)
+					} else {
+						t.Logf("%s: test %d.%d: path %s: %s [expected]", fileName, tno, tcno, tc.Expression, err)
+					}
+					continue
+				} else if tc.Error != nil {
+					t.Errorf("%s: test %d.%d: path %s: error expected, but passed", fileName, tno, tcno, tc.Expression)
+					continue
+				}
+				prog, err := path.Compile()
+				if err != nil {
+					t.Errorf("%s: path %s: compile: %s", fileName, tc.Expression, err)
+				}
+				results, err := prog.Run(test.Given)
+				if err != nil {
+					t.Errorf("%s: path %s: run %.40s...: %s", fileName, tc.Expression, string(given), err)
+				}
+				fmt.Printf("results: %d\n", len(results))
+				if tc.Result != nil {
+					fmt.Printf("results0: %s\n", jsonString(tc.Result))
+					s2 := jsonString(results)
+					fmt.Printf("results1: %s\n", s2);
+					if !reflect.DeepEqual(results, tc.Result) && !isReordered(results, tc.Result) {
+						t.Errorf("%s: path %s: run %.40s...: wanted %s, got %s", fileName, tc.Expression, string(given), jsonString(tc.Result), s2)
+					}
+				}
+			}
+		}
+	}
+}
+
+// loadParkerTest returns the set of Parker-format tests in the given file or gives a fatal error.
+func loadParkerTest(file string, t *testing.T) []PathTest {
+	data := loadFile(file, t)
+	var js []PathTest
+	err := json.Unmarshal(data, &js)
+	if err != nil {
+		t.Fatalf("%s: erroneous Parker test: %s", file, err)
+	}
+	return js
 }
 
 // loadJSON returns the JSON in the given file or gives a fatal error.
