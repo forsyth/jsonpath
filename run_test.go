@@ -305,6 +305,9 @@ func TestParkerTests(t *testing.T) {
 				if err != nil {
 					t.Errorf("%s: path %s: compile: %s", fileName, tc.Expression, err)
 				}
+				if testing.Verbose() {
+					fmt.Printf("prog: %s\n", progString(prog))
+				}
 				results, err := prog.Run(test.Given)
 				if err != nil {
 					t.Errorf("%s: path %s: run %.40s...: %s", fileName, tc.Expression, string(given), err)
