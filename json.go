@@ -96,10 +96,21 @@ func eqVal(a, b JSON) bool {
 	if isInt(b) && isInt(a) {
 		return cvi(b) == cvi(a)
 	}
-	// let this one be truthy on the LHS
 	switch b := b.(type) {
 	case bool:
+		// let this one be truthy on the LHS
 		return b == cvb(a)
+	case nil:
+		// "null" equal only to itself and "undefined" (error)
+		switch a.(type) {
+		case nil:
+			return true
+		case error:
+			// an error is treated as "undefined" and thus "null"
+			return true
+		default:
+			return false
+		}
 	default:
 		return false
 	}
