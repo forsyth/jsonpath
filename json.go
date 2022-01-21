@@ -2,6 +2,7 @@ package JSONPath
 
 import (
 	"encoding/json"
+	"math"
 	"strconv"
 	"strings"
 )
