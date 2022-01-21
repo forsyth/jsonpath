@@ -86,16 +86,6 @@ func IsStructure(j JSON) bool {
 
 // eqVal returns true if value(a) == value(b) in the expression language.
 func eqVal(a, b JSON) bool {
-	// this seems to be easier to follow than nested type switches
-	if isString(b) && isString(a) {
-		return cvs(b) == cvs(a)
-	}
-	if isFloat(b) && isFloat(a) || isFloat(b) && isInt(a) || isInt(b) && isFloat(a) {
-		return cvf(b) == cvf(a)
-	}
-	if isInt(b) && isInt(a) {
-		return cvi(b) == cvi(a)
-	}
 	switch b := b.(type) {
 	case bool:
 		// let this one be truthy on the LHS
@@ -112,6 +102,16 @@ func eqVal(a, b JSON) bool {
 			return false
 		}
 	default:
+		// this seems to be easier to follow than nested type switches
+		if isString(b) && isString(a) {
+			return cvs(b) == cvs(a)
+		}
+		if isFloat(b) && isFloat(a) || isFloat(b) && isInt(a) || isInt(b) && isFloat(a) {
+			return cvf(b) == cvf(a)
+		}
+		if isInt(b) && isInt(a) {
+			return cvi(b) == cvi(a)
+		}
 		return false
 	}
 }
@@ -194,13 +194,19 @@ func cvf(v JSON) float64 {
 	}
 }
 
-// convert a JSON value to boolean, the "truthy" JavaScript way.
+// convert a JSON value to boolean, the "truthy" JavaScript way: if it's not "falsy" it's true.
 func cvb(v JSON) bool {
 	switch v := v.(type) {
 	case nil, error:
 		return false
 	case bool:
 		return v
+	case int:
+		return v != 0
+	case int64:
+		return v != 0
+	case float64:
+		return !math.IsNan(v) && v != 0.0
 	case string:
 		return v != ""
 	case []JSON:
