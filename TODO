@@ -3,8 +3,7 @@
 -	decide whether to switch to rune in lexer
 -	decide whether to use bufio instead of or underneath rd
 -	regexp flags (u is always on)
--	evaluator
-	~ in progress
++	evaluator
 x	vm dictionary for identifier and strings
 x	OpNest, OpValues set vm.values <-JSON; stop and drain
 x	give up on []Val as the stack state, given JSON structure, just use the real types
@@ -13,7 +12,9 @@ x	errorVal can just be error now
 	    run_test.go:227: testdata/test_suite.yaml: sample 131: dot_notation_with_wildcard_on_object: got result ([{"key":"value"},[0,1],"string",42]) expected ([42,{"key":"value"},[0,1],"string"])
 -	currently grammar allows expr for slice bound but most implementations don't seem to support it
 	(this one allows it syntactically but doesn't yet expand *Slice into 3 stacked values)
--	test functions and connect to machine using Program
-	- implement tokenize
++	test functions and connect to machine using Program
+	+ implement tokenize
 -	more thorough test of expressions than testdata/test_suite.yaml provides
--	character escapes if regexp as string, RE type Posix or not
+	+ added Daniel Parker's tests but still need more
++	character escapes if regexp as string, RE type Posix or not
+-	cv* functions need an error value or error return
