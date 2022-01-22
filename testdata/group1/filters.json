@@ -578,9 +578,10 @@
             ],
         "cases" : [
             {
-                "comment" : "Filter expression with equals",
+                "comment" : "Filter expression with equals [modified to mimic JS ==]",
                 "expression" : "$[?(@.key==42)]",
-                "result" : [{"key": 42}]
+                "result" : [{"key":42},{"key":[42]}],
+                "xresult" : [{"key": 42}]
             }
         ]
     },
@@ -769,14 +770,18 @@
                 "key": {}
               },
               {
+                "key": [0]
+              },
+              {
                 "key": []
               }
             ],
         "cases" : [
             { 
-                "comment" : "Filter expression with equals false",
+                "comment" : "Filter expression with equals false [modified to mimic JS ==]",
                 "expression" : "$[?(@.key==false)]",
-                "result" : [{"key": false}]
+                "result": [{"key":false},{"key":""},{"key":0},{"key":[0]},{"key":[]}],
+                "xresult" : [{"key": false}]
             },
             { 
                 "comment" : "Filter expression with equals null",
@@ -1037,9 +1042,10 @@
          ],
         "cases" : [
             {
-                "comment" : "Filter expression with equals string",
+                "comment" : "Filter expression with equals string [modified to mimic JS ==]",
                 "expression" : "$[?(@.key==\"value\")]",
-                "result" : [{"key": "value"}]
+                "result" : [{"key": "value"},{"key": ["value"]}],
+                "xresult" : [{"key": "value"}]
             }
         ]
     },
@@ -1120,14 +1126,18 @@
                 "key": {}
               },
               {
+                "key": [1]
+              },
+              {
                 "key": []
               }
             ],
         "cases" : [
             {
-                "comment" : "Filter expression with equals true",
+                "comment" : "Filter expression with equals true [modified to mimic JS ==]",
                 "expression" : "$[?(@.key==true)]",
-                "result" : [{"key": true}]
+                "result" : [{"key":true},{"key":1},{"key":[1]}],
+                "xresult" : [{"key": true}]
             }
         ]
     },
