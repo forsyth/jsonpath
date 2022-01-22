@@ -2,6 +2,7 @@ package JSONPath
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -220,7 +221,7 @@ func TestTestSuite(t *testing.T) {
 			s1 := jsonString(query.Consensus)
 			fmt.Printf("results0: %s\n", s1)
 			if s1 != s2 {
-				b, ok := query.Consensus.([]interface{})	// it's always a set
+				b, ok := query.Consensus.([]interface{}) // it's always a set
 				if ok && isReordered(results, b) {
 					note = " (differ, but reordered)"
 				} else {
@@ -243,19 +244,19 @@ func TestTestSuite(t *testing.T) {
 // second test suite format from Daniel A Parker
 
 type PathTest struct {
-	Given	JSON  `json:"given"`	// either [] or {}
-	Cases	[]TestCase `json:"cases"`
+	Given JSON       `json:"given"` // either [] or {}
+	Cases []TestCase `json:"cases"`
 }
 
 type TestCase struct {
-	Source	string	`json:"source"`	// eg, github...
-	Comment	string	`json:"comment"`	// what it tests
-	Error	interface{}	`json:"error"`	// correct response is an error: sometimes a string, sometimes a bool
-	Skip	bool 	`json:"skip"`	// test marked to be skipped by this implementation
-	Expression	string	`json:"expression"`	// path expression
-	Nodups	bool	`json:"nodups"`	// remove duplicates from output set (not implemented)
-	Result	[]JSON	`json:"result"`
-	Path	[]string	`json:"path"`	// not used: expression for each subpath to result
+	Source     string      `json:"source"`     // eg, github...
+	Comment    string      `json:"comment"`    // what it tests
+	Error      interface{} `json:"error"`      // correct response is an error: sometimes a string, sometimes a bool
+	Skip       bool        `json:"skip"`       // test marked to be skipped by this implementation
+	Expression string      `json:"expression"` // path expression
+	Nodups     bool        `json:"nodups"`     // remove duplicates from output set (not implemented)
+	Result     []JSON      `json:"result"`
+	Path       []string    `json:"path"` // not used: expression for each subpath to result
 }
 
 // directory of tests in Parker's JSON format
@@ -271,7 +272,7 @@ func TestParkerTests(t *testing.T) {
 		if !strings.HasSuffix(file.Name(), ".json") {
 			continue
 		}
-		fileName := testParker+"/"+file.Name()
+		fileName := testParker + "/" + file.Name()
 		tests := loadParkerTest(fileName, t)
 		fmt.Printf("%s: %d\n", fileName, len(tests))
 		for tno, test := range tests {
@@ -316,7 +317,7 @@ func TestParkerTests(t *testing.T) {
 				if tc.Result != nil {
 					fmt.Printf("results0: %s\n", jsonString(tc.Result))
 					s2 := jsonString(results)
-					fmt.Printf("results1: %s\n", s2);
+					fmt.Printf("results1: %s\n", s2)
 					if !reflect.DeepEqual(results, tc.Result) && !isReordered(results, tc.Result) {
 						t.Errorf("%s: path %s: run %.40s...: wanted %s, got %s", fileName, tc.Expression, string(given), jsonString(tc.Result), s2)
 					}
@@ -332,7 +333,7 @@ func loadParkerTest(file string, t *testing.T) []PathTest {
 	var js []PathTest
 	err := json.Unmarshal(data, &js)
 	if err != nil {
-		t.Fatalf("%s: erroneous Parker test: %s", file, err)
+		t.Fatalf("%s: erroneous Parker test: %s", file, jsonError(err))
 	}
 	return js
 }
@@ -343,9 +344,18 @@ func loadJSON(file string, t *testing.T) JSON {
 	var js interface{}
 	err := json.Unmarshal(data, &js)
 	if err != nil {
-		t.Fatalf("%s: erroneous JSON: %s", file, err)
+		t.Fatalf("%s: erroneous JSON: %s", file, jsonError(err))
 	}
 	return js
+}
+
+// jsonError returns text including the offset of the error, if it can
+func jsonError(err error) string {
+	var synerr *json.SyntaxError
+	if errors.As(err, &synerr) {
+		return fmt.Sprintf("%s at offset %d", synerr, synerr.Offset)
+	}
+	return fmt.Sprint(err)
 }
 
 // loadYAML returns the external TestSuite, which is in YAML format, for fun.
