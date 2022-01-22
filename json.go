@@ -2,6 +2,7 @@ package JSONPath
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -85,35 +86,129 @@ func IsStructure(j JSON) bool {
 	}
 }
 
-// eqVal returns true if value(a) == value(b) in the expression language.
-func eqVal(a, b JSON) bool {
-	switch b := b.(type) {
-	case bool:
-		// let this one be truthy on the LHS
-		return b == cvb(a)
-	case nil:
-		// "null" equal only to itself and "undefined" (error)
-		switch a.(type) {
-		case nil:
+// eqArray returns true if array a as a string equals b.
+// This represents Array.prototype.toString, reduced to the cases that can be true.
+func eqArray(a []JSON, b string) bool {
+	switch len(a) {
+	case 0:
+		return b == ""
+	case 1:
+		return cvs(a[0]) == b
+	default:
+		return false
+	}
+}
+
+// eqNum returns true if numeric values a and b are equal
+func eqNum(a, b JSON) bool {
+	if isFloat(a) || isFloat(b) {
+		var zero float64
+		va := cvf(a)
+		vb := cvf(b)
+		switch {
+		case math.IsNaN(va), math.IsNaN(vb):
+			return false
+		case va == 0.0 && vb == -zero,
+			vb == 0.0 && va == -zero:
 			return true
-		case error:
-			// an error is treated as "undefined" and thus "null"
+		default:
+			return va == vb
+		}
+	}
+	return cvi(a) == cvi(b)
+}
+
+func eqVal(a, b JSON) bool {
+	r := eqVal1(a, b)
+	fmt.Printf("eqval: %v [%v] %v [%v] -> %v\n", a, typeOf(a), b, typeOf(b), r)
+	return r
+}
+
+// eqVal returns the value of the Abstract Equality Comparison Algorithm (ECMA-262, 5.1, 11.9.3) [see notes/abstract-equality.pdf].
+func eqVal1(a, b JSON) bool {
+	ta := typeOf(a)
+	tb := typeOf(b)
+	if ta != tb {
+		// types differ, consider implicit conversions
+		switch ta<<8 | tb {
+		case Null<<8 | Undefined, Undefined<<8 | Null:
+			// 11.9.3(2), 11.9.3(3)
+			return true
+		case Number<<8 | String | String<<8 | Number:
+			// 11.9.3(4), 11.9.3(5)
+			return eqNum(a, b)
+		case Boolean<<8 | Number, Number<<8 | Boolean:
+			// 11.9.3(6), 11.9.3(7)
+			return eqNum(a, b)
+		case Boolean<<8 | String:
+			// 11.9.3(6)
+			return !cvb(a) && b.(string) == ""
+		case String<<8 | Boolean:
+			// 11.9.3(7)
+			return !cvb(b) && a.(string) == ""
+		case Object<<8 | Boolean:
+			// 11.9.3(6) [a == ToNumber(b)]
+			a, ok := a.([]JSON)
+			b := cvi(b)
+			return ok && (b == 0 && len(a) == 0 || len(a) == 1 && cvi(a[0]) == b)
+		case Boolean<<8 | Object:
+			// 11.9.3(7) [ToNumber(a) == b]
+			b, ok := b.([]JSON)
+			a := cvi(a)
+			return ok && (a == 0 && len(b) == 0 || len(b) == 1 && cvi(b[0]) == a)
+		case String<<8 | Object, Object<<8 | String,
+			Number<<8 | Object, Object<<8 | Number:
+			// 11.9.3(8), 11.9.3(9)
+			// note only one can be an Object, and only when that's an array can == be true
+			if a, ok := a.([]JSON); ok {
+				return eqArray(a, cvs(b))
+			}
+			if b, ok := b.([]JSON); ok {
+				return eqArray(b, cvs(a))
+			}
+			return false
+		default:
+			return false
+		}
+	}
+	// 11.9.3(1)
+	switch ta {
+	case Undefined, Null:
+		return true
+	case Number:
+		return eqNum(a, b)
+	case String:
+		return a.(string) == b.(string)
+	case Boolean:
+		return a.(bool) == b.(bool)
+	default:
+		// unlike JavaScript, compare values not references
+		switch a := a.(type) {
+		case []JSON:
+			b, ok := b.([]JSON)
+			if !ok || len(a) != len(b) {
+				return false
+			}
+			for i, ea := range a {
+				if !eqVal(ea, b[i]) {
+					return false
+				}
+			}
+			return true
+		case map[string]JSON:
+			b, ok := b.(map[string]JSON)
+			if !ok || len(a) != len(b) {
+				return false
+			}
+			for k, v := range a {
+				if !eqVal(v, b[k]) {
+					return false
+				}
+			}
 			return true
 		default:
 			return false
 		}
-	default:
-		// this seems to be easier to follow than nested type switches
-		if isString(b) && isString(a) {
-			return cvs(b) == cvs(a)
-		}
-		if isFloat(b) && isFloat(a) || isFloat(b) && isInt(a) || isInt(b) && isFloat(a) {
-			return cvf(b) == cvf(a)
-		}
-		if isInt(b) && isInt(a) {
-			return cvi(b) == cvi(a)
-		}
-		return false
 	}
 }
 
@@ -129,14 +224,20 @@ func searchJSON(vals []JSON, v JSON, f bool) bool {
 	return !f
 }
 
-// return the value of a string, or the empty string
+// convert a JavaScript primitive value, or array of primitive values, to a string
 func cvs(v JSON) string {
 	switch v := v.(type) {
+	case error:
+		return "undefined"
+	case nil:
+		return "null"
 	case string:
 		return v
+	case bool, int, int64, float64:
+		return fmt.Sprint(v)
 	default:
-		// TO DO
-		return ""
+		// non-primitive value, shouldn't be used
+		return "[object Object]"
 	}
 }
 
@@ -156,6 +257,9 @@ func cvi(v JSON) int64 {
 	case float64:
 		return int64(v) // TO DO: traps if not representable?
 	case string:
+		if v == "" {
+			return 0 // wat!
+		}
 		n, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
 			return 0
@@ -184,6 +288,9 @@ func cvf(v JSON) float64 {
 	case float64:
 		return v
 	case string:
+		if v == "" {
+			return 0.0 // wat!
+		}
 		f, err := strconv.ParseFloat(v, 64)
 		if err != nil {
 			return 0.0
@@ -207,16 +314,42 @@ func cvb(v JSON) bool {
 	case int64:
 		return v != 0
 	case float64:
-		return !math.IsNan(v) && v != 0.0
+		return !math.IsNaN(v) && v != 0.0 && v != -0.0
 	case string:
 		return v != ""
-	case []JSON:
-		return len(v) != 0
-	case map[string]JSON:
-		return len(v) != 0
 	default:
 		//fmt.Printf("cvb: DEFAULT: %#v\n", v)
 		return true
+	}
+}
+
+// JavaScript types
+type jsType int
+
+const (
+	Undefined jsType = iota
+	Null
+	Number
+	String
+	Boolean
+	Object
+)
+
+// typeOf returns the  for a value, for use in Abstract Equality Comparison.
+func typeOf(js JSON) jsType {
+	switch js.(type) {
+	case error:
+		return Undefined
+	case nil:
+		return Null
+	case int, int64, float64:
+		return Number
+	case string:
+		return String
+	case bool:
+		return Boolean
+	default:
+		return Object
 	}
 }
 
