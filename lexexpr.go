@@ -70,7 +70,7 @@ func (l *lexer) lexRegexp(ec int) lexeme {
 		case c == eof:
 			return lexeme{tokRE, s.String(), ErrUnclosedRE}
 		case c == ec:
-			return lexeme{tokRE, s.String(), nil} 
+			return lexeme{tokRE, s.String(), nil}
 		case c == '\\' && r.look() == ec:
 			r.get()
 			c = ec

@@ -15,7 +15,7 @@ var (
 	ErrShortEscape    = errors.New("unicode escape needs 4 hex digits")
 	ErrIntOverflow    = errors.New("overflow of negative integer literal")
 	ErrBadReal        = errors.New("invalid floating-point literal syntax")
-	ErrCtrlChar	= errors.New("must use escape to encode ctrl character")
+	ErrCtrlChar       = errors.New("must use escape to encode ctrl character")
 )
 
 // lexeme is a tuple representing a lexical element: token, optional value, optional error

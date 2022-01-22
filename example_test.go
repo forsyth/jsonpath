@@ -8,7 +8,7 @@ import (
 	"github.com/forsyth/jsonpath"
 )
 
-var paths = []string {
+var paths = []string{
 	"$",
 	"$.books",
 	"$.books[?(@.author=='Adam Smith')].title",
@@ -16,7 +16,7 @@ var paths = []string {
 	"$.books[*].title",
 }
 
-var docs = []string {
+var docs = []string{
 	`{"books": [
 		{"title": "Decline and Fall", "author": "Evelyn Waugh", "date": 1928},
 		{"title": "Wealth of Nations", "author": "Adam Smith", "date": 1776}

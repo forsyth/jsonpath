@@ -60,7 +60,7 @@ func (m *machine) popN(n int64) []JSON {
 	esp := m.sp
 	m.sp -= int(n)
 	a := make([]JSON, n)
-	copy(a, m.stack[m.sp: esp])
+	copy(a, m.stack[m.sp:esp])
 	for i := m.sp; i < esp; i++ {
 		m.stack[i] = nil
 	}
