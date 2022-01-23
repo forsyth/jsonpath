@@ -312,11 +312,6 @@ func cvi(v JSON) int64 {
 		return n
 	case IntVal: // appears in Slice (via OpBounds)
 		return v.V()
-	case []JSON:
-		if len(v) == 1 {
-			return cvi(v[0])
-		}
-		return 0
 	default:
 		return 0
 	}
@@ -346,11 +341,6 @@ func cvf(v JSON) float64 {
 			return math.NaN()
 		}
 		return f
-	case []JSON:
-		if len(v) == 1 {
-			return cvf(v[0])
-		}
-		return math.NaN()
 	default:
 		//fmt.Printf("cvf(%#v)", v)
 		return math.NaN()
@@ -373,8 +363,6 @@ func cvb(v JSON) bool {
 		return !math.IsNaN(v) && v != 0.0 && v != -zero
 	case string:
 		return v != ""
-	case []JSON:
-		return len(v) == 1 && cvb(v[0])
 	default:
 		//fmt.Printf("cvb: DEFAULT: %#v\n", v)
 		return true
