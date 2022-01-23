@@ -1,6 +1,6 @@
 $ -> 
 $(key,more) -> !unexpected token (
-$. -> !unexpected end of file at offset 1
+$. -> !unexpected end of expression at offset 1
 $.$ -> !unexpected $ at offset 2
 $.'key' -> !unexpected string literal at offset 6
 $.'some.key' -> !unexpected string literal at offset 11
@@ -10,7 +10,7 @@ $.*.bar.* -> bar Wild ID[0] Member.1 Wild
 $.*['c','d'] -> "c" "d" Wild String[0] String[1] Union.2
 $.*[1] -> Wild Int(1) Select.1
 $.-1 -> Int(-1) Member.1
-$.. -> !unexpected end of file at offset 2
+$.. -> !unexpected end of expression at offset 2
 $..'key' -> !unexpected string literal at offset 7
 $..* -> Nest.3 NestWild Rep.1
 $..*[?(@.id>2)] -> id Nest.3 NestWild Rep.1 For.11 Current ID[0] Dot.2 Int(2) GT.2 Filter.1 Rep.4
@@ -31,7 +31,7 @@ $.in -> in ID[0] Member.1
 $.items[?(@.key==$.value)] -> items key value ID[0] Member.1 For.12 Current ID[1] Dot.2 Root ID[2] Dot.2 EQ.2 Filter.1 Rep.3
 $.key -> key ID[0] Member.1
 $.key-dash -> key-dash ID[0] Member.1
-$.key.. -> !unexpected end of file at offset 6
+$.key.. -> !unexpected end of expression at offset 6
 $.length -> length ID[0] Member.1
 $.missing -> missing ID[0] Member.1
 $.null -> null ID[0] Member.1
