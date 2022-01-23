@@ -112,19 +112,18 @@ func eqArrayN(a []JSON, b JSON) bool {
 	}
 }
 
-// badNum returns true if the string s would result in NaN in JS, where fp is true for floating-point.
+// badNum returns true if the string s would result in NaN in JS, where fp requires floating-point.
 func badNum(s string, fp bool) bool {
 	if s == "" {
 		return false
 	}
-	if fp {
-		_, err := strconv.ParseFloat(s, 64)
-		if err != nil {
-			return true
+	if !fp {
+		_, err := strconv.ParseInt(s, 10, 64)
+		if err == nil {
+			return false
 		}
-		return false
 	}
-	_, err := strconv.ParseInt(s, 10, 64)
+	_, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return true
 	}
@@ -137,23 +136,12 @@ func eqNum(a, b JSON) bool {
 		var zero float64
 		va := cvf(a)
 		vb := cvf(b)
-		switch {
-		case math.IsNaN(va), math.IsNaN(vb):
-			return false
-		case va == 0.0 && vb == -zero,
-			vb == 0.0 && va == -zero:
+		if va == 0.0 && vb == -zero || vb == 0.0 && va == -zero {
 			return true
-		default:
-			return va == vb
 		}
+		return va == vb	// this will be false for NaN
 	}
 	return cvi(a) == cvi(b)
-}
-
-func eqValX(a, b JSON) bool {
-	r := eqVal(a, b)
-	fmt.Printf("eqval: %v [%v] %v [%v] -> %v\n", a, typeOf(a), b, typeOf(b), r)
-	return r
 }
 
 // eqVal returns the value of the Abstract Equality Comparison Algorithm (ECMA-262, 5.1, 11.9.3) [see notes/abstract-equality.pdf].
@@ -318,11 +306,17 @@ func cvi(v JSON) int64 {
 		}
 		n, err := strconv.ParseInt(v, 10, 64)
 		if err != nil {
+			// should really be NaN, so check first with badNum when required
 			return 0
 		}
 		return n
 	case IntVal: // appears in Slice (via OpBounds)
 		return v.V()
+	case []JSON:
+		if len(v) == 1 {
+			return cvi(v[0])
+		}
+		return 0
 	default:
 		return 0
 	}
@@ -349,12 +343,17 @@ func cvf(v JSON) float64 {
 		}
 		f, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return 0.0
+			return math.NaN()
 		}
 		return f
+	case []JSON:
+		if len(v) == 1 {
+			return cvf(v[0])
+		}
+		return math.NaN()
 	default:
 		//fmt.Printf("cvf(%#v)", v)
-		return 0.0
+		return math.NaN()
 	}
 }
 
@@ -370,9 +369,12 @@ func cvb(v JSON) bool {
 	case int64:
 		return v != 0
 	case float64:
-		return !math.IsNaN(v) && v != 0.0 && v != -0.0
+		var zero float64
+		return !math.IsNaN(v) && v != 0.0 && v != -zero
 	case string:
 		return v != ""
+	case []JSON:
+		return len(v) == 1 && cvb(v[0])
 	default:
 		//fmt.Printf("cvb: DEFAULT: %#v\n", v)
 		return true
