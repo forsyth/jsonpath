@@ -17,7 +17,7 @@ func newParser(s string) *parser {
 func (p *parser) expect(lex func() lexeme, nt token) error {
 	lx := lex()
 	if lx.err != nil {
-		return lx.err
+		return fmt.Errorf("expected %q at %s, got %s", nt, p.offset(), lx.err)
 	}
 	if lx.tok != nt {
 		return fmt.Errorf("expected %q at %s, got %v", nt, p.offset(), lx.tok)
