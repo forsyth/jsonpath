@@ -86,9 +86,9 @@ func IsStructure(j JSON) bool {
 	}
 }
 
-// eqArray returns true if array a as a string equals b.
+// eqArrayS returns true if array a as a string equals b.
 // This represents Array.prototype.toString, reduced to the cases that can be true.
-func eqArray(a []JSON, b string) bool {
+func eqArrayS(a []JSON, b string) bool {
 	switch len(a) {
 	case 0:
 		return b == ""
@@ -97,6 +97,38 @@ func eqArray(a []JSON, b string) bool {
 	default:
 		return false
 	}
+}
+
+// eqArrayN returns true if array a as a string converted to a Number equals b.
+// This represents Array.prototype.toString, reduced to the cases that can be true.
+func eqArrayN(a []JSON, b JSON) bool {
+	switch len(a) {
+	case 0:
+		return eqNum(b, 0.0)
+	case 1:
+		return eqNum(a[0], b)
+	default:
+		return false
+	}
+}
+
+// badNum returns true if the string s would result in NaN in JS, where fp is true for floating-point.
+func badNum(s string, fp bool) bool {
+	if s == "" {
+		return false
+	}
+	if fp {
+		_, err := strconv.ParseFloat(s, 64)
+		if err != nil {
+			return true
+		}
+		return false
+	}
+	_, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return true
+	}
+	return false
 }
 
 // eqNum returns true if numeric values a and b are equal
@@ -118,14 +150,14 @@ func eqNum(a, b JSON) bool {
 	return cvi(a) == cvi(b)
 }
 
-func eqVal(a, b JSON) bool {
-	r := eqVal1(a, b)
+func eqValX(a, b JSON) bool {
+	r := eqVal(a, b)
 	fmt.Printf("eqval: %v [%v] %v [%v] -> %v\n", a, typeOf(a), b, typeOf(b), r)
 	return r
 }
 
 // eqVal returns the value of the Abstract Equality Comparison Algorithm (ECMA-262, 5.1, 11.9.3) [see notes/abstract-equality.pdf].
-func eqVal1(a, b JSON) bool {
+func eqVal(a, b JSON) bool {
 	ta := typeOf(a)
 	tb := typeOf(b)
 	if ta != tb {
@@ -134,18 +166,33 @@ func eqVal1(a, b JSON) bool {
 		case Null<<8 | Undefined, Undefined<<8 | Null:
 			// 11.9.3(2), 11.9.3(3)
 			return true
-		case Number<<8 | String | String<<8 | Number:
-			// 11.9.3(4), 11.9.3(5)
+		case Number<<8 | String:
+			// 11.9.3(4)
+			if badNum(cvs(b), isFloat(a)) {
+				return false
+			}
+			return eqNum(a, b)
+		case String<<8 | Number:
+			// 11.9.3(5)
+			if badNum(cvs(a), isFloat(b)) {
+				return false
+			}
 			return eqNum(a, b)
 		case Boolean<<8 | Number, Number<<8 | Boolean:
-			// 11.9.3(6), 11.9.3(7)
+			// 11.9.3(6)
 			return eqNum(a, b)
 		case Boolean<<8 | String:
 			// 11.9.3(6)
-			return !cvb(a) && b.(string) == ""
+			if badNum(cvs(b), true) {
+				return false
+			}
+			return cvf(a) == cvf(b)	// wat!
 		case String<<8 | Boolean:
 			// 11.9.3(7)
-			return !cvb(b) && a.(string) == ""
+			if badNum(cvs(a), true) {
+				return false
+			}
+			return cvf(a) == cvf(b)	// wat!
 		case Object<<8 | Boolean:
 			// 11.9.3(6) [a == ToNumber(b)]
 			a, ok := a.([]JSON)
@@ -156,15 +203,24 @@ func eqVal1(a, b JSON) bool {
 			b, ok := b.([]JSON)
 			a := cvi(a)
 			return ok && (a == 0 && len(b) == 0 || len(b) == 1 && cvi(b[0]) == a)
-		case String<<8 | Object, Object<<8 | String,
-			Number<<8 | Object, Object<<8 | Number:
+		case String<<8 | Object, Object<<8 | String:
 			// 11.9.3(8), 11.9.3(9)
 			// note only one can be an Object, and only when that's an array can == be true
 			if a, ok := a.([]JSON); ok {
-				return eqArray(a, cvs(b))
+				return eqArrayS(a, cvs(b))
 			}
 			if b, ok := b.([]JSON); ok {
-				return eqArray(b, cvs(a))
+				return eqArrayS(b, cvs(a))
+			}
+			return false
+		case Number<<8 | Object, Object<<8 | Number:
+			// 11.9.3(8), 11.9.3(9)
+			// note only one can be an Object, and only when that's an array can == be true
+			if a, ok := a.([]JSON); ok {
+				return eqArrayN(a, b)
+			}
+			if b, ok := b.([]JSON); ok {
+				return eqArrayN(b, a)
 			}
 			return false
 		default:
