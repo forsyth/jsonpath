@@ -56,5 +56,9 @@ func (r *rd) loc() Loc {
 }
 
 func (r *rd) offset() string {
-	return fmt.Sprintf("offset %d", r.pos-1)
+	o := r.pos
+	if o != 0 {
+		o--
+	}
+	return fmt.Sprintf("offset %d", o)
 }
