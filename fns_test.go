@@ -78,7 +78,7 @@ func TestFunctions(t *testing.T) {
 		default:
 			t.Fatalf("function test %d: unexpected root op: %#v", i, expr.Opcode())
 		}
-		fmt.Printf("%s: %#v\n", ft.expr, got)
+		t.Logf("%s: %#v", ft.expr, got)
 		if got != ft.expect {
 			t.Errorf("function test %d: %q: got (%s) expected (%s)", i, ft.expr, got, ft.expect)
 		}
