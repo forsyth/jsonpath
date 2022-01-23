@@ -580,7 +580,7 @@
             {
                 "comment" : "Filter expression with equals [modified to mimic JS ==]",
                 "expression" : "$[?(@.key==42)]",
-                "result" : [{"key":42},{"key":[42]}],
+                "result" : [{"key":42},{"key":"42"},{"key":[42]}],
                 "xresult" : [{"key": 42}]
             }
         ]
@@ -960,9 +960,9 @@
         "given" : [{"key": -12.3}, {"key": -0.123}, {"key": -12}, {"key": 12.3}, {"key": 2}, {"key": "-0.123e2"}],
         "cases" : [
             {
-                "comment" : "Filter expression with equals number with fraction",
+                "comment" : "Filter expression with equals number with fraction [modified: JS == works for number==string]",
                 "expression" : "$[?(@.key==-0.123e2)]",
-                "result" : [{"key": -12.3}]
+                "result" : [{"key":-12.3},{"key":"-0.123e2"}]
             }
         ]
     },
@@ -1210,7 +1210,6 @@
                    {"key": 41.9999},
                    {"key": 100},
                    {"key": "43"},
-                   {"key": "42"},
                    {"key": "41"},
                    {"key": "value"},
                    {"some": "value"}
@@ -1249,7 +1248,7 @@
                 "comment" : "Filter expression with negation and less than",
                 "expression" : "$[?(@.key!=42)]",
                 "result" : [{"key":0},{"key":-1},{"key":41},{"key":43},{"key":42.0001},{"key":41.9999},
-                            {"key":100},{"key":"43"},{"key":"42"},{"key":"41"},{"key":"value"},{"some":"value"}]
+                            {"key":100},{"key":"43"},{"key":"41"},{"key":"value"},{"some":"value"}]
             }
         ]
     },
