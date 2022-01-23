@@ -171,8 +171,8 @@ $[?(@['@key']==42)] -> "@key" For.8 Current String[0] Index.2 Int(42) EQ.2 Filte
 $[?(@['key']==42)] -> "key" For.8 Current String[0] Index.2 Int(42) EQ.2 Filter.1 Rep.1
 $[?(@[*]==2)] -> !unexpected token * in expression term
 $[?(@[-1]==2)] -> For.9 Current Int(1) Neg.1 Index.2 Int(2) EQ.2 Filter.1 Rep.1
-$[?(@[0:1]==1)] -> !unexpected character ':' at offset 7
-$[?(@[0:1]==[1])] -> !unexpected character ':' at offset 7
+$[?(@[0:1]==1)] -> !expected "]" at offset 7, got unexpected character ':' at offset 7
+$[?(@[0:1]==[1])] -> !expected "]" at offset 7, got unexpected character ':' at offset 7
 $[?(@[1]=='b')] -> "b" For.8 Current Int(1) Index.2 String[0] EQ.2 Filter.1 Rep.1
 $[?(false)] -> For.4 Bool(0) Filter.1 Rep.1
 $[?(null)] -> For.4 Null Filter.1 Rep.1
