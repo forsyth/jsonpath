@@ -1,8 +1,6 @@
 package JSONPath
 
 import (
-_	"errors"
-_	"fmt"
 	"math"
 	"testing"
 )
@@ -118,6 +116,7 @@ var pairs = []eqTest {
 	{args{42.0, map[string]JSON{"42.0": true}}, false},
 }
 
+// TestEquality runs through a set of tests of the abstract equality comparison algorithm (JS ==).
 func TestEquality(t *testing.T) {
 	for i, p := range pairs {
 		for j := 0; j < 2; j++ {
