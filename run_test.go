@@ -53,15 +53,13 @@ func TestRun(t *testing.T) {
 			t.Errorf("sample %d: %s: compile: %s", i, q, err)
 			continue
 		}
-		if testing.Verbose() {
-			fmt.Printf("%s -> %s\n", q, progString(prog))
-		}
+		t.Logf("%s -> %s", q, progString(prog))
 		vals, err := prog.Run(js)
 		if err != nil {
 			t.Errorf("sample %d: %s: run: %s", i, q, err)
 			continue
 		}
-		fmt.Printf("sample %d: %s: success\n", i, q)
+		t.Logf("sample %d: %s: success", i, q)
 		_ = vals
 	}
 }
@@ -73,9 +71,7 @@ func TestWalker(t *testing.T) {
 	values := make(chan JSON)
 	go walker(values, []JSON{js})
 	for item := range values {
-		if testing.Verbose() {
-			fmt.Printf("%#v\n", item)
-		}
+		t.Logf("%#v", item)
 	}
 }
 
@@ -109,9 +105,9 @@ var exclusions = map[string]string{ // samples excluded by this implementation, 
 	"dot_notation_with_single_quotes_and_dot":                             "unexpected string literal at offset 11",
 	"dot_notation_without_root":                                           "expected \"$\" at offset 2, got identifier",
 	"filter_expression_with_empty_expression":                             "unexpected token ) in expression term",
-	"filter_expression_with_equals_array_for_array_slice_with_range_1":    "unexpected character ':' at offset 7",
+	"filter_expression_with_equals_array_for_array_slice_with_range_1":    "expected \"]\" at offset 7, got unexpected character ':' at offset 7",
 	"filter_expression_with_equals_array_for_dot_notation_with_star":      "expected identifier in '.' selection",
-	"filter_expression_with_equals_number_for_array_slice_with_range_1":   "unexpected character ':' at offset 7",
+	"filter_expression_with_equals_number_for_array_slice_with_range_1":   "expected \"]\" at offset 7, got unexpected character ':' at offset 7",
 	"filter_expression_with_equals_number_for_bracket_notation_with_star": "unexpected token * in expression term",
 	"filter_expression_with_equals_number_for_dot_notation_with_star":     "expected identifier in '.' selection",
 	"filter_expression_with_equals_object":                                "unexpected character '{' at offset 9",
@@ -186,17 +182,14 @@ Search:
 func TestTestSuite(t *testing.T) {
 	ts := loadYAML(testSuiteFile, t)
 	for qno, query := range ts.Queries {
-		if testing.Verbose() {
-			fmt.Printf("%d: %s %s %s\n", qno, query.ID, query.Selector, jsonString(query.Document))
-		}
+		t.Logf("%d: %s %s %s", qno, query.ID, query.Selector, jsonString(query.Document))
 		path, err := ParsePath(query.Selector)
 		if err != nil {
 			expected := query.excluded()
 			if expected != err.Error() {
-				t.Errorf("%s: sample %d: %s: parse %q: %s", testSuiteFile, qno, query.ID, query.Selector, err)
-			}
-			if testing.Verbose() {
-				fmt.Printf("%d: %s: selector %q: got error (%s) expected: %s\n", qno, query.ID, query.Selector, err, expected)
+				t.Errorf("%s: sample %d: %s: parse %q: %s", testSuiteFile, qno, query.ID, query.Selector, err.Error())
+			} else {
+				t.Logf("%d: %s: selector %q: got error (%s) [expected]", qno, query.ID, query.Selector, err.Error())
 			}
 			continue
 		}
@@ -209,7 +202,7 @@ func TestTestSuite(t *testing.T) {
 			t.Errorf("%s: sample %d: %s: compile %q: %s", testSuiteFile, qno, query.ID, query.Selector, err)
 			continue
 		}
-		fmt.Printf("prog: %s\n", progString(prog))
+		t.Logf("prog: %s", progString(prog))
 		results, err := prog.Run(query.Document)
 		if err != nil {
 			t.Errorf("%s: sample %d: %s: run error: %s", testSuiteFile, qno, query.ID, err)
@@ -219,7 +212,7 @@ func TestTestSuite(t *testing.T) {
 		note := " "
 		if query.Consensus != nil {
 			s1 := jsonString(query.Consensus)
-			fmt.Printf("results0: %s\n", s1)
+			t.Logf("results0: %s", s1)
 			if s1 != s2 {
 				b, ok := query.Consensus.([]interface{}) // it's always a set
 				if ok && isReordered(results, b) {
@@ -237,7 +230,7 @@ func TestTestSuite(t *testing.T) {
 				}
 			}
 		}
-		fmt.Printf("results1: %s%s\n", s2, note)
+		t.Logf("results1: %s%s", s2, note)
 	}
 }
 
@@ -274,22 +267,23 @@ func TestParkerTests(t *testing.T) {
 		}
 		fileName := testParker + "/" + file.Name()
 		tests := loadParkerTest(fileName, t)
-		fmt.Printf("%s: %d\n", fileName, len(tests))
+		t.Logf("%s: %d", fileName, len(tests))
 		for tno, test := range tests {
 			given := jsonString(test.Given)
-			fmt.Printf("example %d: given: %s\n", tno, given)
-			fmt.Printf("GIVEN: %#v\n", test.Given)
+			t.Logf("example %d: given: %s", tno, given)
+			t.Logf("GIVEN: %#v", test.Given)
 			for tcno, tc := range test.Cases {
 				if tc.Comment != "" {
-					fmt.Printf("comment: %s", tc.Comment)
-					fmt.Printf("\n")
+					t.Logf("comment: %s", tc.Comment)
 				}
-				fmt.Printf("expr: %s", tc.Expression)
+				skipped := ""
 				if tc.Skip {
-					fmt.Printf(" [skipped]\n")
+					skipped = " [skipped]"
+				}
+				t.Logf("expr: %s%s", tc.Expression, skipped)
+				if tc.Skip {
 					continue
 				}
-				fmt.Printf("\n")
 				path, err := ParsePath(tc.Expression)
 				if err != nil {
 					if tc.Error == nil {
@@ -306,18 +300,16 @@ func TestParkerTests(t *testing.T) {
 				if err != nil {
 					t.Errorf("%s: path %s: compile: %s", fileName, tc.Expression, err)
 				}
-				if testing.Verbose() {
-					fmt.Printf("prog: %s\n", progString(prog))
-				}
+				t.Logf("prog: %s", progString(prog))
 				results, err := prog.Run(test.Given)
 				if err != nil {
 					t.Errorf("%s: path %s: run %.40s...: %s", fileName, tc.Expression, string(given), err)
 				}
-				fmt.Printf("results: %d\n", len(results))
+				t.Logf("results: %d", len(results))
 				if tc.Result != nil {
-					fmt.Printf("results0: %s\n", jsonString(tc.Result))
+					t.Logf("results0: %s", jsonString(tc.Result))
 					s2 := jsonString(results)
-					fmt.Printf("results1: %s\n", s2)
+					t.Logf("results1: %s", s2)
 					if !reflect.DeepEqual(results, tc.Result) && !isReordered(results, tc.Result) {
 						t.Errorf("%s: path %s: run %.40s...: wanted %s, got %s", fileName, tc.Expression, string(given), jsonString(tc.Result), s2)
 					}
