@@ -139,7 +139,7 @@ func eqNum(a, b JSON) bool {
 		if va == 0.0 && vb == -zero || vb == 0.0 && va == -zero {
 			return true
 		}
-		return va == vb	// this will be false for NaN
+		return va == vb // this will be false for NaN
 	}
 	return cvi(a) == cvi(b)
 }
@@ -174,13 +174,13 @@ func eqVal(a, b JSON) bool {
 			if badNum(cvs(b), true) {
 				return false
 			}
-			return cvf(a) == cvf(b)	// wat!
+			return cvf(a) == cvf(b) // wat!
 		case String<<8 | Boolean:
 			// 11.9.3(7)
 			if badNum(cvs(a), true) {
 				return false
 			}
-			return cvf(a) == cvf(b)	// wat!
+			return cvf(a) == cvf(b) // wat!
 		case Object<<8 | Boolean:
 			// 11.9.3(6) [a == ToNumber(b)]
 			a, ok := a.([]JSON)
