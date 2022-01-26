@@ -111,7 +111,6 @@ func (l *lexer) ws() Loc {
 }
 
 // lexNumber returns an integer token from r with a 64-bit value, or an error (eg, it overflows).
-// Currently it supports only integers.
 // The IETF grammar excludes leading zeroes, presumably to avoid octal, but we'll accept them as decimal.
 func (l *lexer) lexNumber(real bool) lexeme {
 	var sb strings.Builder

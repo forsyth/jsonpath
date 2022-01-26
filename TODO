@@ -18,3 +18,4 @@ x	errorVal can just be error now
 	+ added Daniel Parker's tests but still need more
 +	character escapes if regexp as string, RE type Posix or not
 -	cv* functions need an error value or error return
+-	run_tests.go is a bit messy, tidy.
