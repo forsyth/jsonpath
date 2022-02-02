@@ -77,5 +77,4 @@ func (l *lexer) lexRegexp(ec int) lexeme {
 		}
 		s.WriteByte(byte(c))
 	}
-	return lexeme{tokRE, s.String(), nil}
 }
