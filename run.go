@@ -1,4 +1,4 @@
-package JSONPath
+package jsonpath
 
 // "When I say 'run!', run!"
 
@@ -118,8 +118,9 @@ func (m *machine) valsOK(a, b JSON) bool {
 	return true
 }
 
-// Run applies the current Program to the root of a JSON structure, returning a collection of JSON structures from it (which might be empty) as selected by the original path expression, or a fatal run-time error.
-// Following the usual JavaScript conventions, many errors are not fatal, but yield a null result.
+// Run applies the current Program to the root of a JSON structure, returning a collection of JSON structures from it (which might be empty) as selected by the original path expression, or a run-time error.
+// Run-time errors include call of an unknown function, an invalid dynamic regular expression (ie, a regular expression as a string variable) and invalid operand types for "~" and "in" ("nin").
+// Following the usual JavaScript conventions, many other errors do not stop evaluation, but yield a null result, detectable using || and &&.
 func (p *Program) Run(root JSON) ([]JSON, error) {
 	vm := &machine{prog: p, root: root, out: []JSON{root}, pc: 0, tracing: false}
 	for vm.pc < len(p.orders) {

@@ -1,4 +1,4 @@
-package JSONPath
+package jsonpath
 
 // Elements of an expression tree (Expr)
 

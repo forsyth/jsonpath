@@ -1,8 +1,8 @@
-// Copyright © 2021 Charles Forsyth (charles.forsyth@gmail.com)
+// Copyright © 2021-22 Charles Forsyth (charles.forsyth@gmail.com)
 // Usable under the terms in the file LICENSE.
 
 /*
-Package JSONPath provides a parser for JSONpaths, a syntax for expressing queries and locations in a JSON structure.
+Package jsonpath provides a parser for JSONpaths, a syntax for expressing queries and locations in a JSON structure.
 
 The JSONpath syntax is typically defined by providing a set of sample paths.
 Following https://github.com/dchester/jsonpath/, this package instead is based on a grammar,
@@ -50,7 +50,7 @@ Script expressions (filters and calculations) share the same syntax:
 	re ::= <regular expression of some style, with \/ escaping the delimiting "/">
 	real ::= integer "." integer? ("e" [+-]? integer)?
 
-The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying JSONPath systematically instead of providing a few examples —  although this grammar is more restrictive (eg, as regards the content of a union expression). Some of its extensions (eg, the parent operator) are also not provided.
+The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying jsonpath systematically instead of providing a few examples —  although this grammar is more restrictive (eg, as regards the content of a union expression). Some of its extensions (eg, the parent operator) are also not provided.
 
 Paths are represented by a Path type, which is just a sequence of Steps, each with some parameter values (Val). Expressions are represented by a type Expr, which is an expression tree.
 
@@ -67,4 +67,4 @@ Several threads can Run the same Program simultaneously, since each Run gets its
 (The evaluator is almost complete, but it and the Path, Step and Expr structures are still subject to change, since this project is not yet an initial release.
 No issues yet, please!)
 */
-package JSONPath
+package jsonpath

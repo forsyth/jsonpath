@@ -1,4 +1,4 @@
-package JSONPath_test
+package jsonpath_test
 
 import (
 	"encoding/json"
@@ -23,11 +23,11 @@ var docs = []string{
 	]}`,
 }
 
-func ExampleJSONPath() {
+func Examplejsonpath() {
 	for _, s := range paths {
 
 		// ParsePath parses a JSON path expression into a Path: a sequence of Steps
-		path, err := JSONPath.ParsePath(s)
+		path, err := jsonpath.ParsePath(s)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "example: path %q: %s\n", s, err)
 			continue
