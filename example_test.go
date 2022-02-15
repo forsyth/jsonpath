@@ -23,7 +23,7 @@ var docs = []string{
 	]}`,
 }
 
-func Examplejsonpath() {
+func Example() {
 	for _, s := range paths {
 
 		// ParsePath parses a JSON path expression into a Path: a sequence of Steps
