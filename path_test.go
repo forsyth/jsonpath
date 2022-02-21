@@ -6,6 +6,9 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/forsyth/jsonpath/mach"
+	"github.com/forsyth/jsonpath/paths"
 )
 
 const testFile = "testdata/t1"
@@ -39,7 +42,7 @@ func TestPathParse(t *testing.T) {
 		if building {
 			fmt.Printf("%s -> ", sam)
 		}
-		path, err := ParsePath(sam)
+		path, err := paths.ParsePath(sam)
 		if err != nil {
 			if building {
 				fmt.Printf("!%s\n", err)
@@ -72,58 +75,10 @@ func TestPathParse(t *testing.T) {
 }
 
 // build a program for the Path and return a readable version as a string
-func codePath(path Path) (string, error) {
-	prog, err := path.Compile()
+func codePath(path paths.Path) (string, error) {
+	prog, err := mach.Compile(path)
 	if err != nil {
 		return "", err
 	}
-	return progString(prog), nil
-}
-
-func progString(prog *Program) string {
-	var sb strings.Builder
-	for i, val := range prog.vals {
-		if i > 0 {
-			sb.WriteByte(' ')
-		}
-		sb.WriteString(val.String())
-	}
-	if len(prog.vals) > 0 {
-		sb.WriteByte(' ')
-	}
-	for i, ord := range prog.orders {
-		if i > 0 {
-			sb.WriteByte(' ')
-		}
-		op := ord.op()
-		sb.WriteString(trimOp(op))
-		if op.IsLeaf() {
-			if !op.HasVal() {
-				continue
-			}
-			if ord.isSmallInt() {
-				sb.WriteByte('(')
-				sb.WriteString(fmt.Sprint(ord.smallInt()))
-				sb.WriteByte(')')
-			} else {
-				sb.WriteByte('[')
-				sb.WriteString(fmt.Sprint(ord.index()))
-				sb.WriteByte(']')
-			}
-			continue
-		}
-		if ord.isSmallInt() && ord.smallInt() != 0 {
-			sb.WriteByte('.')
-			sb.WriteString(fmt.Sprint(ord.smallInt()))
-		}
-	}
-	return sb.String()
-}
-
-func trimOp(op Op) string {
-	name := opNames[op]
-	if name == "" {
-		panic("unknown op in opNames")
-	}
-	return name[2:]
+	return prog.String(), nil
 }

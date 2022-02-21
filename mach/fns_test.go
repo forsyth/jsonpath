@@ -1,9 +1,11 @@
-package jsonpath
+package mach
 
 import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/forsyth/jsonpath/paths"
 )
 
 type funcTest struct {
@@ -49,26 +51,26 @@ var funcTests = []funcTest{
 
 func TestFunctions(t *testing.T) {
 	for i, ft := range funcTests {
-		expr, err := ParseScriptExpression(ft.expr)
+		expr, err := paths.ParseScriptExpression(ft.expr)
 		if err != nil {
 			t.Fatalf("function test %d: parse %q: %s", i, ft.expr, err)
 		}
 		var got string
 		switch expr.Opcode() {
-		case OpCall:
-			ret, err := testcall(expr.(*Inner).kids)
+		case paths.OpCall:
+			ret, err := testcall(expr.(*paths.Inner).Kids)
 			if err != nil {
 				t.Fatalf("function test %d: %q: %s", i, ft.expr, err)
 			}
 			got = jsonString(ret)
-		case OpArray:
-			a := expr.(*Inner)
+		case paths.OpArray:
+			a := expr.(*paths.Inner)
 			array := []JSON{}
-			for _, v := range a.kids {
-				if v.Opcode() != OpCall {
+			for _, v := range a.Kids {
+				if v.Opcode() != paths.OpCall {
 					t.Fatalf("function test %d: unexpected operator in array: %#v", i, v.Opcode())
 				}
-				ret, err := testcall(v.(*Inner).kids)
+				ret, err := testcall(v.(*paths.Inner).Kids)
 				if err != nil {
 					t.Fatalf("function test %d: %q: %s", i, ft.expr, err)
 				}
@@ -85,13 +87,13 @@ func TestFunctions(t *testing.T) {
 	}
 }
 
-func testcall(kids []Expr) (JSON, error) {
+func testcall(kids []paths.Expr) (JSON, error) {
 	if len(kids) == 0 {
 		return nil, errors.New("no identifier child in call")
 	}
-	nm, ok := kids[0].(*NameLeaf)
+	nm, ok := kids[0].(*paths.NameLeaf)
 	if !ok {
-		return nil, fmt.Errorf("got %#v, expected OpID", kids[0].Opcode())
+		return nil, fmt.Errorf("got %#v, expected paths.OpID", kids[0].Opcode())
 	}
 	args, err := collect(kids[1:], []JSON{})
 	if err != nil {
@@ -100,28 +102,28 @@ func testcall(kids []Expr) (JSON, error) {
 	return call(nm.Name, args)
 }
 
-func collect(kids []Expr, args []JSON) ([]JSON, error) {
+func collect(kids []paths.Expr, args []JSON) ([]JSON, error) {
 	for _, k := range kids {
 		switch t := k.(type) {
-		case *IntLeaf:
+		case *paths.IntLeaf:
 			args = append(args, t.Val)
-		case *FloatLeaf:
+		case *paths.FloatLeaf:
 			args = append(args, t.Val)
-		case *StringLeaf:
+		case *paths.StringLeaf:
 			args = append(args, t.Val)
-		case *Inner:
+		case *paths.Inner:
 			switch t.Op {
-			case OpNeg:
-				switch r := t.kids[0].(type) {
-				case *IntLeaf:
+			case paths.OpNeg:
+				switch r := t.Kids[0].(type) {
+				case *paths.IntLeaf:
 					args = append(args, -r.Val)
-				case *FloatLeaf:
+				case *paths.FloatLeaf:
 					args = append(args, -r.Val)
 				default:
-					return nil, fmt.Errorf("unexpected op %#v under OpNeg", t.Op)
+					return nil, fmt.Errorf("unexpected op %#v under paths.OpNeg", t.Op)
 				}
-			case OpArray:
-				els, err := collect(t.kids, []JSON{})
+			case paths.OpArray:
+				els, err := collect(t.Kids, []JSON{})
 				if err != nil {
 					return nil, err
 				}

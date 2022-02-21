@@ -1,4 +1,4 @@
-package jsonpath
+package paths
 
 // Elements of an expression tree (Expr)
 
@@ -24,15 +24,15 @@ type Expr interface {
 // Inner represents an interior operation with one or more operands.
 type Inner struct {
 	Op
-	kids []Expr
+	Kids []Expr
 }
 
 // Kid returns child c (index c) and true, or nil and false if the child doesn't exist.
 func (i *Inner) Kid(c int) (Expr, bool) {
-	if c >= len(i.kids) {
+	if c >= len(i.Kids) {
 		return nil, false
 	}
-	return i.kids[c], true
+	return i.Kids[c], true
 }
 
 func (i *Inner) String() string {

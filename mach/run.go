@@ -1,4 +1,4 @@
-package jsonpath
+package mach
 
 // "When I say 'run!', run!"
 
@@ -8,6 +8,8 @@ import (
 	"math"
 	"regexp"
 	"unicode/utf8"
+
+	"github.com/forsyth/jsonpath/paths"
 )
 
 var (
@@ -29,7 +31,7 @@ type machine struct {
 	stack   []JSON        // expression stack
 	sp      int           // expression stack pointer
 	pc      int           // next instruction
-	values  []<-chan JSON // values from OpFor for OpFilter or OpNest
+	values  []<-chan JSON // values from paths.OpFor for paths.OpFilter or paths.OpNest
 	tracing bool
 }
 
@@ -128,13 +130,13 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 		vm.pc++
 		switch ord.op() {
 		// leaf operations
-		case OpInt:
+		case paths.OpInt:
 			if ord.isSmallInt() {
 				vm.push(ord.smallInt())
 				break
 			}
-			vm.push(p.value(ord.index()).(Valuer).Value())
-		case OpBool:
+			vm.push(p.value(ord.index()).(paths.Valuer).Value())
+		case paths.OpBool:
 			if !ord.isSmallInt() {
 				panic("require smallInt")
 			}
@@ -144,13 +146,13 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			} else {
 				vm.push(false)
 			}
-		case OpNull:
+		case paths.OpNull:
 			vm.push(nil)
-		case OpReal, OpRE, OpBounds, OpString:
-			vm.push(p.value(ord.index()).(Valuer).Value())
-		case OpID:
+		case paths.OpReal, paths.OpRE, paths.OpBounds, paths.OpString:
+			vm.push(p.value(ord.index()).(paths.Valuer).Value())
+		case paths.OpID:
 			vm.push(p.value(ord.index()))
-		case OpExp:
+		case paths.OpExp:
 			// expression in path is either string or integer (a key or index);
 			// other values are converted to integer.
 			v := vm.pop()
@@ -164,13 +166,13 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			}
 
 		// path operations, working on each member of the current output set
-		case OpWild:
+		case paths.OpWild:
 			vm.out = applySelection(vm.out, func(val JSON, acc []JSON) []JSON {
 				return valsWild(acc, val)
 			})
-		case OpMember, OpSelect:
-			negIndex := ord.op() == OpSelect // only [] can index from end of array
-			sel := vm.pop()                  // can be ID, String, Int, Expr(result) or Slice
+		case paths.OpMember, paths.OpSelect:
+			negIndex := ord.op() == paths.OpSelect // only [] can index from end of array
+			sel := vm.pop()                        // can be ID, String, Int, Expr(result) or Slice
 			if isNothing(sel) {
 				vm.out = []JSON{}
 				break
@@ -178,7 +180,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			vm.out = applySelection(vm.out, func(val JSON, acc []JSON) []JSON {
 				return valsByKey(acc, val, sel, negIndex)
 			})
-		case OpUnion:
+		case paths.OpUnion:
 			// note that it's (apparently) a union that yields a bag, not a set
 			n := ord.smallInt()
 			sels := vm.popN(n)
@@ -192,21 +194,21 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			})
 
 		// path operations, working on the value in dot
-		case OpFilter, OpNestFilter:
+		case paths.OpFilter, paths.OpNestFilter:
 			v := vm.pop()
 			//fmt.Printf("FILTER: %#v\n", v)
 			if !isNothing(v) && cvb(v) {
 				vm.out = append(vm.out, vm.dot)
 			}
-		case OpNestWild:
+		case paths.OpNestWild:
 			vm.out = valsWild(vm.out, vm.dot)
-		case OpNestMember, OpNestSelect:
-			negIndex := ord.op() == OpNestSelect // only [] can index from end of array
-			sel := vm.pop()                      // can be ID, String, Int, Expr(result) or Slice
+		case paths.OpNestMember, paths.OpNestSelect:
+			negIndex := ord.op() == paths.OpNestSelect // only [] can index from end of array
+			sel := vm.pop()                            // can be ID, String, Int, Expr(result) or Slice
 			if !isNothing(sel) {
 				vm.out = valsByKey(vm.out, vm.dot, sel, negIndex)
 			}
-		case OpNestUnion:
+		case paths.OpNestUnion:
 			// note that it's (apparently) a union that yields a bag, not a set
 			n := ord.smallInt()
 			sels := vm.popN(n)
@@ -216,12 +218,12 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				}
 			}
 
-		// iterating over members of current vm.out directly (OpFor) and all their descendents (OpNest)
-		case OpFor:
+		// iterating over members of current vm.out directly (paths.OpFor) and all their descendents (paths.OpNest)
+		case paths.OpFor:
 			looptop(vm, stepping, ord.pc())
-		case OpNest:
+		case paths.OpNest:
 			looptop(vm, walker, ord.pc())
-		case OpRep:
+		case paths.OpRep:
 			js, more := <-vm.topInput()
 			if !more {
 				//fmt.Printf("rep: all done\n")
@@ -234,17 +236,17 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			vm.branch(ord.pc())
 
 		// expression operators
-		case OpRoot:
+		case paths.OpRoot:
 			vm.push(vm.root)
-		case OpCurrent:
+		case paths.OpCurrent:
 			vm.push(vm.dot)
-		case OpDot:
+		case paths.OpDot:
 			sel := vm.pop()
 			val := vm.pop()
 			if !vm.valsOK(sel, val) {
 				break
 			}
-			key := sel.(NameVal)
+			key := sel.(paths.NameVal)
 			if !vm.valOK(key) {
 				break
 			}
@@ -279,7 +281,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				//fmt.Printf(" -> . of non-object: %#v %#v\n", el, key)
 				vm.push(nothing)
 			}
-		case OpIndex:
+		case paths.OpIndex:
 			// array[index] or obj['field']
 			index := vm.pop()
 			val := vm.pop()
@@ -312,14 +314,14 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				//fmt.Printf("index of %#v by %#v\n", val, index)
 				vm.push(nothing)
 			}
-		case OpSlice:
+		case paths.OpSlice:
 			b := vm.pop()
 			a := vm.pop()
 			if isNothing(a) || isNothing(b) {
 				vm.push(nothing)
 				break
 			}
-			slice, ok1 := b.(*Slice)
+			slice, ok1 := b.(*paths.Slice)
 			array, ok2 := a.([]JSON)
 			if !ok1 || !ok2 {
 				//fmt.Printf("slice failed: %#v %#v\n", array, slice)
@@ -328,7 +330,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			}
 			//fmt.Printf("slice=%v %#v\n", slice, array)
 			vm.push(slicing(array, slice))
-		case OpOr:
+		case paths.OpOr:
 			b := vm.pop()
 			a := vm.pop()
 			if isNothing(a) && isNothing(b) {
@@ -340,7 +342,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				break
 			}
 			vm.push(b)
-		case OpAnd:
+		case paths.OpAnd:
 			b := vm.pop()
 			a := vm.pop()
 			if isNothing(a) || !cvb(a) {
@@ -348,7 +350,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				break
 			}
 			vm.push(b)
-		case OpAdd:
+		case paths.OpAdd:
 			// TO DO: allow string+string concatenation?
 			b := vm.pop()
 			a := vm.pop()
@@ -356,35 +358,35 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 				break
 			}
 			vm.push(arith(a, b, func(i, j int64) int64 { return i + j }, func(x, y float64) float64 { return x + y }))
-		case OpSub:
+		case paths.OpSub:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
 				break
 			}
 			vm.push(arith(a, b, func(i, j int64) int64 { return i - j }, func(x, y float64) float64 { return x - y }))
-		case OpMul:
+		case paths.OpMul:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
 				break
 			}
 			vm.push(arith(a, b, func(i, j int64) int64 { return i * j }, func(x, y float64) float64 { return x * y }))
-		case OpDiv:
+		case paths.OpDiv:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
 				break
 			}
 			vm.push(divide(a, b, func(i, j int64) int64 { return i / j }, func(x, y float64) float64 { return x / y }))
-		case OpMod:
+		case paths.OpMod:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
 				break
 			}
 			vm.push(divide(a, b, func(i, j int64) int64 { return i % j }, func(x, y float64) float64 { return math.Mod(x, y) }))
-		case OpNeg:
+		case paths.OpNeg:
 			v := vm.pop()
 			if !vm.valOK(v) {
 				break
@@ -395,40 +397,40 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			default:
 				vm.push(-cvi(v))
 			}
-		case OpNot:
+		case paths.OpNot:
 			vm.push(!cvb(vm.pop()))
-		case OpEQ:
+		case paths.OpEQ:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(eqVal(a, b))
-		case OpNE:
+		case paths.OpNE:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(!eqVal(a, b))
-		case OpLT:
+		case paths.OpLT:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(relation(a, b, func(i, j int64) bool { return i < j },
 				func(x, y float64) bool { return x < y }, func(s, t string) bool { return s < t }))
-		case OpLE:
+		case paths.OpLE:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(relation(a, b, func(i, j int64) bool { return i <= j },
 				func(x, y float64) bool { return x <= y }, func(s, t string) bool { return s <= t }))
-		case OpGE:
+		case paths.OpGE:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(relation(a, b, func(i, j int64) bool { return i >= j },
 				func(x, y float64) bool { return x >= y }, func(s, t string) bool { return s >= t }))
-		case OpGT:
+		case paths.OpGT:
 			b := vm.pop()
 			a := vm.pop()
 			vm.push(relation(a, b, func(i, j int64) bool { return i > j },
 				func(x, y float64) bool { return x > y }, func(s, t string) bool { return s > t }))
-		case OpArray:
+		case paths.OpArray:
 			n := ord.smallInt()
 			vm.push(vm.popN(n))
-		case OpMatch:
+		case paths.OpMatch:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
@@ -455,7 +457,7 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			default:
 				return nil, fmt.Errorf("%s requires string left operand, not %s", ord.op(), a)
 			}
-		case OpIn, OpNin:
+		case paths.OpIn, paths.OpNin:
 			b := vm.pop()
 			a := vm.pop()
 			if !vm.valsOK(a, b) {
@@ -463,14 +465,14 @@ func (p *Program) Run(root JSON) ([]JSON, error) {
 			}
 			switch b := b.(type) {
 			case []JSON:
-				vm.push(searchJSON(b, a, ord.op() == OpIn))
+				vm.push(searchJSON(b, a, ord.op() == paths.OpIn))
 			default:
 				return nil, fmt.Errorf("%s requires array right operand, not %s", ord.op(), b)
 			}
-		case OpCall:
+		case paths.OpCall:
 			n := ord.smallInt()
 			args := vm.popN(n)
-			id := args[0].(NameVal)
+			id := args[0].(paths.NameVal)
 			result, err := call(id.S(), args[1:])
 			if err != nil {
 				return nil, err
@@ -528,7 +530,7 @@ func applySelection(src []JSON, f func(JSON, []JSON) []JSON) []JSON {
 	return vals
 }
 
-// looptop sets up iteration (OpFor, OpNest) over a set of values produced by the producer process.
+// looptop sets up iteration (paths.OpFor, paths.OpNest) over a set of values produced by the producer process.
 func looptop(vm *machine, producer func(chan<- JSON, []JSON), epc int) {
 	if len(vm.out) == 0 {
 		//fmt.Printf("loop: empty out\n")
@@ -546,7 +548,7 @@ func looptop(vm *machine, producer func(chan<- JSON, []JSON), epc int) {
 // sliceEval returns an interpretation of the given Slice with respect to an array of length l.
 // A negative index is converted into an offset from the array's end.
 // A negative stride means the selected entries are to be in reverse order (start down to end, exclusive).
-func sliceEval(slice *Slice, l int64) (int64, int64, int64) {
+func sliceEval(slice *paths.Slice, l int64) (int64, int64, int64) {
 	stride := int64(1)
 	if slice.Stride != nil {
 		stride = cvi(slice.Stride)
@@ -671,7 +673,7 @@ func relation(a, b JSON, intf func(int64, int64) bool, floatf func(float64, floa
 }
 
 // slicing returns the slice of src.
-func slicing(src []JSON, slice *Slice) []JSON {
+func slicing(src []JSON, slice *paths.Slice) []JSON {
 	start, end, stride := sliceEval(slice, int64(len(src)))
 	switch {
 	case stride == 1:
@@ -717,7 +719,7 @@ func valsByKey(vals []JSON, src JSON, key JSON, negIndex bool) []JSON {
 		if !ok {
 			return nil
 		}
-		slice := key.(*Slice)
+		slice := key.(*paths.Slice)
 		start, end, stride := sliceEval(slice, int64(len(src)))
 		switch {
 		case stride > 0:
@@ -763,7 +765,7 @@ func mapKey(key JSON) string {
 		// floats here are the result of (expr),
 		// and an integer is required.
 		return fmt.Sprint(int64(float64(key)))
-	case NameVal:
+	case paths.NameVal:
 		return key.S()
 	default:
 		return fmt.Sprint(key)

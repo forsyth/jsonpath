@@ -1,4 +1,4 @@
-package jsonpath
+package mach
 
 import (
 	"encoding/json"
@@ -6,11 +6,13 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/forsyth/jsonpath/paths"
 )
 
 // JSON is a synonym for the interface{} structures returned by encoding/json,
 // used as values in the JSON machine, to make it clear that's what they are.
-type JSON = interface{}
+type JSON = paths.JSON // temporary, during the renaming
 
 // enquiry functions on JSON, sometimes easier to read than type switches
 
@@ -38,7 +40,7 @@ func isFloat(v JSON) bool {
 
 // isSlice returns true if v represents slice parameters.
 func isSlice(v JSON) bool {
-	_, ok := v.(*Slice)
+	_, ok := v.(*paths.Slice)
 	return ok
 }
 
@@ -310,7 +312,7 @@ func cvi(v JSON) int64 {
 			return 0
 		}
 		return n
-	case IntVal: // appears in Slice (via OpBounds)
+	case paths.IntVal: // appears in Slice (via OpBounds)
 		return v.V()
 	default:
 		return 0
@@ -382,8 +384,8 @@ const (
 )
 
 // typeOf returns the  for a value, for use in Abstract Equality Comparison.
-func typeOf(js JSON) jsType {
-	switch js.(type) {
+func typeOf(v JSON) jsType {
+	switch v.(type) {
 	case error:
 		return Undefined
 	case nil:

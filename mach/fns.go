@@ -1,4 +1,4 @@
-package jsonpath
+package mach
 
 import (
 	"math"
@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+	//	"github.com/forsyth/jsonpath/paths"
 )
 
 // Function represents a predefined function with na args (or AnyNumber) with body fn.

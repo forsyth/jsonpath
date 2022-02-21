@@ -1,8 +1,10 @@
-package jsonpath
+package mach
 
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/forsyth/jsonpath/paths"
 )
 
 // order holds a single order for the path machine.
@@ -24,18 +26,18 @@ const (
 )
 
 // mkOrder returns an order with an op and index field.
-func mkOrder(op Op, index uint32) order {
+func mkOrder(op paths.Op, index uint32) order {
 	return order(op&opMask) | order(index<<indexOffset)
 }
 
 // mkSmall returns an order with an op and signed integer.
-func mkSmall(op Op, val int) order {
+func mkSmall(op paths.Op, val int) order {
 	return order(op&opMask) | order((val&indexMask)<<indexOffset) | smallFlag
 }
 
 // op returns the operation part of an order.
-func (o order) op() Op {
-	return Op(o & opMask)
+func (o order) op() paths.Op {
+	return paths.Op(o & opMask)
 }
 
 // isSmallInt is true if the order contains a small integer, not its index
@@ -72,14 +74,14 @@ func (o order) pc() int {
 	return int(o.smallInt())
 }
 
-// floatVal extends Val to include floating-point in a Program.
+// floatVal extends paths.Val to include floating-point in a Program.
 type floatVal float64
 
 func (f floatVal) String() string {
 	return fmt.Sprint(float64(f))
 }
 
-// Value satisfies Valuer, boxing an ordinary floating-point number.
+// Value satisfies paths.Valuer, boxing an ordinary floating-point number.
 func (f floatVal) Value() JSON {
 	return float64(f)
 }
@@ -88,12 +90,12 @@ func (f floatVal) F() float64 {
 	return float64(f)
 }
 
-// regexpVal extends Val to include compiled regular expressions in a Program.
+// regexpVal extends paths.Val to include compiled regular expressions in a Program.
 type regexpVal struct {
 	*regexp.Regexp
 }
 
-// Value satisfies Valuer, boxing the compiled regular expression.
+// Value satisfies paths.Valuer, boxing the compiled regular expression.
 func (r regexpVal) Value() JSON {
 	return r.Regexp
 }
@@ -105,8 +107,8 @@ func (r regexpVal) String() string {
 // Program is the compiled form of a Path and associated expressions.
 // It is a program for a simple stack machine, although the details are hidden.
 type Program struct {
-	vals   []Val   // unique data values, indexed by an order's index value
-	orders []order // program text
+	vals   []paths.Val // unique data values, indexed by an order's index value
+	orders []order     // program text
 }
 
 // asm adds an instruction to the program and returns its pc.
@@ -121,14 +123,14 @@ func (p *Program) patch(pc int, o order) {
 }
 
 // data adds a data value to the program and returns its index.
-func (p *Program) data(val Val) uint32 {
+func (p *Program) data(val paths.Val) uint32 {
 	o := uint32(len(p.vals))
 	p.vals = append(p.vals, val)
 	return o
 }
 
 // value returns the data value at the given index.
-func (p *Program) value(index uint32) Val {
+func (p *Program) value(index uint32) paths.Val {
 	return p.vals[index]
 }
 

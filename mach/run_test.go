@@ -1,4 +1,4 @@
-package jsonpath
+package mach
 
 import (
 	"encoding/json"
@@ -10,12 +10,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/forsyth/jsonpath/paths"
 	"gopkg.in/yaml.v3"
 )
 
 // standard "book" example as initial test case
 
-const testJSON = "testdata/book.json"
+const testJSON = "../testdata/book.json"
 
 var testQueries = []string{
 	"$.store",
@@ -43,17 +44,17 @@ var testQueries = []string{
 func TestRun(t *testing.T) {
 	js := loadJSON(testJSON, t)
 	for i, q := range testQueries {
-		path, err := ParsePath(q)
+		path, err := paths.ParsePath(q)
 		if err != nil {
 			t.Errorf("sample %d: %s: parse: %s", i, q, err)
 			continue
 		}
-		prog, err := path.Compile()
+		prog, err := Compile(path)
 		if err != nil {
 			t.Errorf("sample %d: %s: compile: %s", i, q, err)
 			continue
 		}
-		t.Logf("%s -> %s", q, progString(prog))
+		t.Logf("%s -> %s", q, prog)
 		vals, err := prog.Run(js)
 		if err != nil {
 			t.Errorf("sample %d: %s: run: %s", i, q, err)
@@ -77,7 +78,7 @@ func TestWalker(t *testing.T) {
 
 // run the engine against an external test suite of sorts.
 
-const testSuiteFile = "testdata/test_suite.yaml"
+const testSuiteFile = "../testdata/test_suite.yaml"
 
 // test case excluded by this implementation, and why.
 type exclusion struct {
@@ -183,7 +184,7 @@ func TestTestSuite(t *testing.T) {
 	ts := loadYAML(testSuiteFile, t)
 	for qno, query := range ts.Queries {
 		t.Logf("%d: %s %s %s", qno, query.ID, query.Selector, jsonString(query.Document))
-		path, err := ParsePath(query.Selector)
+		path, err := paths.ParsePath(query.Selector)
 		if err != nil {
 			expected := query.excluded()
 			if expected != err.Error() {
@@ -197,12 +198,12 @@ func TestTestSuite(t *testing.T) {
 			// skip ones with no consensus
 			continue
 		}
-		prog, err := path.Compile()
+		prog, err := Compile(path)
 		if err != nil {
 			t.Errorf("%s: sample %d: %s: compile %q: %s", testSuiteFile, qno, query.ID, query.Selector, err)
 			continue
 		}
-		t.Logf("prog: %s", progString(prog))
+		t.Logf("prog: %s", prog)
 		results, err := prog.Run(query.Document)
 		if err != nil {
 			t.Errorf("%s: sample %d: %s: run error: %s", testSuiteFile, qno, query.ID, err)
@@ -253,7 +254,7 @@ type TestCase struct {
 }
 
 // directory of tests in Parker's JSON format
-const testParker = "testdata/group1"
+const testParker = "../testdata/group1"
 
 // TestParkTests runs the set of tests adapted from Parker's C# implementation.
 func TestParkerTests(t *testing.T) {
@@ -284,7 +285,7 @@ func TestParkerTests(t *testing.T) {
 				if tc.Skip {
 					continue
 				}
-				path, err := ParsePath(tc.Expression)
+				path, err := paths.ParsePath(tc.Expression)
 				if err != nil {
 					if tc.Error == nil {
 						t.Errorf("%s: test %d.%d: path %s: %s", fileName, tno, tcno, tc.Expression, err)
@@ -296,11 +297,11 @@ func TestParkerTests(t *testing.T) {
 					t.Errorf("%s: test %d.%d: path %s: error expected, but passed", fileName, tno, tcno, tc.Expression)
 					continue
 				}
-				prog, err := path.Compile()
+				prog, err := Compile(path)
 				if err != nil {
 					t.Errorf("%s: path %s: compile: %s", fileName, tc.Expression, err)
 				}
-				t.Logf("prog: %s", progString(prog))
+				t.Logf("prog: %s", prog)
 				results, err := prog.Run(test.Given)
 				if err != nil {
 					t.Errorf("%s: path %s: run %.40s...: %s", fileName, tc.Expression, string(given), err)

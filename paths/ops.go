@@ -1,4 +1,4 @@
-package jsonpath
+package paths
 
 // Op represents path expression leaf and expression operators, and filter and expression engine operators.
 //

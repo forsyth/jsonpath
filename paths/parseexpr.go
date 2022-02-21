@@ -1,4 +1,4 @@
-package jsonpath
+package paths
 
 // Parse the script expression language embedded within path expressions.
 // It's a small subset of JavaScript (at least I hope it's a small subset.)

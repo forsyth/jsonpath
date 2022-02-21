@@ -27,16 +27,9 @@ func Example() {
 	for _, s := range paths {
 
 		// ParsePath parses a JSON path expression into a Path: a sequence of Steps
-		path, err := jsonpath.ParsePath(s)
+		jpath, err := jsonpath.Compile(s)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "example: path %q: %s\n", s, err)
-			continue
-		}
-
-		// Path.Compile then converts a Path and its expressions into a Program for a simple abstract machine.
-		prog, err := path.Compile()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "example: path %q: compilation error: %s\n", s, err)
 			continue
 		}
 		fmt.Printf("pattern: %s\n", s)
@@ -48,9 +41,9 @@ func Example() {
 				continue
 			}
 
-			// Program.Run evaluates prog on a given JSON value, the root of a document, returning
-			// the list of resulting JSON values. The same program can be reused, even concurrently.
-			vals, err := prog.Run(d)
+			// jpath.Eval evaluates the path s on a given JSON value, the root of a document, returning
+			// the list of resulting JSON values. The same JSONPath value can be reused, even concurrently.
+			vals, err := jpath.Eval(d)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "example: path %q: subject %q: %s\n", s, doc, err)
 				continue
