@@ -1,8 +1,9 @@
-package jsonpath
+package mach
 
 import (
 	"math"
 	"testing"
+	//	"github.com/forsyth/jsonpath/paths"
 )
 
 type args []JSON

@@ -1,8 +1,10 @@
-package jsonpath
+package mach
 
 import (
 	"errors"
 	"fmt"
+
+	"github.com/forsyth/jsonpath/paths"
 )
 
 var (
@@ -11,14 +13,14 @@ var (
 
 // builder is the state when building a program
 type builder struct {
-	vals map[Val]uint32 // map value to its index in prog.vals
+	vals map[paths.Val]uint32 // map value to its index in prog.vals
 	prog *Program
 }
 
 // Compile compiles a Path into a Program for a small abstract machine that evaluates paths and expressions.
-func (path Path) Compile() (*Program, error) {
+func Compile(path paths.Path) (*Program, error) {
 	prog := &Program{}
-	b := &builder{vals: make(map[Val]uint32), prog: prog}
+	b := &builder{vals: make(map[paths.Val]uint32), prog: prog}
 	for _, step := range path {
 		if step.Op.IsLeaf() && step.Op.HasVal() {
 			// leaf carries a value index
@@ -29,13 +31,13 @@ func (path Path) Compile() (*Program, error) {
 			continue
 		}
 		switch step.Op {
-		case OpNestMember, OpNestFilter, OpNestSelect, OpNestUnion, OpNestWild:
-			err := b.codeLoop(step, OpNest)
+		case paths.OpNestMember, paths.OpNestFilter, paths.OpNestSelect, paths.OpNestUnion, paths.OpNestWild:
+			err := b.codeLoop(step, paths.OpNest)
 			if err != nil {
 				return nil, err
 			}
-		case OpFilter:
-			err := b.codeLoop(step, OpFor)
+		case paths.OpFilter:
+			err := b.codeLoop(step, paths.OpFor)
 			if err != nil {
 				return nil, err
 			}
@@ -50,19 +52,19 @@ func (path Path) Compile() (*Program, error) {
 	return prog, nil
 }
 
-func (b *builder) codeLoop(step *Step, intro Op) error {
+func (b *builder) codeLoop(step *paths.Step, intro paths.Op) error {
 	prog := b.prog
 	fpc := prog.asm(mkSmall(intro, 0))
 	lpc, err := b.codeStep(step)
 	if err != nil {
 		return err
 	}
-	prog.asm(mkSmall(OpRep, lpc))
+	prog.asm(mkSmall(paths.OpRep, lpc))
 	prog.patch(fpc, mkSmall(intro, prog.size()))
 	return nil
 }
 
-func (b *builder) codeStep(step *Step) (int, error) {
+func (b *builder) codeStep(step *paths.Step) (int, error) {
 	prog := b.prog
 	pc := prog.size()
 	err := b.codeArgs(step.Args)
@@ -70,7 +72,7 @@ func (b *builder) codeStep(step *Step) (int, error) {
 	return pc, err
 }
 
-func (b *builder) codeArgs(args []Val) error {
+func (b *builder) codeArgs(args []paths.Val) error {
 	for _, arg := range args {
 		err := b.codeVal(valOp(arg), arg)
 		if err != nil {
@@ -81,25 +83,25 @@ func (b *builder) codeArgs(args []Val) error {
 }
 
 // valOp returns the best op for the value.
-func valOp(arg Val) Op {
+func valOp(arg paths.Val) paths.Op {
 	switch arg.(type) {
-	case NameVal:
-		return OpID
-	case IntVal:
-		return OpInt
-	case StringVal:
-		return OpString
-	case *Slice:
-		return OpBounds
-	case Expr:
-		return OpExp
+	case paths.NameVal:
+		return paths.OpID
+	case paths.IntVal:
+		return paths.OpInt
+	case paths.StringVal:
+		return paths.OpString
+	case *paths.Slice:
+		return paths.OpBounds
+	case paths.Expr:
+		return paths.OpExp
 	default:
 		panic(fmt.Sprintf("unexpected valOp: %#v", arg))
 	}
 }
 
-func (b *builder) codeVal(op Op, val Val) error {
-	if expr, ok := val.(Expr); ok {
+func (b *builder) codeVal(op paths.Op, val paths.Val) error {
+	if expr, ok := val.(paths.Expr); ok {
 		return b.codeExpr(expr)
 	}
 	if !op.HasVal() || val == nil {
@@ -108,65 +110,65 @@ func (b *builder) codeVal(op Op, val Val) error {
 	return b.codeOp(op, val)
 }
 
-func (b *builder) codeExpr(expr Expr) error {
+func (b *builder) codeExpr(expr paths.Expr) error {
 	if expr == nil {
 		panic("unexpected nil expr")
 	}
 	if expr.IsLeaf() {
 		return b.codeLeaf(expr)
 	}
-	t := expr.(*Inner)
-	for _, k := range t.kids {
+	t := expr.(*paths.Inner)
+	for _, k := range t.Kids {
 		err := b.codeExpr(k)
 		if err != nil {
 			return err
 		}
 	}
-	b.prog.asm(mkSmall(t.Op, len(t.kids)))
+	b.prog.asm(mkSmall(t.Op, len(t.Kids)))
 	return nil
 }
 
-func (b *builder) codeLeaf(expr Expr) error {
+func (b *builder) codeLeaf(expr paths.Expr) error {
 	op := expr.Opcode()
 	if !op.HasVal() {
 		return b.codeOp(op, nil)
 	}
 	switch l := expr.(type) {
-	case *IntLeaf:
+	case *paths.IntLeaf:
 		if isSmallInt(l.Val) {
 			// skip conversion via IntVal
 			b.prog.asm(mkSmall(op, int(l.Val)))
 			return nil
 		}
-		return b.codeOp(op, IntVal(l.Val))
-	case *FloatLeaf:
+		return b.codeOp(op, paths.IntVal(l.Val))
+	case *paths.FloatLeaf:
 		return b.codeOp(op, floatVal(l.Val))
-	case *StringLeaf:
-		return b.codeOp(op, StringVal(l.Val))
-	case *NameLeaf:
-		return b.codeOp(op, NameVal(l.Name))
-	case *RegexpLeaf:
+	case *paths.StringLeaf:
+		return b.codeOp(op, paths.StringVal(l.Val))
+	case *paths.NameLeaf:
+		return b.codeOp(op, paths.NameVal(l.Name))
+	case *paths.RegexpLeaf:
 		return b.codeOp(op, regexpVal{l.Prog})
-	case *BoolLeaf:
+	case *paths.BoolLeaf:
 		var v int
 		if l.Val {
 			v = 1
 		}
 		b.prog.asm(mkSmall(op, v))
 		return nil
-	case *NullLeaf:
+	case *paths.NullLeaf:
 		return b.codeOp(op, nil)
 	default:
 		panic("unexpected Leaf op: " + op.GoString())
 	}
 }
 
-func (b *builder) codeOp(op Op, val Val) error {
+func (b *builder) codeOp(op paths.Op, val paths.Val) error {
 	if val == nil {
 		b.prog.asm(mkSmall(op, 0))
 		return nil
 	}
-	if v, ok := val.(IntVal); ok {
+	if v, ok := val.(paths.IntVal); ok {
 		n := v.V()
 		if isSmallInt(n) {
 			b.prog.asm(mkSmall(op, int(n)))
@@ -182,7 +184,7 @@ func (b *builder) codeOp(op Op, val Val) error {
 }
 
 // mkVal assigns and returns an index for val, for the index field of an order.
-func (b *builder) mkVal(val Val) (uint32, error) {
+func (b *builder) mkVal(val paths.Val) (uint32, error) {
 	i, ok := b.vals[val]
 	if ok {
 		return i, nil
