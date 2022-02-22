@@ -281,6 +281,8 @@ func cvs(v JSON) string {
 		return v
 	case bool, int, int64, float64:
 		return fmt.Sprint(v)
+	case json.Number:
+		return v.String()
 	default:
 		// non-primitive value, shouldn't be used
 		return "[object Object]"
@@ -312,6 +314,11 @@ func cvi(v JSON) int64 {
 			return 0
 		}
 		return n
+	case json.Number:
+		if n, err := v.Int64(); err == nil {
+			return n
+		}
+		return 0
 	case paths.IntVal: // appears in Slice (via OpBounds)
 		return v.V()
 	default:
@@ -343,6 +350,11 @@ func cvf(v JSON) float64 {
 			return math.NaN()
 		}
 		return f
+	case json.Number:
+		if f, err := v.Float64(); err == nil {
+			return f
+		}
+		return math.NaN()
 	default:
 		//fmt.Printf("cvf(%#v)", v)
 		return math.NaN()
@@ -365,6 +377,14 @@ func cvb(v JSON) bool {
 		return !math.IsNaN(v) && v != 0.0 && v != -zero
 	case string:
 		return v != ""
+	case json.Number:
+		if n, err := v.Int64(); err == nil {
+			return n != 0
+		}
+		if f, err := v.Float64(); err == nil {
+			return f != 0
+		}
+		return v.String() != "" // whatever it is
 	default:
 		//fmt.Printf("cvb: DEFAULT: %#v\n", v)
 		return true
