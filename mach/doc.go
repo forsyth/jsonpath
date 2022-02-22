@@ -9,4 +9,3 @@ Several threads can Run the same Program simultaneously, since each Run gets its
 The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying JSONpath systematically instead of providing a few examples —  although the grammar above is more restrictive (eg, as regards the content of a union expression). Some of Parker's extensions (eg, the parent operator) are also not provided.
 */
 package mach
-
