@@ -67,7 +67,7 @@ func quote(s string) string {
 
 // Eval evaluates a previously-compiled JSONpath expression against a given JSON value
 // (the root of a document), as returned by encoding/json.Decoder.Unmarshal.
-// It returns a slice containing the list of the JSON values selected by the path expression.
+// It returns a slice containing the list of JSON values selected by the path expression.
 // If a run-time error occurs, for instance an invalid dynamic regular expression,
 // Eval stops and returns only an error.
 // Eval may be used concurrently.
