@@ -75,7 +75,7 @@ func quote(s string) string {
 // Path expressions contain boolean filter expressions of the form ?(expr), and other
 // numeric, string or boolean expressions of the form (expr). The expression language
 // is the same for each, containing a subset of JavaScript's expression and logical
-// operators, and a match operator ~ (subject-string ~ /re/ or subject-string ~ regexp-string).
+// operators, and a match operator =~ (subject-string =~ /re/ or subject-string =~ regexp-string).
 // The equality operators == and != apply JavaScript's equality rules.
 func (path *JSONPath) Eval(root interface{}) ([]interface{}, error) {
 	return path.prog.Run(root)

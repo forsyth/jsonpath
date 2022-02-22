@@ -69,7 +69,7 @@ const (
 	OpArray   // [e-list]
 	OpIn      // "in"
 	OpNin     // "nin", not in
-	OpMatch   // ~= (why not just ~)
+	OpMatch   // =~ (why not just ~)
 	OpNot     // unary !
 )
 
