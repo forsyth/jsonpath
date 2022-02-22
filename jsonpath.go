@@ -5,7 +5,8 @@
 // Given a JSON value ("document") a path expression selects subcomponents and returns a list of the selected values.
 //
 // The JSONpath syntax is often defined by providing a set of sample paths.
-// Following https://github.com/dchester/jsonpath/, this package instead is based on a grammar,
+// This package instead is based on a grammar, parsed and interpreted in a conventional way.
+//
 // Briefly, a JSONpath gives a dot-separated path through a JSON structure, with nested expressions providing dynamic values and filters.
 // Unfortunately the notation has not yet been standardised, and implementations have signfiicant differences.
 // This one aims to satisfy the existing consensus as represented by several test suites.
