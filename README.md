@@ -6,7 +6,7 @@ lexical analysis (tokenising) and parsing (building from the token stream an abs
 with nested expression trees).
 That representation is converted into orders for a small abstract machine that evaluates a path expression given a root JSON value, yielding a collection of JSON values selected by the path expression.
 
-It is currently in development, subject to change and not yet ready for use.
+It is currently in development and subject to change, but ready for friendly users.
 
 The path image is from Joey Genovese on Unsplash.
 
