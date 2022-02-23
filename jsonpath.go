@@ -13,6 +13,10 @@
 //
 // For the detailed syntax, run
 //	go doc jsonpath/syntax
+//
+// A given JSONpath expression (in textual form) is first transformed by Compile or MustCompile to
+// a pointer to a JSONPath value that can then be applied repeatedly to JSON values using its Eval method.
+// Compilation checks that the expression is valid JSONpath syntax as defined above.
 package jsonpath
 
 import (
@@ -35,8 +39,9 @@ func (path *JSONPath) String() string {
 	return path.expr
 }
 
-// Compile parses a JSONpath expression and, if successful, returns a JSONPath value
+// Compile parses a JSONpath expression and, if it is syntactically valid, returns a JSONPath value
 // that allows repeated evaluation of that expression against a given JSON value.
+// If the expression is not valid JSONPath, Compile instead returns only an error.
 func Compile(expr string) (*JSONPath, error) {
 	path, err := paths.ParsePath(expr)
 	if err != nil {
@@ -77,6 +82,11 @@ func quote(s string) string {
 // is the same for each, containing a subset of JavaScript's expression and logical
 // operators, and a match operator =~ (subject-string =~ /re/ or subject-string =~ regexp-string).
 // The equality operators == and != apply JavaScript's equality rules.
+// Boolean contexts apply JavaScript's falsy rules, and || and && also behave as in JavaScript.
+// For instance (a || b) yields the value of b if a is falsy, not necessarily a Boolean value as in Go and other languages.
+// JavaScript's implicit conversion rules are also applied when boolean, string and numeric values meet.
+// Note that expressions also handle failure (eg, failing to find a key in an object, or selecting from a non-object)
+// by propagating null values, which can then be detected and handled by using || and && as one might in JavaScript.
 func (path *JSONPath) Eval(root interface{}) ([]interface{}, error) {
 	return path.prog.Run(root)
 }
