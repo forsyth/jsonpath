@@ -2,11 +2,8 @@
 // Usable under the terms in the file LICENSE.
 
 /*
-Package jsonpath provides a parser for JSONpaths, a syntax for expressing queries and locations in a JSON structure.
-
 The JSONpath syntax is typically defined by providing a set of sample paths.
-Following https://github.com/dchester/jsonpath/, this package instead is based on a grammar,
-and internally has a conventional lexical analyser and parser for the grammar.
+Following https://github.com/dchester/jsonpath/, this package instead is based on a grammar.
 
 The grammar has two distinct parts, one for the paths (the outermost construction),
 and one for expressions and filter expressions that can appear in a path ("script-expressions").

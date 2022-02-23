@@ -19,3 +19,4 @@ x	errorVal can just be error now
 +	character escapes if regexp as string, RE type Posix or not
 -	cv* functions need an error value or error return
 -	run_tests.go is a bit messy, tidy.
+-	syntax/syntax_test.go for systematic grammar testing of parse functions.
