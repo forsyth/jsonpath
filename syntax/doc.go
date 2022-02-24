@@ -48,5 +48,8 @@ Script expressions (filters and calculations) share the same syntax:
 	real ::= integer "." integer? ("e" [+-]? integer)?
 
 The semantics and built-in functions are generally those of https://danielaparker.github.io/JsonCons.Net/articles/JsonPath/Specification.html — a rare example of specifying JSONpath systematically instead of providing a few examples —  although the grammar above is more restrictive (eg, as regards the content of a union expression). Some of Parker's extensions (eg, the parent operator) are also not provided.
+
+JSONpath expressions were originally described by https://goessner.net/articles/JsonPath/index.html by
+analogy with XPath for XML.
 */
 package syntax
