@@ -4,7 +4,8 @@ STRINGS=\
 
 all:V: $STRINGS
 	go build
-	go vet . ./paths ./mach
+	go build ./cmd/jp
+	go vet . ./paths ./mach ./cmd/jp
 
 paths/op_string.go:D: paths/ops.go
 	go generate paths/ops.go
