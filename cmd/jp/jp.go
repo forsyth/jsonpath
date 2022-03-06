@@ -96,7 +96,7 @@ func readValues(fd *os.File, jpath *jsonpath.JSONPath, enc *json.Encoder) error 
 func readLines(fd *os.File, jpath *jsonpath.JSONPath, enc *json.Encoder) error {
 	input := bufio.NewScanner(fd)
 	input.Split(bufio.ScanLines)
-	for lno := int64(1); input.Scan(); lno++ {
+	for lno := 1; input.Scan(); lno++ {
 		var root interface{}
 		err := json.Unmarshal(input.Bytes(), &root)
 		if err != nil {
@@ -120,7 +120,6 @@ func readLines(fd *os.File, jpath *jsonpath.JSONPath, enc *json.Encoder) error {
 func errorf(format string, args ...interface{}) {
 	stdout.Flush()
 	fmt.Fprintf(os.Stderr, "%s: ", os.Args[0])
-	fmt.Fprintf(os.Stderr, format, args...)
-	fmt.Fprintf(os.Stderr, "\n")
+	fmt.Fprintf(os.Stderr, format+"\n", args...)
 	os.Exit(1)
 }
