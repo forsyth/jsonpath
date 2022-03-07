@@ -40,7 +40,7 @@ func main() {
 		reader = readValues
 	}
 	if flag.NArg() > 1 {
-		for _, file := range flag.Args() {
+		for _, file := range flag.Args()[1:] {
 			fd, err := os.Open(file)
 			if err != nil {
 				errorf("%s: cannot open: %s", file, err.Error())
