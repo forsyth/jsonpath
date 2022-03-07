@@ -13,11 +13,11 @@ import (
 	"github.com/forsyth/jsonpath"
 )
 
-var stdout *bufio.Writer	// global only because os.Exit doesn't run defers
+var stdout *bufio.Writer // global only because os.Exit doesn't run defers
 
 func main() {
 	byLine := flag.Bool("l", false, "one JSON value per line, and result set on single line")
-//	useNumber := flag.Bool("n", false, "represent JSON numbers as integer, floating-point or string")
+	//	useNumber := flag.Bool("n", false, "represent JSON numbers as integer, floating-point or string")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		fmt.Fprintf(os.Stderr, "usage: jp [-l] pat [file ...]\n")
@@ -30,14 +30,14 @@ func main() {
 	if err != nil {
 		errorf("path %s: %s", quote(jexp), err.Error())
 	}
-	var evaluate func(*os.File, *jsonpath.JSONPath, *json.Encoder) error
+	var reader func(*os.File, *jsonpath.JSONPath, *json.Encoder) error
 	enc := json.NewEncoder(stdout)
 	if *byLine {
-		enc.SetIndent("", "")	// one-line output
-		evaluate = readLines
+		enc.SetIndent("", "") // one-line output
+		reader = readLines
 	} else {
 		enc.SetIndent("", "\t")
-		evaluate = readValues
+		reader = readValues
 	}
 	if flag.NArg() > 1 {
 		for _, file := range flag.Args() {
@@ -45,14 +45,14 @@ func main() {
 			if err != nil {
 				errorf("%s: cannot open: %s", file, err.Error())
 			}
-			defer fd.Close()
-			err = evaluate(fd, jpath, enc)
+			err = reader(fd, jpath, enc)
+			fd.Close()
 			if err != nil {
 				errorf("%s:%s", file, err.Error())
 			}
 		}
 	} else {
-		err = evaluate(os.Stdin, jpath, enc)
+		err = reader(os.Stdin, jpath, enc)
 		if err != nil {
 			errorf("%s", err.Error())
 		}
@@ -78,15 +78,15 @@ func readValues(fd *os.File, jpath *jsonpath.JSONPath, enc *json.Encoder) error 
 			if errors.Is(err, io.EOF) {
 				break
 			}
-			return fmt.Errorf("%d: decoding JSON: %w", off, err)
+			return fmt.Errorf("#%d: decoding JSON: %w", off, err)
 		}
 		results, err := jpath.Eval(root)
 		if err != nil {
-			return fmt.Errorf("%d: evaluation error: %w", off, err)
+			return fmt.Errorf("#%d: evaluation error: %w", off, err)
 		}
 		err = enc.Encode(results)
 		if err != nil {
-			return fmt.Errorf("%d: encoding results: %w", off, err)
+			return fmt.Errorf("#%d: encoding results: %w", off, err)
 		}
 	}
 	return nil

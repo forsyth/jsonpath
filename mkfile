@@ -11,7 +11,7 @@ paths/op_string.go:D: paths/ops.go
 	go generate paths/ops.go
 
 fmt:V:
-	go fmt . ./paths ./mach
+	go fmt . ./paths ./mach ./cmd/jp
 
 test:V:
 	go test . ./paths ./mach
