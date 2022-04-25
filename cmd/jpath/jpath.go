@@ -20,7 +20,7 @@ func main() {
 	//	useNumber := flag.Bool("n", false, "represent JSON numbers as integer, floating-point or string")
 	flag.Parse()
 	if flag.NArg() < 1 {
-		fmt.Fprintf(os.Stderr, "usage: jp [-l] pat [file ...]\n")
+		fmt.Fprintf(os.Stderr, "usage: jpath [-l] pat [file ...]\n")
 		os.Exit(2)
 	}
 	stdout = bufio.NewWriter(os.Stdout)
