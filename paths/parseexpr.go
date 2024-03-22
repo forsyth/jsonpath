@@ -64,7 +64,9 @@ func (p *parser) parseScriptExpr() (Expr, error) {
 }
 
 // expr collects binary operators with priority >= pri, starting with an initial primary tree:
+//
 //	primary (op e)*
+//
 // See http://antlr.org/papers/Clarke-expr-parsing-1986.pdf for the history and details.
 // p.expr(0) builds a complete (sub)tree.
 func (p *parser) expr(pri int) (Expr, error) {

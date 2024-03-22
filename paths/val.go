@@ -8,8 +8,10 @@ import (
 // Val is an int64, float64, string literal, name, bool?, *Slice or Expr as a value (see IntVal etc below), or nil as a missing value.
 // It represents a parameter to a Path Step, or a value compiled into a Program from a leaf of an expression tree.
 // Types that satisfy Val correspond to elements in the JsonPath grammar (ie, a union type in its abstract syntax tree):
-//		Val = Int | String | Name | Slice | Float | Regexp
-//		Slice = Lb: Val? Ub: Val? Stride: Val?
+//
+//	Val = Int | String | Name | Slice | Float | Regexp
+//	Slice = Lb: Val? Ub: Val? Stride: Val?
+//
 // Originally, it was also the memory type for the Program machine, but because that also includes JSON trees,
 // it was clearer just to use the JSON type (ie, interface{}) directly, hence the addition of Valuer, satisfied by constant values.
 //

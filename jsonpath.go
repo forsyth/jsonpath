@@ -12,6 +12,7 @@
 // This one aims to satisfy the existing consensus as represented by several test suites.
 //
 // For the detailed syntax, run
+//
 //	go doc jsonpath/syntax
 //
 // A given JSONpath expression (in textual form) is first transformed by Compile or MustCompile to
